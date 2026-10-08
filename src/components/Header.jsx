@@ -1,10 +1,10 @@
-import { FaBoxes, FaQrcode, FaChartBar, FaCog, FaHome } from "react-icons/fa";
+import { FaBoxes, FaChartBar, FaCog, FaHome, FaCamera } from "react-icons/fa";
 
 export default function Header({ currentPage = "inicio", onNavigate }) {
   const menu = [
     ["inicio", "Inicio", <FaHome />],
     ["inventario", "Inventario", <FaBoxes />],
-    ["escaner", "Escáner", <FaQrcode />],
+    ["buscar-imagen", "Buscar por imagen", <FaCamera />],
     ["reportes", "Reportes", <FaChartBar />],
     ["configuracion", "Configuración", <FaCog />],
   ];
@@ -19,8 +19,12 @@ export default function Header({ currentPage = "inicio", onNavigate }) {
           </div>
           <nav className="flex flex-wrap gap-2">
             {menu.map(([id, label, icon]) => (
-              <button key={id} type="button" onClick={() => onNavigate?.(id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${currentPage === id ? "bg-white text-[#941B80]" : "bg-white/15 hover:bg-white/25 text-white"}`}>
+              <button
+                key={id}
+                type="button"
+                onClick={() => onNavigate?.(id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition ${currentPage === id ? "bg-white text-[#941B80]" : "bg-white/15 hover:bg-white/25 text-white"}`}
+              >
                 {icon}{label}
               </button>
             ))}
