@@ -1,28 +1,25 @@
 import { useState } from "react";
 import CameraCapture from "./CameraCapture";
 
-export default function InventoryForm({
-  onSubmit,
-  initialData = null,
-}) {
-  const [form, setForm] = useState(
-    initialData || {
-      articulo: "",
-      categoria: "",
-      cantidad: "",
-      ubicacion: "",
-      observaciones: "",
-      foto: "",
-      stockMinimo: 10,
-    }
-  );
+const EMPTY_FORM = {
+  articulo: "",
+  categoria: "",
+  cantidad: "",
+  ubicacion: "",
+  observaciones: "",
+  foto: "",
+  stockMinimo: 10,
+};
+
+export default function InventoryForm({ onSubmit, initialData = null }) {
+  const [form, setForm] = useState(initialData || EMPTY_FORM);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setForm((prev) => ({
       ...prev,
-      [name\]: value,
+      [name]: value,
     }));
   };
 
@@ -40,27 +37,16 @@ export default function InventoryForm({
 
     onSubmit?.({
       ...form,
-      cantidad: Number(form.cantidad),
-      stockMinimo: Number(form.stockMinimo),
+      cantidad: Number(form.cantidad || 0),
+      stockMinimo: Number(form.stockMinimo || 10),
       fechaRegistro: new Date().toISOString(),
     });
 
-    setForm({
-      articulo: "",
-      categoria: "",
-      cantidad: "",
-      ubicacion: "",
-      observaciones: "",
-      foto: "",
-      stockMinimo: 10,
-    });
+    setForm(EMPTY_FORM);
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-6"
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
         <input
           name="articulo"
@@ -131,17 +117,9 @@ export default function InventoryForm({
 
       <button
         type="submit"
-        className="
-          bg-[#941B80]
-          hover:bg-[#692D80]
-          text-white
-          px-8
-          py-3
-          rounded-xl
-          font-semibold
-          transition
-        "
-       Guardar artículo
+        className="bg-[#941B80] hover:bg-[#692D80] text-white px-8 py-3 rounded-xl font-semibold transition"
+      >
+        Guardar artículo
       </button>
     </form>
   );
