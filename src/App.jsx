@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "./components/Header";
 import Home from "./pages/Home";
 import Inventario from "./pages/Inventario";
-import Escaner from "./pages/Escaner";
+import BuscarImagen from "./pages/BuscarImagen";
 import Reportes from "./pages/Reportes";
 import Configuracion from "./pages/Configuracion";
 import useInventory from "./hooks/useInventory";
@@ -23,15 +23,10 @@ function App() {
       fechaRegistro: item.fechaRegistro || new Date().toISOString(),
     }));
 
-    // Conserva lo que ya existe y agrega/actualiza lo importado.
     const porId = new Map(actuales.map((item) => [String(item.id), item]));
-    nuevos.forEach((item) => {
-      porId.set(String(item.id), item);
-    });
+    nuevos.forEach((item) => porId.set(String(item.id), item));
 
-    const combinado = Array.from(porId.values());
-    saveInventory(combinado);
-
+    saveInventory(Array.from(porId.values()));
     inventory.setSearch("");
     inventory.cargarInventario();
   };
@@ -47,8 +42,8 @@ function App() {
             onImport={handleImport}
           />
         );
-      case "escaner":
-        return <Escaner />;
+      case "buscar-imagen":
+        return <BuscarImagen inventario={inventory.items} />;
       case "reportes":
         return <Reportes inventario={inventory.items} />;
       case "configuracion":
