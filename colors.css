@@ -1,0 +1,52 @@
+:root {
+  /* Morados Quálitas */
+  --qualitas-morado: #941B80;
+  --qualitas-morado-claro: #D12893;
+  --qualitas-morado-suave: #9279BA;
+  --qualitas-morado-oscuro: #692D80;
+  --qualitas-morado-profundo: #512950;
+
+  /* Azules / Aqua Quálitas */
+  --qualitas-aqua: #0096AE;
+  --qualitas-aqua-claro: #46B8E9;
+  --qualitas-aqua-medio: #0F98D7;
+  --qualitas-aqua-oscuro: #037081;
+  --qualitas-aqua-profundo: #143B46;
+
+  /* Semáforos */
+  --status-success: #22C55E;
+  --status-warning: #FACC15;
+  --status-danger: #EF4444;
+
+  /* Neutros */
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --border-color: #E2E8F0;
+
+  --text-primary: #143B46;
+  --text-secondary: #64748B;
+  --text-light: #FFFFFF;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.15);
+
+  /* Bordes */
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* Transiciones */
+  --transition-fast: 0.2s ease-in-out;
+  --transition-normal: 0.3s ease-in-out;
+
+  /* Gradiente Corporativo */
+  --qualitas-gradient: linear-gradient(
+    135deg,
+    #941b80 0%,
+    #692d80 50%,
+    #0096ae 100%
+  );
+}
