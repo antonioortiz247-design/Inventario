@@ -1,0 +1,1 @@
+Proyecto base listo para Vercel. Ejecuta npm install y npm run build.

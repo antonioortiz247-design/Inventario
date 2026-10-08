@@ -1,0 +1,1 @@
+export default function App(){return <div style={{padding:20}}>Inventario Quálitas PWA - Base para Vercel</div>}
