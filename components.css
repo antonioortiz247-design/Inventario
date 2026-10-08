@@ -1,0 +1,197 @@
+/* Cards */
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Buttons */
+
+.btn {
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.btn-primary {
+  background: var(--qualitas-morado);
+  color: var(--text-light);
+}
+
+.btn-primary:hover {
+  background: var(--qualitas-morado-oscuro);
+}
+
+.btn-secondary {
+  background: var(--qualitas-aqua);
+  color: var(--text-light);
+}
+
+.btn-secondary:hover {
+  background: var(--qualitas-aqua-oscuro);
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+/* Inputs */
+
+.input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.input:focus {
+  border-color: var(--qualitas-aqua);
+  box-shadow: 0 0 0 3px rgba(0, 150, 174, 0.15);
+}
+
+/* Dashboard */
+
+.dashboard-card {
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.dashboard-card h2 {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.dashboard-card .value {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+/* Tables */
+
+.table-container {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: var(--qualitas-aqua-profundo);
+  color: white;
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: left;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Status */
+
+.status-success {
+  color: var(--status-success);
+}
+
+.status-warning {
+  color: var(--status-warning);
+}
+
+.status-danger {
+  color: var(--status-danger);
+}
+
+/* Images */
+
+.inventory-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+.image-preview {
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 4px solid var(--qualitas-aqua);
+}
+
+/* Sidebar */
+
+.sidebar {
+  background: var(--qualitas-aqua-profundo);
+  color: white;
+  min-height: 100vh;
+}
+
+.sidebar-item {
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-item.active {
+  background: var(--qualitas-aqua);
+}
+
+/* Header */
+
+.header-gradient {
+  background: var(--qualitas-gradient);
+  color: white;
+}
+
+/* QR */
+
+.qr-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .dashboard-card .value {
+    font-size: 2rem;
+  }
+
+  .image-preview {
+    width: 100%;
+    height: auto;
+  }
+}
