@@ -57,6 +57,22 @@ export const getInventory = async () => {
 
   if (error) throw new Error(`No se pudo cargar el inventario: ${error.message}`);
 
+  // Migración inicial: si la base está vacía y este dispositivo ya tenía
+  // inventario local, lo subimos automáticamente una sola vez.
+  if ((!data || data.length === 0)) {
+    const localItems = getLocal();
+
+    if (localItems.length > 0) {
+      const { error: migrationError } = await supabase
+        .from(TABLE)
+        .upsert(localItems.map(toDb), { onConflict: "id" });
+
+      if (!migrationError) {
+        return localItems;
+      }
+    }
+  }
+
   return (data || []).map(fromDb);
 };
 
