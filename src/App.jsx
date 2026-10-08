@@ -12,23 +12,28 @@ function App() {
   const [currentPage, setCurrentPage] = useState("inicio");
   const inventory = useInventory();
 
-  const handleImport = (data) => {
-    const actuales = getInventory();
+  const handleImport = async (data) => {
+    try {
+      const actuales = await getInventory();
 
-    const nuevos = data.map((item) => ({
-      ...item,
-      id: item.id || crypto.randomUUID(),
-      cantidad: Number(item.cantidad || 0),
-      stockMinimo: Number(item.stockMinimo || 10),
-      fechaRegistro: item.fechaRegistro || new Date().toISOString(),
-    }));
+      const nuevos = data.map((item) => ({
+        ...item,
+        id: item.id || crypto.randomUUID(),
+        cantidad: Number(item.cantidad || 0),
+        stockMinimo: Number(item.stockMinimo || 10),
+        fechaRegistro: item.fechaRegistro || new Date().toISOString(),
+      }));
 
-    const porId = new Map(actuales.map((item) => [String(item.id), item]));
-    nuevos.forEach((item) => porId.set(String(item.id), item));
+      const porId = new Map(actuales.map((item) => [String(item.id), item]));
+      nuevos.forEach((item) => porId.set(String(item.id), item));
 
-    saveInventory(Array.from(porId.values()));
-    inventory.setSearch("");
-    inventory.cargarInventario();
+      await saveInventory(Array.from(porId.values()));
+      inventory.setSearch("");
+      await inventory.cargarInventario();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
   const renderPage = () => {
@@ -62,6 +67,13 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-100">
       <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+      {inventory.error && (
+        <div className="mx-auto max-w-7xl px-6 pt-4">
+          <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-4">
+            {inventory.error}
+          </div>
+        </div>
+      )}
       {renderPage()}
     </div>
   );
