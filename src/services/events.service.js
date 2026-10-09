@@ -102,5 +102,6 @@ export async function eliminarEvento(eventoId) {
   requireSupabase();
   const { data, error } = await supabase.rpc("eliminar_evento", { p_evento_id: eventoId });
   if (error) throw new Error(error.message);
+  if (!data) throw new Error("Supabase no eliminó el evento. Revisa que la política eventos_delete_public esté aplicada en eventos.sql.");
   return data;
 }
