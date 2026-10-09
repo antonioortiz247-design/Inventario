@@ -64,3 +64,20 @@ export async function entregarMaterialEvento(materialId, cantidad, responsable, 
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function listarReservasActivas() {
+  requireSupabase();
+  const { data: activeEvents, error: eventsError } = await supabase
+    .from("eventos").select("id").in("estado", ["confirmado", "en_curso"]);
+  if (eventsError) throw new Error("No se pudieron consultar los eventos activos: " + eventsError.message);
+  const ids = (activeEvents || []).map((event) => event.id);
+  if (ids.length === 0) return {};
+  const { data, error } = await supabase
+    .from("evento_materiales").select("articulo_id, cantidad_reservada, cantidad_entregada").in("evento_id", ids);
+  if (error) throw new Error("No se pudieron consultar las reservas: " + error.message);
+  return (data || []).reduce((acc, row) => {
+    const pendiente = Math.max(0, Number(row.cantidad_reservada || 0) - Number(row.cantidad_entregada || 0));
+    acc[row.articulo_id] = (acc[row.articulo_id] || 0) + pendiente;
+    return acc;
+  }, {});
+}
