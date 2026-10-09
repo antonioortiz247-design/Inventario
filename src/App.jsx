@@ -14,7 +14,13 @@ function App() {
 
   const handleImport = async (data) => {
     const actuales = await getInventory();
-    const nuevos = data.map((item) => ({ ...item, id: item.id || crypto.randomUUID(), cantidad: Number(item.cantidad || 0), stockMinimo: Number(item.stockMinimo || 10), fechaRegistro: item.fechaRegistro || new Date().toISOString() }));
+    const nuevos = data.map((item) => ({
+      ...item,
+      id: item.id || crypto.randomUUID(),
+      cantidad: Number(item.cantidad || 0),
+      stockMinimo: Number(item.stockMinimo ?? item.stock_minimo ?? 10),
+      fechaRegistro: item.fechaRegistro || new Date().toISOString(),
+    }));
     const porId = new Map(actuales.map((item) => [String(item.id), item]));
     nuevos.forEach((item) => porId.set(String(item.id), item));
     await saveInventory(Array.from(porId.values()));
@@ -25,7 +31,7 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "inventario":
-        return <Inventario {...inventory} onAdd={inventory.agregarArticulo} onUpdate={inventory.actualizarArticulo} onDelete={inventory.eliminarArticulo} onImport={handleImport} />;
+        return <Inventario {...inventory} inventario={inventory.items} resultados={inventory.resultados} onAdd={inventory.agregarArticulo} onUpdate={inventory.actualizarArticulo} onDelete={inventory.eliminarArticulo} onImport={handleImport} />;
       case "buscar-imagen": return <BuscarImagen inventario={inventory.items} />;
       case "reportes": return <Reportes inventario={inventory.items} />;
       case "configuracion": return <Configuracion />;
