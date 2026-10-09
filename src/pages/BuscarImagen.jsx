@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as mobilenet from "@tensorflow-models/mobilenet";
+import { getItemById, getInventoryPhotoIds } from "../services/inventory.service";
 import "@tensorflow/tfjs";
 
 function cosineSimilarity(a, b) {
@@ -41,6 +42,9 @@ export default function BuscarImagen({ inventario = [] }) {
   const [loadingModel, setLoadingModel] = useState(true);
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState("");
+  const [photoIds, setPhotoIds] = useState([]);
+  const [loadingPhotos, setLoadingPhotos] = useState(true);
+  const [photoProgress, setPhotoProgress] = useState(0);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -63,10 +67,19 @@ export default function BuscarImagen({ inventario = [] }) {
     };
   }, []);
 
-  const productosConFoto = useMemo(
-    () => inventario.filter((item) => item.foto),
-    [inventario]
-  );
+  useEffect(() => {
+    let active = true;
+    getInventoryPhotoIds()
+      .then((ids) => { if (active) setPhotoIds(ids); })
+      .catch((loadError) => { if (active) setError(loadError.message || "No se pudieron consultar las fotografías."); })
+      .finally(() => { if (active) setLoadingPhotos(false); });
+    return () => { active = false; };
+  }, []);
+
+  const productosConFoto = useMemo(() => {
+    const byId = new Map(inventario.map((item) => [String(item.id), item]));
+    return photoIds.map((id) => byId.get(String(id))).filter(Boolean);
+  }, [inventario, photoIds]);
 
   const buscar = async (file) => {
     if (!file || !model) return;
@@ -82,13 +95,20 @@ export default function BuscarImagen({ inventario = [] }) {
       const queryEmbedding = await getEmbedding(model, objectUrl);
       const matches = [];
 
-      for (const item of productosConFoto) {
+      setPhotoProgress(0);
+      for (let index = 0; index < photoIds.length; index++) {
         try {
-          const embedding = await getEmbedding(model, item.foto);
-          const similarity = cosineSimilarity(queryEmbedding, embedding);
-          matches.push({ ...item, similarity });
+          // La imagen completa se descarga solo al ejecutar la búsqueda.
+          const item = await getItemById(photoIds[index]);
+          if (item && item.foto) {
+            const embedding = await getEmbedding(model, item.foto);
+            const similarity = cosineSimilarity(queryEmbedding, embedding);
+            matches.push({ ...item, similarity });
+          }
         } catch {
           // Ignorar fotografías dañadas o incompatibles.
+        } finally {
+          setPhotoProgress(index + 1);
         }
       }
 
@@ -135,7 +155,7 @@ export default function BuscarImagen({ inventario = [] }) {
             {loadingModel ? "Preparando búsqueda visual..." : "Búsqueda visual lista"}
           </span>
           <span className="text-gray-400">
-            {productosConFoto.length} productos con fotografía
+            {loadingPhotos ? "Consultando fotografías…" : `${photoIds.length} productos con fotografía`}
           </span>
         </div>
 
@@ -154,12 +174,17 @@ export default function BuscarImagen({ inventario = [] }) {
               <p className="font-semibold text-[#143B46] mb-2">Resultados</p>
 
               {searching && (
-                <p className="text-gray-500 py-6">Analizando productos...</p>
+                <div className="py-6 text-gray-500">
+                  <p>Analizando fotografías: {photoProgress} de {photoIds.length}…</p>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200">
+                    <div className="h-full rounded-full bg-[#0096AE] transition-all" style={{ width: `${photoIds.length ? (photoProgress / photoIds.length) * 100 : 0}%` }} />
+                  </div>
+                </div>
               )}
 
               {!searching && results.length === 0 && (
                 <p className="text-gray-500 py-6">
-                  No hay coincidencias. Asegúrate de que los productos tengan fotografía.
+                  {loadingPhotos ? "Consultando artículos con fotografía…" : photoIds.length === 0 ? "No hay artículos con fotografía registrada." : "No hay coincidencias. Prueba con otra fotografía."}
                 </p>
               )}
 
