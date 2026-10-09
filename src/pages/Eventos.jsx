@@ -100,7 +100,7 @@ export default function Eventos({ inventario = [], onUpdated }) {
         <label className="text-sm font-medium text-slate-700">Responsable<input value={form.responsable} onChange={(e) => setForm({ ...form, responsable: e.target.value })} placeholder="Nombre responsable" className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3" /></label>
         <label className="text-sm font-medium text-slate-700 md:col-span-2">Notas<textarea rows="2" value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} placeholder="Objetivo, equipo, detalles…" className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3" /></label>
         <div className="flex items-end"><button disabled={saving} className="w-full rounded-xl bg-[#941B80] px-4 py-3 font-semibold text-white disabled:opacity-60">{saving ? "Guardando…" : editingId ? "Guardar cambios" : "Crear borrador"}</button></div>
-      {editingId && <button type="button" onClick={() => { setEditingId(""); setForm(blank); }} className="rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-600">Cancelar edición</button>}
+        {editingId && <div className="flex items-end"><button type="button" onClick={() => { setEditingId(""); setForm(blank); }} className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-600">Cancelar edición</button></div>}
       </form>
     </section>
 
