@@ -6,6 +6,7 @@ import BuscarImagen from "./pages/BuscarImagen";
 import Reportes from "./pages/Reportes";
 import Configuracion from "./pages/Configuracion";
 import Movimientos from "./pages/Movimientos";
+import Eventos from "./pages/Eventos";
 import useInventory from "./hooks/useInventory";
 import { getInventory, saveInventory } from "./services/inventory.service";
 
@@ -25,6 +26,7 @@ function App() {
     switch (currentPage) {
       case "inventario": return <Inventario {...inventory} inventario={inventory.items} resultados={inventory.resultados} onAdd={inventory.agregarArticulo} onUpdate={inventory.actualizarArticulo} onDelete={inventory.eliminarArticulo} onImport={handleImport} />;
       case "movimientos": return <Movimientos inventario={inventory.items} onUpdated={inventory.cargarInventario} />;
+      case "eventos": return <Eventos inventario={inventory.items} onUpdated={inventory.cargarInventario} />;
       case "buscar-imagen": return <BuscarImagen inventario={inventory.items} />;
       case "reportes": return <Reportes inventario={inventory.items} />;
       case "configuracion": return <Configuracion />;
