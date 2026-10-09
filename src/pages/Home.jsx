@@ -1,8 +1,15 @@
 import Dashboard from "../components/Dashboard";
 import ExcelImport from "../components/ExcelImport";
 import ExcelExport from "../components/ExcelExport";
+import { useEffect, useState } from "react";
+import { listarEventos } from "../services/events.service";
 
 export default function Home({ inventario = [], estadisticas, onImport, onNavigate }) {
+  const [proximosEventos, setProximosEventos] = useState([]);
+  useEffect(() => { listarEventos().then((data) => {
+    const hoy = new Date().toLocaleDateString("en-CA");
+    setProximosEventos(data.filter((evento) => evento.fecha_evento >= hoy && !["finalizado", "cancelado"].includes(evento.estado)).sort((a, b) => a.fecha_evento.localeCompare(b.fecha_evento)).slice(0, 5));
+  }).catch(() => setProximosEventos([])); }, []);
   const alertas = inventario
     .filter((item) => Number(item.cantidad || 0) <= Number(item.stockMinimo ?? item.stock_minimo ?? 10))
     .sort((a, b) => {
@@ -22,6 +29,13 @@ export default function Home({ inventario = [], estadisticas, onImport, onNaviga
         stockBajo={estadisticas?.stockBajo ?? 0}
         stockCritico={estadisticas?.stockCritico ?? 0}
       />
+      <section className="rounded-3xl bg-white p-5 shadow-lg md:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div><p className="text-sm font-semibold uppercase tracking-wider text-[#0096AE]">Agenda</p><h2 className="mt-1 text-2xl font-bold text-[#941B80]">Próximos eventos</h2><p className="mt-1 text-sm text-slate-500">Eventos pendientes y confirmados a partir de hoy.</p></div>
+          <button type="button" onClick={() => onNavigate?.("eventos")} className="rounded-xl bg-[#941B80] px-4 py-2.5 font-semibold text-white">Administrar eventos</button>
+        </div>
+        {proximosEventos.length === 0 ? <p className="mt-4 rounded-xl border border-dashed border-slate-300 p-5 text-center text-slate-500">No hay próximos eventos registrados.</p> : <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{proximosEventos.map((evento) => <button key={evento.id} type="button" onClick={() => onNavigate?.("eventos")} className="rounded-2xl border border-slate-200 p-4 text-left hover:border-[#0096AE] hover:bg-slate-50"><div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-slate-800">{evento.nombre}</h3><span className="shrink-0 rounded-full bg-sky-100 px-2 py-1 text-xs font-semibold text-sky-800">{({ borrador: "Borrador", confirmado: "Confirmado", en_curso: "En curso" })[evento.estado] || evento.estado}</span></div><p className="mt-2 text-sm font-medium text-[#941B80]">{evento.fecha_evento}</p><p className="mt-1 text-sm text-slate-500">{evento.ubicacion || "Ubicación por definir"}</p><p className="mt-1 text-xs text-slate-500">Responsable: {evento.responsable || "Sin asignar"}</p></button>)}</div>}
+      </section>
       <section className="rounded-3xl bg-white p-5 shadow-lg md:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
