@@ -81,3 +81,26 @@ export async function listarReservasActivas() {
     return acc;
   }, {});
 }
+
+export async function actualizarEvento(eventoId, evento) {
+  requireSupabase();
+  const { data, error } = await supabase.rpc("actualizar_evento", {
+    p_evento_id: eventoId, p_nombre: evento.nombre.trim(), p_fecha_evento: evento.fecha_evento,
+    p_ubicacion: (evento.ubicacion || "").trim(), p_responsable: (evento.responsable || "").trim(),
+    p_notas: (evento.notas || "").trim(),
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+export async function finalizarEvento(eventoId) {
+  requireSupabase();
+  const { data, error } = await supabase.rpc("finalizar_evento", { p_evento_id: eventoId });
+  if (error) throw new Error(error.message);
+  return data;
+}
+export async function eliminarEvento(eventoId) {
+  requireSupabase();
+  const { data, error } = await supabase.rpc("eliminar_evento", { p_evento_id: eventoId });
+  if (error) throw new Error(error.message);
+  return data;
+}
