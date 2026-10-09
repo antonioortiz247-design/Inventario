@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 import { getItemById, getInventoryPhotoIds } from "../services/inventory.service";
 import "@tensorflow/tfjs";
@@ -76,10 +76,7 @@ export default function BuscarImagen({ inventario = [] }) {
     return () => { active = false; };
   }, []);
 
-  const productosConFoto = useMemo(() => {
-    const byId = new Map(inventario.map((item) => [String(item.id), item]));
-    return photoIds.map((id) => byId.get(String(id))).filter(Boolean);
-  }, [inventario, photoIds]);
+
 
   const buscar = async (file) => {
     if (!file || !model) return;
