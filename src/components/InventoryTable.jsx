@@ -63,10 +63,11 @@ export default function InventoryTable({ data = [], onEdit, onDelete }) {
   const [deletingId, setDeletingId] = useState(null);
   const [savingId, setSavingId] = useState(null);
   const [quantities, setQuantities] = useState({});
+  const [savedQuantities, setSavedQuantities] = useState({});
   const [tableError, setTableError] = useState("");
   const [tableMessage, setTableMessage] = useState("");
 
-  const getQuantity = (item) => quantities[item.id] ?? String(Number(item.cantidad || 0));
+  const getQuantity = (item) => quantities[item.id] ?? String(savedQuantities[item.id] ?? Number(item.cantidad || 0));
 
   const handleQuantityChange = (id, value) => {
     setQuantities((current) => ({ ...current, [id]: value }));
@@ -95,8 +96,9 @@ export default function InventoryTable({ data = [], onEdit, onDelete }) {
     setTableMessage("");
     try {
       await updateItem(item.id, { cantidad: quantity });
-      setTableMessage(`Existencia de “${item.articulo}” actualizada. Recargando inventario…`);
-      window.location.reload();
+      setSavedQuantities((current) => ({ ...current, [item.id]: quantity }));
+      setQuantities((current) => { const next = { ...current }; delete next[item.id]; return next; });
+      setTableMessage(`Existencia de “${item.articulo}” actualizada correctamente.`);
     } catch (error) {
       setTableError(error.message || "No se pudo actualizar la existencia.");
     } finally {
