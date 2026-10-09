@@ -92,3 +92,53 @@ begin
  end if;
  return v_mat;
 end; $$;
+
+-- Editar datos generales del evento sin tocar existencias.
+create or replace function public.actualizar_evento(
+  p_evento_id uuid, p_nombre text, p_fecha_evento date, p_ubicacion text default '', p_responsable text default '', p_notas text default ''
+) returns public.eventos language plpgsql security invoker set search_path=public as $$
+declare v_evento public.eventos;
+begin
+ select * into v_evento from public.eventos where id=p_evento_id for update;
+ if not found then raise exception 'No se encontró el evento'; end if;
+ if v_evento.estado in ('finalizado','cancelado') then raise exception 'No se pueden editar eventos finalizados o cancelados'; end if;
+ if coalesce(trim(p_nombre),'')='' then raise exception 'El nombre del evento es obligatorio'; end if;
+ update public.eventos set nombre=trim(p_nombre), fecha_evento=p_fecha_evento,
+   ubicacion=coalesce(trim(p_ubicacion),''), responsable=coalesce(trim(p_responsable),''),
+   notas=coalesce(trim(p_notas),''), actualizado_en=now()
+ where id=p_evento_id returning * into v_evento;
+ return v_evento;
+end; $$;
+
+-- Marcar terminado no devuelve material ya entregado. Las cantidades no entregadas dejan de estar reservadas.
+create or replace function public.finalizar_evento(p_evento_id uuid)
+returns public.eventos language plpgsql security invoker set search_path=public as $$
+declare v_evento public.eventos;
+begin
+ select * into v_evento from public.eventos where id=p_evento_id for update;
+ if not found then raise exception 'No se encontró el evento'; end if;
+ if v_evento.estado not in ('confirmado','en_curso') then raise exception 'Solo se pueden finalizar eventos confirmados o en curso'; end if;
+ update public.eventos set estado='finalizado', actualizado_en=now() where id=p_evento_id returning * into v_evento;
+ return v_evento;
+end; $$;
+
+-- Borrar evento revierte las entregas registradas mediante entradas trazables y libera las reservas pendientes.
+create or replace function public.eliminar_evento(p_evento_id uuid)
+returns public.eventos language plpgsql security invoker set search_path=public as $$
+declare v_evento public.eventos; v_mat record;
+begin
+ select * into v_evento from public.eventos where id=p_evento_id for update;
+ if not found then raise exception 'No se encontró el evento'; end if;
+ for v_mat in
+   select em.articulo_id, em.cantidad_entregada, i.articulo
+   from public.evento_materiales em join public.inventario_qualitas i on i.id=em.articulo_id
+   where em.evento_id=p_evento_id and em.cantidad_entregada>0
+   for update of i
+ loop
+   perform public.registrar_movimiento(v_mat.articulo_id,'entrada',v_mat.cantidad_entregada,
+     'Reversión por eliminación del evento: '||v_evento.nombre,'Sistema',
+     'Se reintegran '||v_mat.cantidad_entregada||' unidad(es) del artículo '||v_mat.articulo||' al eliminar el evento.');
+ end loop;
+ delete from public.eventos where id=p_evento_id returning * into v_evento;
+ return v_evento;
+end; $$;
