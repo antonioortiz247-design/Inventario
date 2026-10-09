@@ -1,6 +1,3 @@
-import { useState } from "react";
-import { getItemById } from "../services/inventory.service";
-
 import { useEffect, useRef, useState } from "react";
 import { getItemById } from "../services/inventory.service";
 
