@@ -10,7 +10,8 @@ export default function Eventos({ inventario = [], onUpdated }) {
   const [eventos, setEventos] = useState([]);
   const [selected, setSelected] = useState("");
   const [materiales, setMateriales] = useState([]);
-  const [form, setForm] = useState(blank);\n  const [editingId, setEditingId] = useState("");
+  const [form, setForm] = useState(blank);
+  const [editingId, setEditingId] = useState("");
   const [materialForm, setMaterialForm] = useState({ articuloId: "", cantidad: "1" });
   const [dispatchQty, setDispatchQty] = useState({});
   const [dispatchInfo, setDispatchInfo] = useState({ responsable: "", observaciones: "" });
@@ -44,10 +45,18 @@ export default function Eventos({ inventario = [], onUpdated }) {
     if (!form.nombre.trim()) { setError("Escribe el nombre del evento."); return; }
     setSaving(true);
     try {
-      const created = await crearEvento(form);
-      setForm(blank); setSuccess("Evento creado. Agrega los materiales y confirma cuando esté listo.");
-      await loadEvents(created.id);
-    } catch (e) { setError(e.message || "No se pudo crear el evento."); }
+      if (editingId) {
+        const id = editingId;
+        await actualizarEvento(id, form);
+        setEditingId(""); setForm(blank);
+        setSuccess("Datos del evento actualizados; las existencias no cambiaron.");
+        await loadEvents(id);
+      } else {
+        const created = await crearEvento(form);
+        setForm(blank); setSuccess("Evento creado. Agrega los materiales y confirma cuando esté listo.");
+        await loadEvents(created.id);
+      }
+    } catch (e) { setError(e.message || "No se pudo guardar el evento."); }
     finally { setSaving(false); }
   };
 
@@ -91,6 +100,7 @@ export default function Eventos({ inventario = [], onUpdated }) {
         <label className="text-sm font-medium text-slate-700">Responsable<input value={form.responsable} onChange={(e) => setForm({ ...form, responsable: e.target.value })} placeholder="Nombre responsable" className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3" /></label>
         <label className="text-sm font-medium text-slate-700 md:col-span-2">Notas<textarea rows="2" value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} placeholder="Objetivo, equipo, detalles…" className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3" /></label>
         <div className="flex items-end"><button disabled={saving} className="w-full rounded-xl bg-[#941B80] px-4 py-3 font-semibold text-white disabled:opacity-60">{saving ? "Guardando…" : editingId ? "Guardar cambios" : "Crear borrador"}</button></div>
+      {editingId && <button type="button" onClick={() => { setEditingId(""); setForm(blank); }} className="rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-600">Cancelar edición</button>}
       </form>
     </section>
 
