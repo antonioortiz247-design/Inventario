@@ -28,6 +28,7 @@ alter table public.evento_materiales enable row level security;
 drop policy if exists "eventos_select_public" on public.eventos;
 drop policy if exists "eventos_insert_public" on public.eventos;
 drop policy if exists "eventos_update_public" on public.eventos;
+drop policy if exists "eventos_delete_public" on public.eventos;
 drop policy if exists "evento_materiales_select_public" on public.evento_materiales;
 drop policy if exists "evento_materiales_insert_public" on public.evento_materiales;
 drop policy if exists "evento_materiales_update_public" on public.evento_materiales;
@@ -35,6 +36,7 @@ drop policy if exists "evento_materiales_delete_public" on public.evento_materia
 create policy "eventos_select_public" on public.eventos for select to anon, authenticated using (true);
 create policy "eventos_insert_public" on public.eventos for insert to anon, authenticated with check (true);
 create policy "eventos_update_public" on public.eventos for update to anon, authenticated using (true) with check (true);
+create policy "eventos_delete_public" on public.eventos for delete to anon, authenticated using (true);
 create policy "evento_materiales_select_public" on public.evento_materiales for select to anon, authenticated using (true);
 create policy "evento_materiales_insert_public" on public.evento_materiales for insert to anon, authenticated with check (true);
 create policy "evento_materiales_update_public" on public.evento_materiales for update to anon, authenticated using (true) with check (true);
