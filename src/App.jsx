@@ -28,7 +28,7 @@ function App() {
       case "buscar-imagen": return <BuscarImagen inventario={inventory.items} />;
       case "reportes": return <Reportes inventario={inventory.items} />;
       case "configuracion": return <Configuracion />;
-      default: return <Home inventario={inventory.items} estadisticas={inventory.estadisticas} onImport={handleImport} />;
+      default: return <Home inventario={inventory.items} estadisticas={inventory.estadisticas} onImport={handleImport} onNavigate={setCurrentPage} />;
     }
   };
   return <div className="min-h-screen bg-slate-100"><Header currentPage={currentPage} onNavigate={setCurrentPage} />{inventory.error && <div className="mx-auto max-w-7xl px-6 pt-4"><div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-4">{inventory.error}</div></div>}{renderPage()}</div>;
