@@ -14,14 +14,30 @@ export default function Inventario({ inventario = [], resultados = [], search = 
   const [category, setCategory] = useState("todas");
   const [stockFilter, setStockFilter] = useState("todos");
 
-  const categories = useMemo(() => [...new Set(inventario.map((item) => item.categoria?.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es")), [inventario]);
+  // Normaliza espacios, mayúsculas y acentos para que categorías equivalentes
+  // no desaparezcan del filtro por diferencias en los datos importados.
+  const normalize = (value = "") => String(value).trim().normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLocaleLowerCase("es-MX");
+  const categories = useMemo(() => {
+    const unique = new Map();
+    inventario.forEach((item) => {
+      const label = String(item.categoria || "").trim();
+      const key = normalize(label);
+      if (key && !unique.has(key)) unique.set(key, label);
+    });
+    return [...unique.entries()].sort((a, b) => a[1].localeCompare(b[1], "es")).map(([key, label]) => ({ key, label }));
+  }, [inventario]);
   const data = useMemo(() => {
     const base = search.trim() ? resultados : inventario;
     return base.filter((item) => {
-      const categoryMatch = category === "todas" || item.categoria === category;
+      const itemCategory = normalize(item.categoria || "");
+      const categoryMatch = category === "todas" || itemCategory === category;
       const quantity = Number(item.cantidad || 0);
       const minimum = Number(item.stockMinimo ?? item.stock_minimo ?? 10);
-      const stockMatch = stockFilter === "todos" || (stockFilter === "agotado" && quantity <= 0) || (stockFilter === "bajo" && quantity > 0 && quantity <= minimum) || (stockFilter === "disponible" && quantity > minimum);
+      const stockMatch =
+        stockFilter === "todos" ||
+        (stockFilter === "agotado" && quantity <= 0) ||
+        (stockFilter === "bajo" && quantity > 0 && quantity <= minimum) ||
+        (stockFilter === "disponible" && quantity > minimum);
       return categoryMatch && stockMatch;
     });
   }, [inventario, resultados, search, category, stockFilter]);
@@ -68,7 +84,7 @@ export default function Inventario({ inventario = [], resultados = [], search = 
     <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200 md:p-6">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <label className="relative block flex-1"><span className="sr-only">Buscar inventario</span><span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">⌕</span><input value={search} onChange={(e) => setSearch?.(e.target.value)} placeholder="Buscar por artículo, categoría, ubicación u observaciones…" className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-4 outline-none transition focus:border-[#0096AE] focus:ring-2 focus:ring-teal-100" /></label>
-        <label className="text-sm text-slate-600">Categoría<select value={category} onChange={(e) => setCategory(e.target.value)} className="ml-2 rounded-xl border border-slate-300 bg-white p-3"><option value="todas">Todas</option>{categories.map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+        <label className="text-sm text-slate-600">Categoría<select value={category} onChange={(e) => setCategory(e.target.value)} className="ml-2 rounded-xl border border-slate-300 bg-white p-3"><option value="todas">Todas</option>{categories.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}</select></label>
         <label className="text-sm text-slate-600">Existencias<select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)} className="ml-2 rounded-xl border border-slate-300 bg-white p-3"><option value="todos">Todos</option><option value="agotado">Agotados</option><option value="bajo">Stock bajo</option><option value="disponible">Sobre mínimo</option></select></label>
       </div>
       {(search || category !== "todas" || stockFilter !== "todos") && <button type="button" onClick={() => { setSearch?.(""); setCategory("todas"); setStockFilter("todos"); }} className="mt-3 text-sm font-semibold text-[#00788B] underline">Limpiar filtros</button>}
