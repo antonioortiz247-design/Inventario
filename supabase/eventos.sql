@@ -142,5 +142,8 @@ begin
      'Se reintegran '||v_mat.cantidad_entregada||' unidad(es) del artículo '||v_mat.articulo||' al eliminar el evento.');
  end loop;
  delete from public.eventos where id=p_evento_id returning * into v_evento;
+ if not found then
+   raise exception 'No se pudo eliminar el evento por permisos de base de datos. Se cancelaron también las entradas de inventario para evitar alterar existencias.';
+ end if;
  return v_evento;
 end; $$;
