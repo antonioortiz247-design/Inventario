@@ -50,16 +50,32 @@ const saveLocal = (items) => {
 export const getInventory = async () => {
   if (!supabaseConfigured) return getLocal();
 
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .order("fecha_creacion", { ascending: false });
+  // Carga por bloques pequeños para evitar consultas grandes y no ordenar
+  // toda la tabla en cada apertura. La paginación también escala con el inventario.
+  const pageSize = 100;
+  const rows = [];
+  let start = 0;
 
-  if (error) throw new Error(`No se pudo cargar el inventario: ${error.message}`);
+  while (true) {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("id, articulo, categoria, cantidad, ubicacion, observaciones, foto, stock_minimo, fecha_creacion, fecha_actualizacion")
+      .range(start, start + pageSize - 1);
 
-  // Migración inicial: si la base está vacía y este dispositivo ya tenía
-  // inventario local, lo subimos automáticamente una sola vez.
-  if ((!data || data.length === 0)) {
+    if (error) {
+      throw new Error(`No se pudo cargar el inventario desde Supabase: ${error.message}. No se han borrado ni reemplazado registros.`);
+    }
+
+    const batch = data || [];
+    rows.push(...batch);
+
+    if (batch.length < pageSize) break;
+    start += pageSize;
+  }
+
+  // Solo intentar migrar el almacenamiento local cuando Supabase respondió
+  // correctamente y confirmó que la tabla realmente está vacía.
+  if (rows.length === 0) {
     const localItems = getLocal();
 
     if (localItems.length > 0) {
@@ -73,7 +89,7 @@ export const getInventory = async () => {
     }
   }
 
-  return (data || []).map(fromDb);
+  return rows.map(fromDb);
 };
 
 export const saveInventory = async (items) => {
