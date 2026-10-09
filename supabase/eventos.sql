@@ -117,7 +117,7 @@ declare v_evento public.eventos;
 begin
  select * into v_evento from public.eventos where id=p_evento_id for update;
  if not found then raise exception 'No se encontró el evento'; end if;
- if v_evento.estado not in ('confirmado','en_curso') then raise exception 'Solo se pueden finalizar eventos confirmados o en curso'; end if;
+ if v_evento.estado in ('finalizado','cancelado') then raise exception 'El evento ya está finalizado o cancelado'; end if;
  update public.eventos set estado='finalizado', actualizado_en=now() where id=p_evento_id returning * into v_evento;
  return v_evento;
 end; $$;
