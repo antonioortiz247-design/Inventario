@@ -102,6 +102,17 @@ export const getItemById = async (id) => {
   return data ? fromDb(data) : null;
 };
 
+
+// Consulta únicamente IDs; no descarga imágenes Base64 de gran tamaño.
+export const getInventoryPhotoIds = async () => {
+  if (!supabaseConfigured) {
+    return getLocal().filter((item) => typeof item.foto === "string" && item.foto.length > 0).map(({ id }) => id);
+  }
+  const { data, error } = await supabase.from(TABLE).select("id").not("foto", "is", null).neq("foto", "");
+  if (error) throw new Error("No se pudo consultar qué artículos tienen fotografía: " + error.message);
+  return (data || []).map(({ id }) => id);
+};
+
 export const searchItems = async (searchTerm = "") => {
   const inventory = await getInventory(); const term = searchTerm.toLowerCase().trim();
   if (!term) return inventory;
@@ -115,4 +126,4 @@ export const getDashboardStats = (inventory = []) => ({
   stockCritico: inventory.filter((item) => Number(item.cantidad || 0) <= 5).length,
 });
 
-export default { getInventory, saveInventory, addItem, updateItem, deleteItem, getItemById, searchItems, getDashboardStats };
+export default { getInventory, saveInventory, addItem, updateItem, deleteItem, getItemById, getInventoryPhotoIds, searchItems, getDashboardStats };
