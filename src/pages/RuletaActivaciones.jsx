@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaBullseye, FaCog, FaRedoAlt, FaTrophy } from "react-icons/fa";
+import { FaBullseye, FaRedoAlt, FaTrophy } from "react-icons/fa";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 
 const DEFAULT_PRIZES = [
@@ -34,15 +34,12 @@ function weightedChoice(items) {
 
 export default function RuletaActivaciones() {
   const [prizes, setPrizes] = useState(DEFAULT_PRIZES);
-  const [draft, setDraft] = useState(DEFAULT_PRIZES.map(p => `${p.label}|${p.probability}`).join("\n"));
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [winner, setWinner] = useState(null);
   const [pending, setPending] = useState(null);
   const [history, setHistory] = useState([]);
-  const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const total = prizes.reduce((sum, p) => sum + p.probability, 0);
   const slice = 360 / prizes.length;
@@ -64,7 +61,7 @@ export default function RuletaActivaciones() {
       else if (data?.premios && alive) {
         const loaded = cleanPrizes(data.premios);
         if (loaded.length === 8 && loaded.reduce((s, p) => s + p.probability, 0) === 100) {
-          setPrizes(loaded); setDraft(loaded.map(p => `${p.label}|${p.probability}`).join("\n"));
+          setPrizes(loaded);
         }
       }
       await loadHistory();
@@ -76,7 +73,7 @@ export default function RuletaActivaciones() {
       .on("postgres_changes", { event: "*", schema: "public", table: CONFIG }, ({ new: row }) => {
         const loaded = cleanPrizes(row?.premios);
         if (loaded.length === 8 && loaded.reduce((s, p) => s + p.probability, 0) === 100) {
-          setPrizes(loaded); setDraft(loaded.map(p => `${p.label}|${p.probability}`).join("\n"));
+          setPrizes(loaded);
         }
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: HISTORY }, () => { loadHistory(); })
@@ -105,24 +102,6 @@ export default function RuletaActivaciones() {
     }
   };
 
-  const savePrizes = async () => {
-    const next = draft.split("\n").map(line => {
-      const i = line.lastIndexOf("|");
-      return i > 0 ? { label: line.slice(0, i).trim(), probability: Number(line.slice(i + 1).trim()) } : null;
-    }).filter(p => p && p.label && Number.isFinite(p.probability) && p.probability > 0);
-    if (next.length !== 8 || next.reduce((s, p) => s + p.probability, 0) !== 100) {
-      setMessage("Se requieren 8 premios con probabilidades mayores a 0 que sumen exactamente 100%."); return;
-    }
-    setSaving(true); setMessage("");
-    if (supabaseConfigured) {
-      const { error } = await supabase.from(CONFIG).upsert({ id: "default", premios: next, updated_at: new Date().toISOString() }, { onConflict: "id" });
-      if (error) { setMessage("No se guardó la configuración en Supabase: " + error.message); setSaving(false); return; }
-    }
-    setPrizes(next); setDraft(next.map(p => `${p.label}|${p.probability}`).join("\n"));
-    setRotation(0); setWinner(null); setShowSettings(false); setSaving(false);
-    setMessage(supabaseConfigured ? "Probabilidades guardadas y sincronizadas." : "Probabilidades aplicadas solo en esta sesión: configura Supabase para sincronizar.");
-  };
-
   return <main className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
     <section className="overflow-hidden rounded-3xl bg-white shadow-lg">
       <div className="bg-gradient-to-r from-[#941B80] via-[#692D80] to-[#0096AE] px-5 py-7 text-white md:px-8">
@@ -147,15 +126,11 @@ export default function RuletaActivaciones() {
         </div>
         <div className="space-y-4">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5"><p className="text-sm font-semibold uppercase tracking-wider text-[#0096AE]">Resultado</p>
-            {winner ? <div className="mt-3 rounded-xl border border-[#0096AE]/30 bg-white p-5 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#0096AE]/10 text-2xl text-[#0096AE]"><FaTrophy /></div><p className="mt-3 text-xs font-bold uppercase tracking-widest text-slate-500">¡Felicidades!</p><h2 className="mt-1 text-2xl font-extrabold text-[#941B80]">{winner.label}</h2><p className="mt-2 text-sm text-slate-600">Probabilidad configurada: {winner.probability}%</p><p className="mt-2 text-sm text-slate-600">Aseguramos autos, cuidamos personas.</p></div> : <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center"><FaTrophy className="mx-auto text-3xl text-slate-300" /><p className="mt-3 font-semibold text-slate-700">{spinning ? "La suerte está en movimiento…" : "¿Listo para participar?"}</p><p className="mt-1 text-sm text-slate-500">El resultado aparecerá aquí al detenerse la ruleta.</p></div>}
-            <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => setWinner(null)} disabled={spinning || !winner} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-40"><FaRedoAlt /> Nuevo giro</button><button type="button" onClick={() => setShowSettings(v => !v)} className="inline-flex items-center gap-2 rounded-xl border border-[#0096AE] bg-white px-3 py-2 text-sm font-semibold text-[#00788B]"><FaCog /> Editar probabilidades</button></div>
+            {winner ? <div className="mt-3 rounded-xl border border-[#0096AE]/30 bg-white p-5 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#0096AE]/10 text-2xl text-[#0096AE]"><FaTrophy /></div><p className="mt-3 text-xs font-bold uppercase tracking-widest text-slate-500">¡Felicidades!</p><h2 className="mt-1 text-2xl font-extrabold text-[#941B80]">{winner.label}</h2><p className="mt-2 text-sm text-slate-600">Aseguramos autos, cuidamos personas.</p></div> : <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center"><FaTrophy className="mx-auto text-3xl text-slate-300" /><p className="mt-3 font-semibold text-slate-700">{spinning ? "La suerte está en movimiento…" : "¿Listo para participar?"}</p><p className="mt-1 text-sm text-slate-500">El resultado aparecerá aquí al detenerse la ruleta.</p></div>}
+            <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => setWinner(null)} disabled={spinning || !winner} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-40"><FaRedoAlt /> Nuevo giro</button></div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex items-center justify-between gap-3"><h2 className="font-bold text-[#143B46]">Probabilidades</h2><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${total === 100 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{total}% total</span></div>
-            <ol className="mt-3 space-y-2">{prizes.map((p, i) => <li key={p.label} className="flex items-center gap-3 text-sm"><span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} /><span className="flex-1 text-slate-700">{p.label}</span><strong className="tabular-nums text-slate-900">{p.probability}%</strong></li>)}</ol><p className="mt-3 text-xs text-slate-500">El total debe ser exactamente 100%.</p>
-          </div>
-          {showSettings && <div className="rounded-2xl border border-slate-200 p-4"><label className="block text-sm font-semibold text-slate-700">Una opción por línea: nombre|probabilidad<textarea rows="8" value={draft} onChange={e => setDraft(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-300 p-3 font-mono text-sm font-normal focus:border-[#0096AE] focus:outline-none focus:ring-2 focus:ring-[#0096AE]/20" /></label><div className="mt-3 flex gap-2"><button type="button" onClick={savePrizes} disabled={saving || spinning} className="rounded-xl bg-[#941B80] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{saving ? "Guardando…" : "Guardar y sincronizar"}</button><button type="button" onClick={() => setDraft(DEFAULT_PRIZES.map(p => `${p.label}|${p.probability}`).join("\n"))} disabled={saving || spinning} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold">Restablecer</button></div></div>}
           <div className="rounded-2xl border border-slate-200 p-5"><div className="flex items-center justify-between gap-3"><h2 className="font-bold text-[#143B46]">Últimos resultados</h2><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">{history.length}</span></div>
-            {history.length ? <ol className="mt-3 space-y-2">{history.map((item, i) => <li key={item.id || i} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2 text-sm"><span className="font-medium text-slate-700">{item.prize}<span className="ml-2 text-xs text-slate-500">({item.probability}%)</span></span><span className="shrink-0 text-xs tabular-nums text-slate-500">{item.time}</span></li>)}</ol> : <p className="mt-3 text-sm text-slate-500">Los resultados aparecerán aquí.</p>}
+            {history.length ? <ol className="mt-3 space-y-2">{history.map((item, i) => <li key={item.id || i} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2 text-sm"><span className="font-medium text-slate-700">{item.prize}</span><span className="shrink-0 text-xs tabular-nums text-slate-500">{item.time}</span></li>)}</ol> : <p className="mt-3 text-sm text-slate-500">Los resultados aparecerán aquí.</p>}
           </div>
         </div>
       </div>
