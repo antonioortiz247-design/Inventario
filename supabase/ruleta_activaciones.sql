@@ -23,6 +23,23 @@ create table if not exists public.ruleta_activaciones_historial (
   created_at timestamptz not null default now()
 );
 
+-- Prospectos capturados antes de permitir el giro.
+-- La política permite insertar, pero no consultar públicamente los datos personales.
+create table if not exists public.ruleta_activaciones_prospectos (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null check (length(trim(nombre)) >= 2),
+  telefono text not null check (length(trim(telefono)) between 10 and 20),
+  correo text,
+  municipio text,
+  evento text,
+  acepta_aviso boolean not null default false check (acepta_aviso = true),
+  created_at timestamptz not null default now()
+);
+
+alter table public.ruleta_activaciones_historial
+  add column if not exists prospecto_id uuid references public.ruleta_activaciones_prospectos(id);
+
+
 insert into public.ruleta_activaciones_config (id)
 values ('default')
 on conflict (id) do nothing;
@@ -34,6 +51,7 @@ alter table public.ruleta_activaciones_historial enable row level security;
 -- No colocar nunca una service_role key en el frontend.
 grant select, insert, update on public.ruleta_activaciones_config to anon, authenticated;
 grant select, insert on public.ruleta_activaciones_historial to anon, authenticated;
+grant insert on public.ruleta_activaciones_prospectos to anon, authenticated;
 
 drop policy if exists "Ruleta config visible para app" on public.ruleta_activaciones_config;
 create policy "Ruleta config visible para app"
@@ -59,6 +77,16 @@ drop policy if exists "Ruleta historial insertable por app" on public.ruleta_act
 create policy "Ruleta historial insertable por app"
   on public.ruleta_activaciones_historial for insert
   to anon, authenticated with check (premio <> '' and probabilidad > 0 and probabilidad <= 100);
+
+drop policy if exists "Prospectos registrables desde la ruleta" on public.ruleta_activaciones_prospectos;
+create policy "Prospectos registrables desde la ruleta"
+  on public.ruleta_activaciones_prospectos for insert
+  to anon, authenticated
+  with check (
+    length(trim(nombre)) >= 2
+    and length(trim(telefono)) between 10 and 20
+    and acepta_aviso = true
+  );
 
 -- Habilitar actualizaciones en tiempo real si la publicación estándar de Supabase existe.
 do $$
