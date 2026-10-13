@@ -199,6 +199,7 @@ export default function RuletaActivaciones() {
             </label>
             <button type="submit" disabled={leadSaving || loading || !supabaseConfigured} className="mt-4 w-full rounded-xl bg-[#941B80] px-5 py-3 font-extrabold text-white shadow transition hover:bg-[#762067] disabled:cursor-not-allowed disabled:opacity-60">{leadSaving ? "Registrando…" : "Registrar y participar"}</button>
             {!supabaseConfigured && <p className="mt-2 text-sm text-amber-700">Registro temporalmente no disponible.</p>}
+            {message && <p role="alert" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{message}</p>}
             <p className="mt-2 text-xs text-slate-500">* Campos obligatorios. Tu participación se habilita cuando el registro se guarda correctamente.</p>
           </form> : <div className="mb-6 w-full max-w-[520px] rounded-2xl border border-[#0096AE]/30 bg-[#0096AE]/5 p-4 text-center">
             <p className="font-bold text-[#143B46]">Registro completado</p>
