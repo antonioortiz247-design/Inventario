@@ -50,6 +50,7 @@ on conflict (id) do nothing;
 
 alter table public.ruleta_activaciones_config enable row level security;
 alter table public.ruleta_activaciones_historial enable row level security;
+alter table public.ruleta_activaciones_prospectos enable row level security;
 
 -- La aplicación usa la clave publishable/anon desde el navegador.
 -- No colocar nunca una service_role key en el frontend.
