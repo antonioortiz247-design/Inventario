@@ -43,6 +43,7 @@ export default function RuletaActivaciones() {
   const [message, setMessage] = useState("");
   const [lead, setLead] = useState({ nombre: "", telefono: "", correo: "", municipio: "", evento: "" });
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [marketingAccepted, setMarketingAccepted] = useState(false);
   const [leadSaving, setLeadSaving] = useState(false);
   const [leadSaved, setLeadSaved] = useState(false);
   const [prospectId, setProspectId] = useState(null);
@@ -104,6 +105,7 @@ export default function RuletaActivaciones() {
       municipio: lead.municipio.trim() || null,
       evento: lead.evento.trim() || null,
       acepta_aviso: true,
+      acepta_contacto: marketingAccepted,
     });
     setLeadSaving(false);
     if (error) {
@@ -118,6 +120,7 @@ export default function RuletaActivaciones() {
     if (spinning) return;
     setLead({ nombre: "", telefono: "", correo: "", municipio: "", evento: "" });
     setPrivacyAccepted(false);
+    setMarketingAccepted(false);
     setLeadSaved(false);
     setProspectId(null);
     setWinner(null);
@@ -180,7 +183,11 @@ export default function RuletaActivaciones() {
             </div>
             <label className="mt-4 flex items-start gap-3 text-sm text-slate-600">
               <input required type="checkbox" checked={privacyAccepted} onChange={e => setPrivacyAccepted(e.target.checked)} className="mt-1 h-4 w-4 accent-[#941B80]" />
-              <span>Confirmo que leí el aviso de privacidad disponible con el personal de la activación y autorizo el uso de mis datos para gestionar mi participación y contactarme sobre información de seguros. *</span>
+              <span>Confirmo que leí el aviso de privacidad disponible con el personal de la activación y autorizo el tratamiento de mis datos para gestionar mi participación. *</span>
+            </label>
+            <label className="mt-3 flex items-start gap-3 text-sm text-slate-600">
+              <input type="checkbox" checked={marketingAccepted} onChange={e => setMarketingAccepted(e.target.checked)} className="mt-1 h-4 w-4 accent-[#941B80]" />
+              <span>Acepto opcionalmente que Quálitas me contacte para compartir información sobre seguros y cotizaciones.</span>
             </label>
             <button type="submit" disabled={leadSaving || loading || !supabaseConfigured} className="mt-4 w-full rounded-xl bg-[#941B80] px-5 py-3 font-extrabold text-white shadow transition hover:bg-[#762067] disabled:cursor-not-allowed disabled:opacity-60">{leadSaving ? "Registrando…" : "Registrar y participar"}</button>
             {!supabaseConfigured && <p className="mt-2 text-sm text-amber-700">Registro temporalmente no disponible.</p>}
