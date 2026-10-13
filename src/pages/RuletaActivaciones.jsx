@@ -97,23 +97,31 @@ export default function RuletaActivaciones() {
     setLeadSaving(true);
     setMessage("");
     const newProspectId = crypto.randomUUID();
-    const { error } = await supabase.from("ruleta_activaciones_prospectos").insert({
-      id: newProspectId,
-      nombre: lead.nombre.trim(),
-      telefono: lead.telefono.trim(),
-      correo: lead.correo.trim() || null,
-      municipio: lead.municipio.trim() || null,
-      evento: lead.evento.trim() || null,
-      acepta_aviso: true,
-      acepta_contacto: marketingAccepted,
-    });
-    setLeadSaving(false);
-    if (error) {
-      setMessage("No se pudo registrar tu participación. Intenta nuevamente o solicita apoyo al personal.");
-      return;
+    try {
+      const { error } = await supabase.from("ruleta_activaciones_prospectos").insert({
+        id: newProspectId,
+        nombre: lead.nombre.trim(),
+        telefono: lead.telefono.trim(),
+        correo: lead.correo.trim() || null,
+        municipio: lead.municipio.trim() || null,
+        evento: lead.evento.trim() || null,
+        acepta_aviso: true,
+        acepta_contacto: marketingAccepted,
+      });
+      if (error) {
+        console.error("Error al guardar prospecto de ruleta:", error);
+        setMessage("No se pudo guardar el registro: " + error.message + (error.code ? " (código " + error.code + ")" : ""));
+        return;
+      }
+      setProspectId(newProspectId);
+      setLeadSaved(true);
+      setMessage("Registro guardado correctamente. Ya puedes participar.");
+    } catch (error) {
+      console.error("Error inesperado al guardar prospecto:", error);
+      setMessage("Error de conexión al guardar el registro. Revisa tu conexión e inténtalo de nuevo.");
+    } finally {
+      setLeadSaving(false);
     }
-    setProspectId(newProspectId);
-    setLeadSaved(true);
   };
 
   const resetParticipant = () => {
