@@ -22,7 +22,7 @@ export default function Reportes({ inventario = [] }) {
       supabase.from("ruleta_activaciones_historial").select("id,premio,created_at,prospecto_id").order("created_at", { ascending: false }).limit(2000),
     ]);
     if (leadsResult.error || prizesResult.error) {
-      setErrorRuleta("No se pudieron consultar los registros. Verifica que exista la tabla de prospectos y que tu sesión tenga permisos de lectura en Supabase.");
+      setErrorRuleta([leadsResult.error, prizesResult.error].filter(Boolean).map((e) => `${e.message}${e.code ? ` (código ${e.code})` : ""}`).join(" | "));
       setCargandoRuleta(false); return;
     }
     setProspectos(leadsResult.data || []); setPremios(prizesResult.data || []); setCargandoRuleta(false);
