@@ -1,4 +1,4 @@
-import { FaBoxes, FaChartBar, FaCog, FaHome, FaCamera, FaExchangeAlt, FaCalendarAlt, FaCalculator, FaBullseye } from "react-icons/fa";
+import { FaBoxes, FaChartBar, FaCog, FaHome, FaCamera, FaExchangeAlt, FaCalendarAlt, FaCalculator, FaBullseye, FaClipboardList } from "react-icons/fa";
 
 export default function Header({ currentPage = "inicio", onNavigate }) {
   const menu = [
@@ -7,6 +7,7 @@ export default function Header({ currentPage = "inicio", onNavigate }) {
     ["movimientos", "Entradas y salidas", <FaExchangeAlt />],
     ["eventos", "Modo evento", <FaCalendarAlt />],
     ["ruleta", "Ruleta de activaciones", <FaBullseye />],
+    ["registros-ruleta", "Registros de ruleta", <FaClipboardList />],
     ["simulador", "Simulador", <FaCalculator />],
     ["buscar-imagen", "Buscar por imagen", <FaCamera />],
     ["reportes", "Reportes", <FaChartBar />],
