@@ -41,6 +41,11 @@ export default function RuletaActivaciones() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [lead, setLead] = useState({ nombre: "", telefono: "", correo: "", municipio: "", evento: "" });
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [leadSaving, setLeadSaving] = useState(false);
+  const [leadSaved, setLeadSaved] = useState(false);
+  const [prospectId, setProspectId] = useState(null);
   const total = prizes.reduce((sum, p) => sum + p.probability, 0);
   const slice = 360 / prizes.length;
   const segments = useMemo(() => prizes.map((p, index) => ({ ...p, index, color: COLORS[index % COLORS.length] })), [prizes]);
@@ -81,8 +86,45 @@ export default function RuletaActivaciones() {
     return () => { alive = false; supabase.removeChannel(channel); };
   }, [loadHistory]);
 
+  const submitLead = async (event) => {
+    event.preventDefault();
+    if (!supabaseConfigured) {
+      setMessage("No es posible registrar tu participación porque la base de datos no está configurada.");
+      return;
+    }
+    if (!privacyAccepted || leadSaving) return;
+    setLeadSaving(true);
+    setMessage("");
+    const { data, error } = await supabase.from("ruleta_activaciones_prospectos").insert({
+      nombre: lead.nombre.trim(),
+      telefono: lead.telefono.trim(),
+      correo: lead.correo.trim() || null,
+      municipio: lead.municipio.trim() || null,
+      evento: lead.evento.trim() || null,
+      acepta_aviso: true,
+    }).select("id").single();
+    setLeadSaving(false);
+    if (error) {
+      setMessage("No se pudo registrar tu participación. Intenta nuevamente o solicita apoyo al personal.");
+      return;
+    }
+    setProspectId(data.id);
+    setLeadSaved(true);
+  };
+
+  const resetParticipant = () => {
+    if (spinning) return;
+    setLead({ nombre: "", telefono: "", correo: "", municipio: "", evento: "" });
+    setPrivacyAccepted(false);
+    setLeadSaved(false);
+    setProspectId(null);
+    setWinner(null);
+    setPending(null);
+    setMessage("");
+  };
+
   const spin = () => {
-    if (spinning || loading || total !== 100 || prizes.length !== 8) return;
+    if (!leadSaved || winner || spinning || loading || total !== 100 || prizes.length !== 8) return;
     const selected = weightedChoice(prizes);
     const index = prizes.findIndex(p => p.label === selected.label);
     const alignment = (360 - (index + 0.5) * slice + 360) % 360;
@@ -96,7 +138,7 @@ export default function RuletaActivaciones() {
     setSpinning(false); setWinner(selected); setPending(null);
     setHistory(items => [{ id: "pending-" + Date.now(), prize: selected.label, probability: selected.probability, time: new Date().toLocaleString("es-MX", { dateStyle: "short", timeStyle: "short" }) }, ...items].slice(0, 10));
     if (supabaseConfigured) {
-      const { error } = await supabase.from(HISTORY).insert({ premio: selected.label, probabilidad: selected.probability });
+      const { error } = await supabase.from(HISTORY).insert({ premio: selected.label, probabilidad: selected.probability, prospecto_id: prospectId });
       if (error) setMessage("El premio salió, pero no se guardó el historial: " + error.message);
       else await loadHistory();
     }
@@ -113,6 +155,38 @@ export default function RuletaActivaciones() {
       </div>
       <div className="grid gap-8 p-5 md:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] md:p-8">
         <div className="flex flex-col items-center">
+          {!leadSaved ? <form onSubmit={submitLead} className="mb-6 w-full max-w-[520px] rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#0096AE]">Antes de jugar</p>
+            <h2 className="mt-1 text-xl font-extrabold text-[#143B46]">Registra tus datos para participar</h2>
+            <p className="mt-1 text-sm text-slate-600">Completa el formulario. Después podrás girar la ruleta una vez.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="text-sm font-semibold text-slate-700 sm:col-span-2">Nombre completo *
+                <input required maxLength={120} autoComplete="name" value={lead.nombre} onChange={e => setLead({ ...lead, nombre: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Tu nombre" />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">Teléfono celular *
+                <input required type="tel" inputMode="tel" autoComplete="tel" maxLength={20} pattern="[0-9+()\-\s]{10,20}" value={lead.telefono} onChange={e => setLead({ ...lead, telefono: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="10 dígitos" />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">Correo electrónico
+                <input type="email" autoComplete="email" maxLength={160} value={lead.correo} onChange={e => setLead({ ...lead, correo: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="tucorreo@ejemplo.com" />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">Municipio
+                <input maxLength={100} autoComplete="address-level2" value={lead.municipio} onChange={e => setLead({ ...lead, municipio: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Tu municipio" />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">Evento / ubicación
+                <input maxLength={120} value={lead.evento} onChange={e => setLead({ ...lead, evento: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Nombre del evento" />
+              </label>
+            </div>
+            <label className="mt-4 flex items-start gap-3 text-sm text-slate-600">
+              <input required type="checkbox" checked={privacyAccepted} onChange={e => setPrivacyAccepted(e.target.checked)} className="mt-1 h-4 w-4 accent-[#941B80]" />
+              <span>Confirmo que leí el aviso de privacidad disponible con el personal de la activación y autorizo el uso de mis datos para gestionar mi participación y contactarme sobre información de seguros. *</span>
+            </label>
+            <button type="submit" disabled={leadSaving || loading || !supabaseConfigured} className="mt-4 w-full rounded-xl bg-[#941B80] px-5 py-3 font-extrabold text-white shadow transition hover:bg-[#762067] disabled:cursor-not-allowed disabled:opacity-60">{leadSaving ? "Registrando…" : "Registrar y participar"}</button>
+            {!supabaseConfigured && <p className="mt-2 text-sm text-amber-700">Registro temporalmente no disponible.</p>}
+            <p className="mt-2 text-xs text-slate-500">* Campos obligatorios. Tu participación se habilita cuando el registro se guarda correctamente.</p>
+          </form> : <div className="mb-6 w-full max-w-[520px] rounded-2xl border border-[#0096AE]/30 bg-[#0096AE]/5 p-4 text-center">
+            <p className="font-bold text-[#143B46]">Registro completado</p>
+            <p className="mt-1 text-sm text-slate-600">Ya puedes girar la ruleta.</p>
+          </div>}
           <div className="relative w-full max-w-[440px]"><div className="absolute left-1/2 top-[-7px] z-10 -translate-x-1/2 text-4xl leading-none drop-shadow-md" aria-hidden="true">▼</div>
             <div className="rounded-full bg-slate-100 p-2 shadow-[0_12px_35px_rgba(20,59,70,0.18)]"><svg viewBox="0 0 300 300" role="img" aria-label="Ruleta de premios ponderada" className="w-full overflow-visible">
               <g style={{ transform: `rotate(${rotation}deg)`, transformOrigin: "150px 150px", transition: spinning ? "transform 5.5s cubic-bezier(0.12, 0.72, 0.12, 1)" : "none" }} onTransitionEnd={onStop}>
@@ -121,13 +195,13 @@ export default function RuletaActivaciones() {
               </g>
             </svg></div>
           </div>
-          <button type="button" onClick={spin} disabled={spinning || loading || total !== 100} className="mt-6 inline-flex min-w-52 items-center justify-center gap-3 rounded-2xl bg-[#941B80] px-8 py-4 text-lg font-extrabold text-white shadow-lg transition hover:bg-[#762067] disabled:cursor-not-allowed disabled:opacity-60"><FaBullseye /> {loading ? "Cargando…" : spinning ? "Girando…" : "¡Girar ruleta!"}</button>
+          <button type="button" onClick={spin} disabled={!leadSaved || !!winner || spinning || loading || total !== 100} className="mt-6 inline-flex min-w-52 items-center justify-center gap-3 rounded-2xl bg-[#941B80] px-8 py-4 text-lg font-extrabold text-white shadow-lg transition hover:bg-[#762067] disabled:cursor-not-allowed disabled:opacity-60"><FaBullseye /> {loading ? "Cargando…" : spinning ? "Girando…" : winner ? "Participación finalizada" : leadSaved ? "¡Girar ruleta!" : "Regístrate para jugar"}</button>
           <p className="mt-3 text-center text-xs text-slate-500">La selección usa probabilidades ponderadas, no una distribución uniforme.</p>
         </div>
         <div className="space-y-4">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5"><p className="text-sm font-semibold uppercase tracking-wider text-[#0096AE]">Resultado</p>
             {winner ? <div className="mt-3 rounded-xl border border-[#0096AE]/30 bg-white p-5 text-center"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#0096AE]/10 text-2xl text-[#0096AE]"><FaTrophy /></div><p className="mt-3 text-xs font-bold uppercase tracking-widest text-slate-500">¡Felicidades!</p><h2 className="mt-1 text-2xl font-extrabold text-[#941B80]">{winner.label}</h2><p className="mt-2 text-sm text-slate-600">Aseguramos autos, cuidamos personas.</p></div> : <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center"><FaTrophy className="mx-auto text-3xl text-slate-300" /><p className="mt-3 font-semibold text-slate-700">{spinning ? "La suerte está en movimiento…" : "¿Listo para participar?"}</p><p className="mt-1 text-sm text-slate-500">El resultado aparecerá aquí al detenerse la ruleta.</p></div>}
-            <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => setWinner(null)} disabled={spinning || !winner} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-40"><FaRedoAlt /> Nuevo giro</button></div>
+            <div className="mt-4 flex flex-wrap gap-2">{winner && <button type="button" onClick={resetParticipant} disabled={spinning} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#0096AE] px-4 py-3 text-sm font-extrabold text-white hover:bg-[#087F91] disabled:opacity-40"><FaRedoAlt /> Registrar nuevo participante</button>}</div>
           </div>
           <div className="rounded-2xl border border-slate-200 p-5"><div className="flex items-center justify-between gap-3"><h2 className="font-bold text-[#143B46]">Últimos resultados</h2><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">{history.length}</span></div>
             {history.length ? <ol className="mt-3 space-y-2">{history.map((item, i) => <li key={item.id || i} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2 text-sm"><span className="font-medium text-slate-700">{item.prize}</span><span className="shrink-0 text-xs tabular-nums text-slate-500">{item.time}</span></li>)}</ol> : <p className="mt-3 text-sm text-slate-500">Los resultados aparecerán aquí.</p>}
