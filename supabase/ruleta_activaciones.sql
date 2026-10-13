@@ -56,6 +56,7 @@ alter table public.ruleta_activaciones_historial enable row level security;
 grant select, insert, update on public.ruleta_activaciones_config to anon, authenticated;
 grant select, insert on public.ruleta_activaciones_historial to anon, authenticated;
 grant insert on public.ruleta_activaciones_prospectos to anon, authenticated;
+grant select on public.ruleta_activaciones_prospectos to authenticated;
 
 drop policy if exists "Ruleta config visible para app" on public.ruleta_activaciones_config;
 create policy "Ruleta config visible para app"
@@ -91,6 +92,12 @@ create policy "Prospectos registrables desde la ruleta"
     and length(trim(telefono)) between 10 and 20
     and acepta_aviso = true
   );
+
+-- Los datos personales solo se pueden consultar con una sesión autenticada de Supabase.
+drop policy if exists "Prospectos consultables por personal autenticado" on public.ruleta_activaciones_prospectos;
+create policy "Prospectos consultables por personal autenticado"
+  on public.ruleta_activaciones_prospectos for select
+  to authenticated using (true);
 
 -- Habilitar actualizaciones en tiempo real si la publicación estándar de Supabase existe.
 do $$
