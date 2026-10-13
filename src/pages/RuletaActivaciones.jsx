@@ -95,20 +95,22 @@ export default function RuletaActivaciones() {
     if (!privacyAccepted || leadSaving) return;
     setLeadSaving(true);
     setMessage("");
-    const { data, error } = await supabase.from("ruleta_activaciones_prospectos").insert({
+    const newProspectId = crypto.randomUUID();
+    const { error } = await supabase.from("ruleta_activaciones_prospectos").insert({
+      id: newProspectId,
       nombre: lead.nombre.trim(),
       telefono: lead.telefono.trim(),
       correo: lead.correo.trim() || null,
       municipio: lead.municipio.trim() || null,
       evento: lead.evento.trim() || null,
       acepta_aviso: true,
-    }).select("id").single();
+    });
     setLeadSaving(false);
     if (error) {
       setMessage("No se pudo registrar tu participación. Intenta nuevamente o solicita apoyo al personal.");
       return;
     }
-    setProspectId(data.id);
+    setProspectId(newProspectId);
     setLeadSaved(true);
   };
 
