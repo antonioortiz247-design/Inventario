@@ -33,8 +33,12 @@ create table if not exists public.ruleta_activaciones_prospectos (
   municipio text,
   evento text,
   acepta_aviso boolean not null default false check (acepta_aviso = true),
+  acepta_contacto boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+alter table public.ruleta_activaciones_prospectos
+  add column if not exists acepta_contacto boolean not null default false;
 
 alter table public.ruleta_activaciones_historial
   add column if not exists prospecto_id uuid references public.ruleta_activaciones_prospectos(id);
