@@ -3,10 +3,10 @@ import { FaBullseye, FaRedoAlt, FaTrophy } from "react-icons/fa";
 import { supabase, supabaseConfigured } from "../lib/supabase";
 
 const DEFAULT_PRIZES = [
-  { label: "Pluma", probability: 45 }, { label: "Bolsa", probability: 15 },
-  { label: "Cilindro", probability: 15 }, { label: "Libreta", probability: 8 },
-  { label: "Tupper", probability: 8 }, { label: "Audífonos", probability: 6 },
-  { label: "Lonchera", probability: 2 }, { label: "Lámpara", probability: 1 },
+  { label: "Pluma", probability: 94 }, { label: "Bolsa", probability: 1 },
+  { label: "Cilindro", probability: 1 }, { label: "Libreta", probability: 1 },
+  { label: "Tupper", probability: 1 }, { label: "Audífonos", probability: 1 },
+  { label: "Lonchera", probability: 1 }, { label: "Lámpara", probability: 0 },
 ];
 const COLORS = ["#941B80", "#0096AE", "#692D80", "#46B8E9", "#512950", "#0F98D7", "#9279BA", "#037081"];
 const CONFIG = "ruleta_activaciones_config";
@@ -24,12 +24,15 @@ function sectorPath(index, total) {
 function cleanPrizes(items) {
   if (!Array.isArray(items)) return DEFAULT_PRIZES;
   return items.map((p) => ({ label: String(p.label || "").trim(), probability: Number(p.probability) }))
-    .filter((p) => p.label && Number.isFinite(p.probability) && p.probability > 0);
+    .filter((p) => p.label && Number.isFinite(p.probability) && p.probability >= 0);
 }
 function weightedChoice(items) {
-  let n = Math.random() * items.reduce((sum, p) => sum + p.probability, 0);
-  for (const item of items) { n -= item.probability; if (n < 0) return item; }
-  return items[items.length - 1];
+  const eligible = items.filter((item) => item.probability > 0);
+  const totalWeight = eligible.reduce((sum, p) => sum + p.probability, 0);
+  if (!eligible.length || totalWeight <= 0) return null;
+  let n = Math.random() * totalWeight;
+  for (const item of eligible) { n -= item.probability; if (n < 0) return item; }
+  return eligible[eligible.length - 1];
 }
 
 export default function RuletaActivaciones() {
@@ -62,12 +65,18 @@ export default function RuletaActivaciones() {
     let alive = true;
     async function init() {
       if (!supabaseConfigured) { setMessage("Supabase no está configurado: los cambios no se sincronizarán."); setLoading(false); return; }
-      const { data, error } = await supabase.from(CONFIG).select("premios").eq("id", "default").maybeSingle();
-      if (error) setMessage("No se pudo cargar la configuración: " + error.message);
-      else if (data?.premios && alive) {
-        const loaded = cleanPrizes(data.premios);
-        if (loaded.length === 8 && loaded.reduce((s, p) => s + p.probability, 0) === 100) {
-          setPrizes(loaded);
+      // Fija la distribución solicitada en la configuración compartida de Supabase.
+      const { data: existingConfig, error: readError } = await supabase.from(CONFIG).select("id").eq("id", "default").maybeSingle();
+      if (readError) {
+        setMessage("No se pudo consultar la configuración de premios: " + readError.message);
+      } else {
+        const write = existingConfig
+          ? await supabase.from(CONFIG).update({ premios: DEFAULT_PRIZES }).eq("id", "default")
+          : await supabase.from(CONFIG).insert({ id: "default", premios: DEFAULT_PRIZES });
+        if (write.error) {
+          setMessage("No se pudieron guardar las nuevas probabilidades en Supabase: " + write.error.message);
+        } else if (alive) {
+          setPrizes(DEFAULT_PRIZES);
         }
       }
       await loadHistory();
@@ -139,6 +148,7 @@ export default function RuletaActivaciones() {
   const spin = () => {
     if (!leadSaved || winner || spinning || loading || total !== 100 || prizes.length !== 8) return;
     const selected = weightedChoice(prizes);
+    if (!selected) { setMessage("No hay premios con probabilidad mayor que cero."); return; }
     const index = prizes.findIndex(p => p.label === selected.label);
     const alignment = (360 - (index + 0.5) * slice + 360) % 360;
     setWinner(null); setPending(selected); setSpinning(true);
