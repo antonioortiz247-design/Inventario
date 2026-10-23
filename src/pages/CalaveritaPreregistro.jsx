@@ -5,6 +5,14 @@ const field = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3
 const primary = "rounded-xl bg-[#941B80] px-5 py-3 font-bold text-white hover:bg-[#7e176d] disabled:opacity-50";
 const insurers = ["Quálitas","GNP","AXA","HDI","Banorte","Mapfre","Otra"];
 const vencimientos = ["Menos de 30 días","30 a 60 días","60 a 90 días","Más de 90 días"];
+const CONDUCTOR_QUESTIONS = [
+  { q: "Después de un accidente, ¿qué debes hacer primero?", a: ["Retirarte del lugar", "Ponerte a salvo y reportar el siniestro", "Llevar el auto al taller por tu cuenta", "Publicarlo en redes"], correct: 1 },
+  { q: "¿Cuál es uno de los principales beneficios de contar con seguro de auto?", a: ["Evitar cualquier accidente", "Protección financiera ante imprevistos", "No respetar el reglamento", "Garantizar que nunca habrá daños"], correct: 1 },
+  { q: "Al reportar un siniestro, ¿qué información es importante proporcionar?", a: ["Solo tu nombre", "Solo el color del vehículo", "Datos del evento y de tu póliza", "Ninguna información"], correct: 2 },
+  { q: "¿Qué documento acredita la cobertura contratada para el vehículo?", a: ["La licencia de conducir", "La factura del vehículo", "La póliza de seguro", "La tarjeta bancaria"], correct: 2 },
+  { q: "¿Cuál es una práctica de conducción segura?", a: ["Usar el celular mientras conduces", "Mantener distancia de seguridad", "Rebasar por la derecha siempre", "Frenar bruscamente"], correct: 1 }
+];
+
 
 export default function CalaveritaPreregistro({ publicMode = false }) {
   const [mode,setMode] = useState("preregistro");
@@ -20,12 +28,15 @@ export default function CalaveritaPreregistro({ publicMode = false }) {
   const [selected,setSelected] = useState(null);
   const [message,setMessage] = useState("");
   const [rows,setRows] = useState([]);
+  const [quizRecord,setQuizRecord] = useState(null);
+  const [quizAnswers,setQuizAnswers] = useState({});
   useEffect(()=>{ if(!supabaseConfigured)return; supabase.auth.getSession().then(({data})=>setSession(data?.session||null)); const {data}=supabase.auth.onAuthStateChange((_e,s)=>setSession(s)); return ()=>data.subscription.unsubscribe(); },[]);
   const set = (k,v)=>setForm(p=>({...p,[k]:v}));
   const login = async e=>{e.preventDefault();setError("");setBusy(true);const {data,error}=await supabase.auth.signInWithPassword({email:email.trim(),password});if(error)setError(error.message);else{setSession(data.session);setPassword("");}setBusy(false);};
   const search = async ()=>{setError("");setMessage("");setBusy(true);try{const term=query.trim();if(!term){setError("Escribe un folio, nombre o teléfono.");return;}const safe=term.replace(/[,%()]/g," ").trim();if(!safe){setError("Escribe un folio, nombre o teléfono válido.");return;}const {data,error}=await supabase.from("calaverita_2026_registros").select("*").or("folio.ilike.%"+safe+"%,nombre.ilike.%"+safe+"%,telefono.ilike.%"+safe+"%").order("fecha_preregistro",{ascending:false}).limit(30);if(error)throw error;setResults(Array.isArray(data)?data:[]);}catch(e){setResults([]);setError("No se pudo buscar el participante: "+(e?.message||"Error inesperado"));}finally{setBusy(false);}};
   const confirm = async r=>{setBusy(true);setError("");setMessage("");const {data,error}=await supabase.rpc("calaverita_2026_confirmar_asistencia",{p_id:r.id});if(error)setError(error.message);else{setSelected(data);setMessage(data.asistencia_confirmada?"Asistencia confirmada. Verifica las participaciones activas en el registro.":"Asistencia actualizada.");await search();}setBusy(false);};
-  const activityAction = async (r, action)=>{setBusy(true);setError("");setMessage("");const fn=action==="iniciar"?"calaverita_2026_conductor_seguro_iniciar":"calaverita_2026_conductor_seguro_completar";const {data,error}=await supabase.rpc(fn,{p_id:r.id});if(error)setError(error.message);else{setSelected(data);setMessage(action==="iniciar"?"Participante enviado a Conductor Seguro.":"Actividad completada: se otorgó una participación adicional.");await search();}setBusy(false);};
+  const activityAction = async r=>{setBusy(true);setError("");setMessage("");try{const {data,error}=await supabase.rpc("calaverita_2026_conductor_seguro_iniciar",{p_id:r.id});if(error)throw error;setSelected(data);setQuizRecord(data);setQuizAnswers({});setMessage("Actividad iniciada. Presenta las cinco tarjetas al participante.");await search();}catch(e){setError(e?.message||"No se pudo iniciar la actividad.");}finally{setBusy(false);}};
+  const submitQuiz = async e=>{e.preventDefault();if(!quizRecord)return;if(Object.keys(quizAnswers).length!==CONDUCTOR_QUESTIONS.length){setError("Responde las cinco tarjetas antes de finalizar.");return;}const score=CONDUCTOR_QUESTIONS.reduce((sum,q,i)=>sum+(Number(quizAnswers[i])===q.correct?1:0),0);setBusy(true);setError("");setMessage("");try{const {data,error}=await supabase.rpc("calaverita_2026_conductor_seguro_completar",{p_id:quizRecord.id,p_puntaje:score});if(error)throw error;setSelected(data);setQuizRecord(null);setQuizAnswers({});setMessage("Actividad completada: "+score+"/5. "+(score>=4?"Bono de participación otorgado.":"Se requieren 4 respuestas correctas para obtener el bono."));await search();}catch(e){setError(e?.message||"No se pudo guardar el resultado.");}finally{setBusy(false);}};
   const loadRows = async()=>{if(!session)return;setBusy(true);const {data,error}=await supabase.from("calaverita_2026_registros").select("*").order("fecha_preregistro",{ascending:false}).limit(5000);if(error)setError(error.message);else setRows(data||[]);setBusy(false);};
   useEffect(()=>{if(mode==="dashboard"&&session)loadRows();},[mode,session]);
   const metrics=useMemo(()=>{const pre=rows.filter(r=>r.preregistrado).length;const attended=rows.filter(r=>r.asistencia_confirmada).length;return {pre,attended,conversion:pre?Math.round(attended/pre*100):0,reserved:rows.filter(r=>r.preregistrado&&!r.asistencia_confirmada).reduce((s,r)=>s+Number(r.participacion_preregistro_reservada||0),0),active:rows.reduce((s,r)=>s+Number(r.participaciones_activas||0),0),vigentes:rows.filter(r=>r.tipo_cliente==="CLIENTE_VIGENTE").length,renovaciones:rows.filter(r=>r.tipo_cliente==="RENOVACION").length,prospectos:rows.filter(r=>r.tipo_cliente==="PROSPECTO").length};},[rows]);
