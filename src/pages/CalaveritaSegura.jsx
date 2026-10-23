@@ -75,8 +75,8 @@ export default function CalaveritaSegura() {
     } else {
       const value = String(form[current.key] ?? "").trim();
       if (!value) { setError("Completa tu respuesta para continuar."); return; }
-      if (current.key === "correo" && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value)) { setError("Escribe un correo electrónico válido."); return; }
-      if (current.key === "telefono" && !/^[0-9+()\\-\\s]{10,20}$/.test(value)) { setError("Escribe un teléfono válido de 10 a 20 caracteres."); return; }
+      if (current.key === "correo" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { setError("Escribe un correo electrónico válido."); return; }
+      if (current.key === "telefono" && !/^[0-9+()\-\s]{10,20}$/.test(value)) { setError("Escribe un teléfono válido de 10 a 20 caracteres."); return; }
       if (current.key === "anio" && (Number(value) < 1950 || Number(value) > new Date().getFullYear() + 1)) { setError("Escribe un año de vehículo válido."); return; }
     }
     setError("");
