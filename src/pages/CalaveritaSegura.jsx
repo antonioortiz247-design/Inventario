@@ -200,9 +200,10 @@ export default function CalaveritaSegura() {
   };
 
   const drawWinner = () => {
-    if (!rows.length) { setError("No hay registros para realizar el sorteo."); return; }
-    const pool = rows.flatMap(r => Array.from({ length: Math.max(0, Math.min(100, Number(r.participaciones || 0))) }, () => r));
-    if (!pool.length) { setError("No hay participaciones válidas."); return; }
+    const eligible = rows.filter(r => r.asistencia_confirmada === true);
+    if (!eligible.length) { setError("No hay asistentes con asistencia confirmada para realizar la rifa."); return; }
+    const pool = eligible.flatMap(r => Array.from({ length: Math.max(0, Math.min(100, Number(r.participaciones_activas || 0))) }, () => r));
+    if (!pool.length) { setError("No hay participaciones activas válidas entre los asistentes confirmados."); return; }
     setWinner(pool[Math.floor(Math.random() * pool.length)]); setError("");
   };
 
