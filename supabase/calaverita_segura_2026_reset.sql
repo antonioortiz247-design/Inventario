@@ -13,7 +13,8 @@ begin
     raise exception 'Se requiere una sesión de administrador.';
   end if;
 
-  delete from public.calaverita_2026_registros;
+  -- WHERE TRUE hace explícito que el reinicio aplica a todos los registros.
+  delete from public.calaverita_2026_registros where true;
   get diagnostics v_deleted_count = row_count;
 
   return jsonb_build_object('deleted_count', v_deleted_count);
