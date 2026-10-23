@@ -130,6 +130,10 @@ begin
       participaciones_activas=greatest(coalesce(participaciones_activas,0),1)
         + case when preregistrado and coalesce(participacion_preregistro_reservada,0)>0 then 1 else 0 end
         + case when tipo_cliente='CLIENTE_VIGENTE' then 1 when tipo_cliente='RENOVACION' then 2 else 0 end
+        + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end,
+      participaciones=greatest(coalesce(participaciones_activas,0),1)
+        + case when preregistrado and coalesce(participacion_preregistro_reservada,0)>0 then 1 else 0 end
+        + case when tipo_cliente='CLIENTE_VIGENTE' then 1 when tipo_cliente='RENOVACION' then 2 else 0 end
         + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end
   where id=p_id and asistencia_confirmada=false
   returning * into v_row;
@@ -188,5 +192,11 @@ revoke all on function public.calaverita_2026_conductor_seguro_completar(uuid,in
 grant execute on function public.calaverita_2026_conductor_seguro_iniciar(uuid) to authenticated;
 grant execute on function public.calaverita_2026_conductor_seguro_completar(uuid,integer) to authenticated;
 
+
+-- Reconcile confirmed records so both counters match the raffle source of truth.
+update public.calaverita_2026_registros
+set participaciones = participaciones_activas
+where asistencia_confirmada = true
+  and coalesce(participaciones,0) <> coalesce(participaciones_activas,0);
 
 notify pgrst, 'reload schema';
