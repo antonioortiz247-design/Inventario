@@ -52,7 +52,21 @@ export default function CalaveritaSegura() {
     const payload = { ...form, anio: Number(form.anio), tipo_cliente, puntaje_reto: 0, participaciones: 1 + (tipo_cliente === "CLIENTE_VIGENTE" ? 1 : tipo_cliente === "RENOVACION" ? 2 : 0), estatus_seguimiento: "PENDIENTE" };
     try {
       if (supabaseConfigured) {
-        const { data, error: insertError } = await supabase.from("calaverita_2026_registros").insert(payload).select("*").single();
+        const { data, error: insertError } = await supabase.rpc("calaverita_2026_registrar", {
+          p_nombre: payload.nombre,
+          p_telefono: payload.telefono,
+          p_correo: payload.correo,
+          p_municipio: payload.municipio,
+          p_marca: payload.marca,
+          p_modelo: payload.modelo,
+          p_anio: payload.anio,
+          p_tiene_seguro: payload.tiene_seguro,
+          p_aseguradora: payload.aseguradora,
+          p_vencimiento: payload.vencimiento,
+          p_tipo_cliente: payload.tipo_cliente,
+          p_interes_cotizacion: payload.interes_cotizacion,
+          p_participaciones: payload.participaciones
+        });
         if (insertError) throw insertError;
         setRegistro(data);
       } else {
