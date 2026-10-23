@@ -50,14 +50,36 @@ create or replace function public.calaverita_2026_preregistrar(
 ) returns public.calaverita_2026_registros
 language plpgsql security definer set search_path = public
 as $$
-declare v_row public.calaverita_2026_registros;
-declare v_folio text;
-declare v_next bigint;
+declare
+  v_row public.calaverita_2026_registros;
+  v_folio text;
+  v_next bigint;
+  v_phone text := regexp_replace(coalesce(p_telefono,''),'[^0-9]','','g');
+  v_email text := lower(trim(coalesce(p_correo,'')));
 begin
   if length(trim(coalesce(p_nombre,'')))<2 then raise exception 'Escribe tu nombre completo.'; end if;
-  if length(regexp_replace(coalesce(p_telefono,''),'[^0-9]','','g'))<10 then raise exception 'Escribe un teléfono válido.'; end if;
-  if position('@' in coalesce(p_correo,''))<2 then raise exception 'Escribe un correo válido.'; end if;
+  if length(v_phone)<10 then raise exception 'Escribe un teléfono válido.'; end if;
+  if position('@' in v_email)<2 then raise exception 'Escribe un correo válido.'; end if;
   if p_tiene_seguro not in ('Sí','No') then raise exception 'Selecciona si cuentas con seguro.'; end if;
+
+  -- Serialize submissions for the same phone/email to prevent duplicate registrations.
+  perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || least(v_phone,v_email)));
+  perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || greatest(v_phone,v_email)));
+
+  select * into v_row
+  from public.calaverita_2026_registros r
+  where r.preregistrado = true
+    and (
+      regexp_replace(coalesce(r.telefono,''),'[^0-9]','','g') = v_phone
+      or lower(trim(coalesce(r.correo,''))) = v_email
+    )
+  order by r.fecha_preregistro desc nulls last
+  limit 1;
+
+  if found then
+    return v_row;
+  end if;
+
   perform pg_advisory_xact_lock(hashtext('calaverita_2026_folio_seq'));
   select coalesce(max(substring(folio from '[0-9]+$')::bigint),0)+1
     into v_next
