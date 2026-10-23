@@ -70,7 +70,7 @@ begin
     case when p_tiene_seguro='Sí' and p_aseguradora='Quálitas' then 'CLIENTE_VIGENTE'
          when p_tiene_seguro='Sí' and p_vencimiento in ('Menos de 30 días','30 a 60 días','60 a 90 días') then 'RENOVACION'
          else 'PROSPECTO' end,
-    0,0,null,'PRERREGISTRADO'
+    0,1,null,'PRERREGISTRADO'
   ) returning * into v_row;
   return v_row;
 end;
