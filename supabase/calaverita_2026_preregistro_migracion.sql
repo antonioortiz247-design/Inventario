@@ -89,7 +89,7 @@ alter table public.calaverita_2026_registros
 create or replace function public.calaverita_2026_confirmar_asistencia(p_id uuid)
 returns public.calaverita_2026_registros
 language plpgsql security definer set search_path = public
-as $
+as $$
 declare v_row public.calaverita_2026_registros;
 begin
   if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
@@ -109,12 +109,12 @@ begin
   end if;
   return v_row;
 end;
-$;
+$$;
 
 create or replace function public.calaverita_2026_conductor_seguro_iniciar(p_id uuid)
 returns public.calaverita_2026_registros
 language plpgsql security definer set search_path = public
-as $
+as $$
 declare v_row public.calaverita_2026_registros;
 begin
   if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
@@ -127,12 +127,12 @@ begin
   if not found then raise exception 'Confirma la asistencia y verifica que el participante no haya iniciado ya la actividad.'; end if;
   return v_row;
 end;
-$;
+$$;
 
 create or replace function public.calaverita_2026_conductor_seguro_completar(p_id uuid)
 returns public.calaverita_2026_registros
 language plpgsql security definer set search_path = public
-as $
+as $$
 declare v_row public.calaverita_2026_registros;
 begin
   if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
@@ -148,7 +148,7 @@ begin
   if not found then raise exception 'El participante debe estar confirmado y en actividad para registrar la finalización.'; end if;
   return v_row;
 end;
-$;
+$$;
 
 revoke all on function public.calaverita_2026_conductor_seguro_iniciar(uuid) from public;
 revoke all on function public.calaverita_2026_conductor_seguro_completar(uuid) from public;
