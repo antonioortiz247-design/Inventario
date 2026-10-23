@@ -1,5 +1,5 @@
 export default function Dashboard({
-  totalArtículos = 0,
+  totalArticulos = 0,
   piezasTotales = 0,
   stockBajo = 0,
   stockCritico = 0,
@@ -7,7 +7,7 @@ export default function Dashboard({
   const cards = [
     {
       titulo: "Artículos",
-      valor: totalArtículos,
+      valor: totalArticulos,
       color: "bg-[#0096AE]",
       icono: "📦",
     },
