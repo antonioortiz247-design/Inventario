@@ -10,6 +10,7 @@ import Eventos from "./pages/Eventos";
 import Simulador from "./pages/Simulador";
 import RuletaActivaciones from "./pages/RuletaActivaciones";
 import RegistrosRuleta from "./pages/RegistrosRuleta";
+import CalaveritaSegura from "./pages/CalaveritaSegura";
 import useInventory from "./hooks/useInventory";
 import { getInventory, saveInventory } from "./services/inventory.service";
 
@@ -33,6 +34,7 @@ function App() {
       case "simulador": return <Simulador inventario={inventory.items} />;
       case "ruleta": return <RuletaActivaciones />;
       case "registros-ruleta": return <RegistrosRuleta />;
+      case "calaverita-segura": return <CalaveritaSegura />;
       case "buscar-imagen": return <BuscarImagen inventario={inventory.items} />;
       case "reportes": return <Reportes inventario={inventory.items} />;
       case "configuracion": return <Configuracion />;
