@@ -16,7 +16,8 @@ import useInventory from "./hooks/useInventory";
 import { getInventory, saveInventory } from "./services/inventory.service";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("inicio");
+  const publicPreregistro = new URLSearchParams(window.location.search).get("pagina") === "calaverita-preregistro";
+  const [currentPage, setCurrentPage] = useState(publicPreregistro ? "calaverita-preregistro" : "inicio");
   const inventory = useInventory();
   const handleImport = async (data) => {
     const actuales = await getInventory();
@@ -36,13 +37,13 @@ function App() {
       case "ruleta": return <RuletaActivaciones />;
       case "registros-ruleta": return <RegistrosRuleta />;
       case "calaverita-segura": return <CalaveritaSegura />;
-      case "calaverita-preregistro": return <CalaveritaPreregistro />;
+      case "calaverita-preregistro": return <CalaveritaPreregistro publicMode={publicPreregistro} />;
       case "buscar-imagen": return <BuscarImagen inventario={inventory.items} />;
       case "reportes": return <Reportes inventario={inventory.items} />;
       case "configuracion": return <Configuracion />;
       default: return <Home inventario={inventory.items} estadisticas={inventory.estadisticas} onImport={handleImport} onNavigate={setCurrentPage} />;
     }
   };
-  return <div className="min-h-screen bg-slate-100"><Header currentPage={currentPage} onNavigate={setCurrentPage} />{inventory.error && <div className="mx-auto max-w-7xl px-6 pt-4"><div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-4">{inventory.error}</div></div>}{renderPage()}</div>;
+  return <div className="min-h-screen bg-slate-100">{!publicPreregistro && <Header currentPage={currentPage} onNavigate={setCurrentPage} />}{inventory.error && <div className="mx-auto max-w-7xl px-6 pt-4"><div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-4">{inventory.error}</div></div>}{renderPage()}</div>;
 }
 export default App;
