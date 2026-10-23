@@ -44,7 +44,7 @@ export default function RuletaActivaciones() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [lead, setLead] = useState({ nombre: "", telefono: "", correo: "", municipio: "", evento: "" });
+  const [lead, setLead] = useState({ nombre: "", telefono: "", correo: "", municipio: "", marca: "", modelo: "", anio: "", tiene_seguro: "", aseguradora: "", vencimiento: "", interes_cotizacion: "", evento: "" });
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [marketingAccepted, setMarketingAccepted] = useState(false);
   const [leadSaving, setLeadSaving] = useState(false);
@@ -112,7 +112,14 @@ export default function RuletaActivaciones() {
         nombre: lead.nombre.trim(),
         telefono: lead.telefono.trim(),
         correo: lead.correo.trim() || null,
-        municipio: lead.municipio.trim() || null,
+        municipio: lead.municipio.trim(),
+        marca: lead.marca.trim(),
+        modelo: lead.modelo.trim(),
+        anio: Number(lead.anio),
+        tiene_seguro: lead.tiene_seguro,
+        aseguradora: lead.tiene_seguro === "Sí" ? lead.aseguradora : null,
+        vencimiento: lead.tiene_seguro === "Sí" ? lead.vencimiento : null,
+        interes_cotizacion: lead.tiene_seguro === "No" ? lead.interes_cotizacion : null,
         evento: lead.evento.trim() || null,
         acepta_aviso: true,
         acepta_contacto: marketingAccepted,
@@ -135,7 +142,7 @@ export default function RuletaActivaciones() {
 
   const resetParticipant = () => {
     if (spinning) return;
-    setLead({ nombre: "", telefono: "", correo: "", municipio: "", evento: "" });
+    setLead({ nombre: "", telefono: "", correo: "", municipio: "", marca: "", modelo: "", anio: "", tiene_seguro: "", aseguradora: "", vencimiento: "", interes_cotizacion: "", evento: "" });
     setPrivacyAccepted(false);
     setMarketingAccepted(false);
     setLeadSaved(false);
@@ -170,33 +177,65 @@ export default function RuletaActivaciones() {
   return <main className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
     <section className="overflow-hidden rounded-3xl bg-white shadow-lg">
       <div className="bg-gradient-to-r from-[#941B80] via-[#692D80] to-[#0096AE] px-5 py-7 text-white md:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-4"><div>
+        <div className="flex flex-wrap items-center justify-between gap-4"><div className="flex min-w-0 items-center gap-4"><div className="rounded-xl bg-white p-2"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-auto w-40 object-contain md:w-52" /></div><div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">Marketing BTL · Quálitas</p>
           <h1 className="mt-1 text-3xl font-extrabold md:text-4xl">Ruleta de activaciones</h1>
           <p className="mt-2 max-w-2xl text-white/90">Premios con probabilidades configuradas y sincronización entre dispositivos.</p>
-        </div><div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 text-3xl"><FaBullseye /></div></div>
+        </div></div><div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 text-3xl"><FaBullseye /></div></div>
       </div>
       <div className="grid gap-8 p-5 md:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] md:p-8">
         <div className="flex flex-col items-center">
-          {!leadSaved ? <form onSubmit={submitLead} className="mb-6 w-full max-w-[520px] rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#0096AE]">Antes de jugar</p>
+          {!leadSaved ? <form onSubmit={submitLead} className="mb-6 w-full max-w-[620px] rounded-2xl border border-slate-200 bg-slate-50 p-5 md:p-6">
+            <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-5 h-auto w-full max-w-xs object-contain" />
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#0096AE]">Antes de jugar · Registro de participante</p>
             <h2 className="mt-1 text-xl font-extrabold text-[#143B46]">Registra tus datos para participar</h2>
-            <p className="mt-1 text-sm text-slate-600">Completa el formulario. Después podrás girar la ruleta una vez.</p>
+            <p className="mt-1 text-sm text-slate-600">Completa los datos de contacto y de tu vehículo. Después podrás girar la ruleta una vez.</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-semibold text-slate-700 sm:col-span-2">Nombre completo *
-                <input required maxLength={120} autoComplete="name" value={lead.nombre} onChange={e => setLead({ ...lead, nombre: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Tu nombre" />
+                <input required maxLength={120} autoComplete="name" value={lead.nombre} onChange={e => setLead({ ...lead, nombre: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Nombre y apellidos" />
               </label>
               <label className="text-sm font-semibold text-slate-700">Teléfono celular *
-                <input required type="tel" inputMode="tel" autoComplete="tel" maxLength={20} pattern="[0-9+()\-\s]{10,20}" value={lead.telefono} onChange={e => setLead({ ...lead, telefono: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="10 dígitos" />
+                <input required type="tel" inputMode="tel" autoComplete="tel" maxLength={20} pattern="[0-9+()\\-\\s]{10,20}" value={lead.telefono} onChange={e => setLead({ ...lead, telefono: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="10 dígitos" />
               </label>
-              <label className="text-sm font-semibold text-slate-700">Correo electrónico
-                <input type="email" autoComplete="email" maxLength={160} value={lead.correo} onChange={e => setLead({ ...lead, correo: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="tucorreo@ejemplo.com" />
+              <label className="text-sm font-semibold text-slate-700">Correo electrónico *
+                <input required type="email" autoComplete="email" maxLength={160} value={lead.correo} onChange={e => setLead({ ...lead, correo: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="tucorreo@ejemplo.com" />
               </label>
-              <label className="text-sm font-semibold text-slate-700">Municipio
-                <input maxLength={100} autoComplete="address-level2" value={lead.municipio} onChange={e => setLead({ ...lead, municipio: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Tu municipio" />
+              <label className="text-sm font-semibold text-slate-700">Municipio *
+                <input required maxLength={100} autoComplete="address-level2" value={lead.municipio} onChange={e => setLead({ ...lead, municipio: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Tu municipio" />
               </label>
-              <label className="text-sm font-semibold text-slate-700">Evento / ubicación
-                <input maxLength={120} value={lead.evento} onChange={e => setLead({ ...lead, evento: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Nombre del evento" />
+              <label className="text-sm font-semibold text-slate-700">Marca del vehículo *
+                <input required maxLength={80} value={lead.marca} onChange={e => setLead({ ...lead, marca: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Ej. Nissan" />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">Modelo del vehículo *
+                <input required maxLength={80} value={lead.modelo} onChange={e => setLead({ ...lead, modelo: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Ej. Versa" />
+              </label>
+              <label className="text-sm font-semibold text-slate-700">Año del vehículo *
+                <input required type="number" min="1950" max={new Date().getFullYear()+1} value={lead.anio} onChange={e => setLead({ ...lead, anio: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Ej. 2022" />
+              </label>
+              <label className="text-sm font-semibold text-slate-700 sm:col-span-2">¿Cuenta con seguro actualmente? *
+                <select required value={lead.tiene_seguro} onChange={e => setLead({ ...lead, tiene_seguro: e.target.value, aseguradora: "", vencimiento: "", interes_cotizacion: "" })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15">
+                  <option value="">Selecciona una opción</option><option>Sí</option><option>No</option>
+                </select>
+              </label>
+              {lead.tiene_seguro === "Sí" && <>
+                <label className="text-sm font-semibold text-slate-700">¿Con qué aseguradora? *
+                  <select required value={lead.aseguradora} onChange={e => setLead({ ...lead, aseguradora: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15">
+                    <option value="">Selecciona una opción</option>{["Quálitas","GNP","AXA","HDI","Banorte","Mapfre","Otra"].map(v=><option key={v}>{v}</option>)}
+                  </select>
+                </label>
+                <label className="text-sm font-semibold text-slate-700">¿Cuándo vence aproximadamente? *
+                  <select required value={lead.vencimiento} onChange={e => setLead({ ...lead, vencimiento: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15">
+                    <option value="">Selecciona una opción</option>{["Menos de 30 días","30 a 60 días","60 a 90 días","Más de 90 días"].map(v=><option key={v}>{v}</option>)}
+                  </select>
+                </label>
+              </>}
+              {lead.tiene_seguro === "No" && <label className="text-sm font-semibold text-slate-700 sm:col-span-2">¿Te gustaría recibir una cotización? *
+                <select required value={lead.interes_cotizacion} onChange={e => setLead({ ...lead, interes_cotizacion: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15">
+                  <option value="">Selecciona una opción</option><option>Sí</option><option>No</option>
+                </select>
+              </label>}
+              <label className="text-sm font-semibold text-slate-700 sm:col-span-2">Evento / ubicación
+                <input maxLength={120} value={lead.evento} onChange={e => setLead({ ...lead, evento: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 font-normal outline-none focus:border-[#941B80] focus:ring-2 focus:ring-[#941B80]/15" placeholder="Nombre o sede de la activación" />
               </label>
             </div>
             <label className="mt-4 flex items-start gap-3 text-sm text-slate-600">
@@ -211,7 +250,8 @@ export default function RuletaActivaciones() {
             {!supabaseConfigured && <p className="mt-2 text-sm text-amber-700">Registro temporalmente no disponible.</p>}
             {message && <p role="alert" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{message}</p>}
             <p className="mt-2 text-xs text-slate-500">* Campos obligatorios. Tu participación se habilita cuando el registro se guarda correctamente.</p>
-          </form> : <div className="mb-6 w-full max-w-[520px] rounded-2xl border border-[#0096AE]/30 bg-[#0096AE]/5 p-4 text-center">
+          </form> : <div className="mb-6 w-full max-w-[620px] rounded-2xl border border-[#0096AE]/30 bg-[#0096AE]/5 p-4 text-center">
+            <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-3 h-auto w-40 object-contain" />
             <p className="font-bold text-[#143B46]">Registro completado</p>
             <p className="mt-1 text-sm text-slate-600">Ya puedes girar la ruleta.</p>
           </div>}
