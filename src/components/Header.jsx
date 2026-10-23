@@ -1,4 +1,4 @@
-import { FaBoxes, FaChartBar, FaCog, FaHome, FaCamera, FaExchangeAlt, FaCalendarAlt, FaCalculator, FaBullseye, FaClipboardList, FaSkull } from "react-icons/fa";
+import { FaBoxes, FaChartBar, FaCog, FaHome, FaCamera, FaExchangeAlt, FaCalendarAlt, FaCalculator, FaBullseye, FaClipboardList, FaSkull, FaTicketAlt } from "react-icons/fa";
 
 export default function Header({ currentPage = "inicio", onNavigate }) {
   const menu = [
@@ -8,7 +8,7 @@ export default function Header({ currentPage = "inicio", onNavigate }) {
     ["eventos", "Modo evento", <FaCalendarAlt />],
     ["ruleta", "Ruleta de activaciones", <FaBullseye />],
     ["registros-ruleta", "Registros de ruleta", <FaClipboardList />],
-    ["calaverita-segura", "Calaverita Segura 2026", <FaSkull />],
+    ["calaverita-segura", "Calaverita Segura 2026", <FaSkull />],\n    ["calaverita-preregistro", "Prerregistro Calaverita", <FaTicketAlt />],
     ["simulador", "Simulador", <FaCalculator />],
     ["buscar-imagen", "Buscar por imagen", <FaCamera />],
     ["reportes", "Reportes", <FaChartBar />],
