@@ -78,4 +78,57 @@ $$;
 revoke all on function public.calaverita_2026_preregistrar(text,text,text,text,text,text,text) from public;
 grant execute on function public.calaverita_2026_preregistrar(text,text,text,text,text,text,text) to anon, authenticated;
 
+
+-- Seguimiento operativo de Conductor Seguro: estados e incentivo por completar.
+alter table public.calaverita_2026_registros
+  add column if not exists conductor_seguro_estado text not null default 'sin_iniciar',
+  add column if not exists conductor_seguro_inicio timestamptz,
+  add column if not exists conductor_seguro_completado timestamptz,
+  add column if not exists conductor_seguro_bono_otorgado boolean not null default false;
+
+create or replace function public.calaverita_2026_conductor_seguro_iniciar(p_id uuid)
+returns public.calaverita_2026_registros
+language plpgsql security definer set search_path = public
+as $
+declare v_row public.calaverita_2026_registros;
+begin
+  if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
+  update public.calaverita_2026_registros
+  set conductor_seguro_estado='en_actividad',
+      conductor_seguro_inicio=coalesce(conductor_seguro_inicio,now())
+  where id=p_id and asistencia_confirmada=true
+    and conductor_seguro_estado in ('sin_iniciar','en_espera')
+  returning * into v_row;
+  if not found then raise exception 'Confirma la asistencia y verifica que el participante no haya iniciado ya la actividad.'; end if;
+  return v_row;
+end;
+$;
+
+create or replace function public.calaverita_2026_conductor_seguro_completar(p_id uuid)
+returns public.calaverita_2026_registros
+language plpgsql security definer set search_path = public
+as $
+declare v_row public.calaverita_2026_registros;
+begin
+  if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
+  update public.calaverita_2026_registros
+  set conductor_seguro_estado='completado',
+      conductor_seguro_completado=coalesce(conductor_seguro_completado,now()),
+      conductor_seguro_bono_otorgado=true,
+      participaciones_activas=coalesce(participaciones_activas,0)+case when conductor_seguro_bono_otorgado then 0 else 1 end,
+      participaciones=coalesce(participaciones,0)+case when conductor_seguro_bono_otorgado then 0 else 1 end
+  where id=p_id and asistencia_confirmada=true
+    and conductor_seguro_estado='en_actividad'
+  returning * into v_row;
+  if not found then raise exception 'El participante debe estar confirmado y en actividad para registrar la finalización.'; end if;
+  return v_row;
+end;
+$;
+
+revoke all on function public.calaverita_2026_conductor_seguro_iniciar(uuid) from public;
+revoke all on function public.calaverita_2026_conductor_seguro_completar(uuid) from public;
+grant execute on function public.calaverita_2026_conductor_seguro_iniciar(uuid) to authenticated;
+grant execute on function public.calaverita_2026_conductor_seguro_completar(uuid) to authenticated;
+
+
 notify pgrst, 'reload schema';
