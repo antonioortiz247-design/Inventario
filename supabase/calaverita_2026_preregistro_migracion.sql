@@ -86,6 +86,31 @@ alter table public.calaverita_2026_registros
   add column if not exists conductor_seguro_completado timestamptz,
   add column if not exists conductor_seguro_bono_otorgado boolean not null default false;
 
+create or replace function public.calaverita_2026_confirmar_asistencia(p_id uuid)
+returns public.calaverita_2026_registros
+language plpgsql security definer set search_path = public
+as $
+declare v_row public.calaverita_2026_registros;
+begin
+  if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
+  update public.calaverita_2026_registros
+  set asistencia_confirmada=true,
+      fecha_confirmacion=coalesce(fecha_confirmacion,now()),
+      conductor_seguro_estado=case when conductor_seguro_estado='sin_iniciar' then 'en_espera' else conductor_seguro_estado end,
+      participaciones_activas=greatest(coalesce(participaciones_activas,0),1)
+        + case when preregistrado and coalesce(participacion_preregistro_reservada,0)>0 then 1 else 0 end
+        + case when tipo_cliente='CLIENTE_VIGENTE' then 1 when tipo_cliente='RENOVACION' then 2 else 0 end
+        + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end
+  where id=p_id and asistencia_confirmada=false
+  returning * into v_row;
+  if not found then
+    select * into v_row from public.calaverita_2026_registros where id=p_id;
+    if not found then raise exception 'Participante no encontrado'; end if;
+  end if;
+  return v_row;
+end;
+$;
+
 create or replace function public.calaverita_2026_conductor_seguro_iniciar(p_id uuid)
 returns public.calaverita_2026_registros
 language plpgsql security definer set search_path = public
