@@ -112,7 +112,20 @@ export default function CalaveritaSegura() {
     const a = document.createElement("a"); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
   };
 
-  const exportExcel = () => {\n    const worksheet = XLSX.utils.json_to_sheet(rows.map(r => ({\n      "Fecha de registro": r.fecha_registro, "Nombre": r.nombre, "Teléfono": r.telefono, "Correo": r.correo,\n      "Municipio": r.municipio, "Marca": r.marca, "Modelo": r.modelo, "Año": r.anio,\n      "Aseguradora": r.aseguradora, "Vencimiento": r.vencimiento, "Tipo de cliente": r.tipo_cliente,\n      "Puntaje del reto": r.puntaje_reto, "Participaciones": r.participaciones,\n      "Interés de cotización": r.interes_cotizacion, "Seguimiento": r.estatus_seguimiento\n    })));\n    worksheet["!cols"] = [{wch:22},{wch:28},{wch:16},{wch:28},{wch:22},{wch:16},{wch:18},{wch:10},{wch:18},{wch:22},{wch:20},{wch:16},{wch:16},{wch:22},{wch:20}];\n    const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "Asistentes");\n    XLSX.writeFile(workbook, "Calaverita_Segura_Qualitas_2026.xlsx");\n  };\n\n  const drawWinner = () => {
+  const exportExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(rows.map(r => ({
+      "Fecha de registro": r.fecha_registro, "Nombre": r.nombre, "Teléfono": r.telefono, "Correo": r.correo,
+      "Municipio": r.municipio, "Marca": r.marca, "Modelo": r.modelo, "Año": r.anio,
+      "Aseguradora": r.aseguradora, "Vencimiento": r.vencimiento, "Tipo de cliente": r.tipo_cliente,
+      "Puntaje del reto": r.puntaje_reto, "Participaciones": r.participaciones,
+      "Interés de cotización": r.interes_cotizacion, "Seguimiento": r.estatus_seguimiento
+    })));
+    worksheet["!cols"] = [{wch:22},{wch:28},{wch:16},{wch:28},{wch:22},{wch:16},{wch:18},{wch:10},{wch:18},{wch:22},{wch:20},{wch:16},{wch:16},{wch:22},{wch:20}];
+    const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, "Asistentes");
+    XLSX.writeFile(workbook, "Calaverita_Segura_Qualitas_2026.xlsx");
+  };
+
+  const drawWinner = () => {
     if (!rows.length) { setError("No hay registros para realizar el sorteo."); return; }
     const pool = rows.flatMap(r => Array.from({ length: Math.max(0, Math.min(100, Number(r.participaciones || 0))) }, () => r));
     if (!pool.length) { setError("No hay participaciones válidas."); return; }
