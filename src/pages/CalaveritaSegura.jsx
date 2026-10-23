@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase, supabaseConfigured } from "../lib/supabase";
-import { FaArrowLeft, FaCheckCircle, FaDownload, FaLock, FaTrophy, FaUsers, FaSyncAlt } from "react-icons/fa";
+import { FaArrowLeft, FaCheckCircle, FaDownload, FaLock, FaTrophy, FaUsers, FaSyncAlt, FaTrashAlt } from "react-icons/fa";
 import * as XLSX from "xlsx";
 
 const QUESTIONS = [
@@ -29,6 +29,7 @@ export default function CalaveritaSegura() {
   const [rows, setRows] = useState([]);
   const [winner, setWinner] = useState(null);
   const [busyAdmin, setBusyAdmin] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     if (!supabaseConfigured) return;
@@ -99,6 +100,23 @@ export default function CalaveritaSegura() {
     finally { setSaving(false); }
   };
 
+  const resetTests = async () => {
+    const confirmed = window.confirm("¿Seguro que quieres borrar TODOS los registros de Calaverita Segura 2026? Esta acción no se puede deshacer. Úsala sólo para limpiar pruebas.");
+    if (!confirmed) return;
+    setResetting(true); setError(""); setNotice("");
+    try {
+      const { data, error: resetError } = await supabase.rpc("calaverita_2026_reiniciar_pruebas");
+      if (resetError) throw resetError;
+      setRows([]);
+      setWinner(null);
+      setNotice("Registros eliminados: " + Number(data?.deleted_count ?? 0) + ". El panel quedó limpio.");
+    } catch (e) {
+      setError("No se pudieron borrar los registros. Ejecuta el SQL complementario de reinicio en Supabase y vuelve a intentarlo: " + (e.message || "Error desconocido"));
+    } finally {
+      setResetting(false);
+    }
+  };
+
   const loadAdmin = async () => {
     if (!session) return;
     setBusyAdmin(true); setError("");
@@ -161,7 +179,7 @@ export default function CalaveritaSegura() {
         <button onClick={() => { setScreen("admin"); setError(""); }} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"><FaLock/> Administración</button>
       </div>
       <header className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-[#941B80] to-[#0096AE] p-6 text-white shadow-lg md:p-8">
-        <div className="flex items-center gap-4"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-2xl font-black text-[#941B80]">Q</div><div><p className="text-xs font-bold uppercase tracking-[.2em] text-white/80">Quálitas · 30 de octubre de 2026</p><h1 className="mt-1 text-2xl font-black md:text-4xl">CALAVERITA SEGURA</h1><p className="mt-1 text-white/90">Evento de Fidelización y Seguridad Vial · 14:30–18:00 h</p></div></div>
+        <div className="flex items-center gap-4"><div className="flex shrink-0 items-center rounded-xl bg-white p-2"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-auto w-40 object-contain md:w-56" /></div><div><p className="text-xs font-bold uppercase tracking-[.2em] text-white/80">Quálitas · 30 de octubre de 2026</p><h1 className="mt-1 text-2xl font-black md:text-4xl">CALAVERITA SEGURA</h1><p className="mt-1 text-white/90">Evento de Fidelización y Seguridad Vial · 14:30–18:00 h</p></div></div>
         <p className="mt-3 text-sm text-white/90">Plaza San Diego · Cuautitlán, Estado de México</p>
       </header>
 
@@ -169,7 +187,7 @@ export default function CalaveritaSegura() {
       {notice && <div role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{notice}</div>}
 
       {screen === "welcome" && <section className={cardClass + " text-center"}>
-        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-purple-50 text-4xl text-[#941B80]">✦</div>
+        <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-6 h-auto w-full max-w-sm object-contain" />
         <p className="text-sm font-bold uppercase tracking-widest text-[#0096AE]">La Calaverita que Protege</p><h2 className="mt-2 text-3xl font-black text-slate-900 md:text-4xl">Bienvenido</h2>
         <p className="mx-auto mt-3 max-w-xl text-slate-600">Participa en nuestro Reto Conductor Seguro y obtén la oportunidad de ganar una Dashcam.</p>
         <button onClick={() => { setError(""); setScreen("register"); }} className={btnPrimary + " mt-7 min-w-48"}>COMENZAR</button>
@@ -204,11 +222,11 @@ export default function CalaveritaSegura() {
         <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-sm font-bold uppercase tracking-widest text-[#0096AE]">Área restringida</p><h2 className="mt-1 text-2xl font-black text-slate-900">Panel administrador</h2><p className="mt-1 text-sm text-slate-600">Acceso autenticado para consultar registros personales y realizar la rifa.</p></div>{session && <button onClick={async()=>{await supabase.auth.signOut();setSession(null);setRows([]);}} className="rounded-xl border px-3 py-2 text-sm font-semibold">Cerrar sesión</button>}</div>
         {!session ? <form onSubmit={signIn} className="mt-6 grid max-w-lg gap-4"><label className="text-sm font-semibold">Correo de administrador<input required type="email" className={fieldClass} value={email} onChange={e=>setEmail(e.target.value)}/></label><label className="text-sm font-semibold">Contraseña<input required type="password" className={fieldClass} value={password} onChange={e=>setPassword(e.target.value)}/></label><button disabled={busyAdmin || !supabaseConfigured} className={btnPrimary}>{busyAdmin?"Validando…":"Iniciar sesión"}</button>{!supabaseConfigured&&<p className="text-sm text-red-700">Configura Supabase para habilitar el panel y guardar registros compartidos.</p>}</form> :
         <><div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[["Asistentes",metrics.total,<FaUsers/>],["Clientes vigentes",metrics.vigentes,"Q"],["Renovaciones",metrics.renovaciones,"↻"],["Prospectos",metrics.prospectos,"+"],["Participaciones",metrics.participaciones,<FaTrophy/>],["Promedio del reto",metrics.promedio+"/5","★"]].map(([label,value,icon])=><div key={label} className="rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between text-sm font-semibold text-slate-500"><span>{label}</span><span className="text-[#0096AE]">{icon}</span></div><p className="mt-2 text-3xl font-black text-[#941B80]">{value}</p></div>)}</div>
-        <div className="mt-5 flex flex-wrap gap-2"><button onClick={loadAdmin} className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-semibold"><FaSyncAlt/> Actualizar</button><button onClick={()=>exportCsv(rows,"Calaverita_Segura_Quálitas_2026.csv")} className="inline-flex items-center gap-2 rounded-xl bg-[#0096AE] px-4 py-2 font-bold text-white"><FaDownload/> Exportar CSV</button><button onClick={exportExcel} className="inline-flex items-center gap-2 rounded-xl border border-[#0096AE] px-4 py-2 font-bold text-[#007f93]"><FaDownload/> Exportar Excel</button><button onClick={()=>window.print()} className="rounded-xl border px-4 py-2 font-semibold">Imprimir / Guardar PDF</button><button onClick={drawWinner} className={btnPrimary}><FaTrophy/> REALIZAR SORTEO</button></div>
+        <div className="mt-5 flex flex-wrap gap-2"><button onClick={loadAdmin} className="inline-flex items-center gap-2 rounded-xl border px-4 py-2 font-semibold"><FaSyncAlt/> Actualizar</button><button onClick={()=>exportCsv(rows,"Calaverita_Segura_Quálitas_2026.csv")} className="inline-flex items-center gap-2 rounded-xl bg-[#0096AE] px-4 py-2 font-bold text-white"><FaDownload/> Exportar CSV</button><button onClick={exportExcel} className="inline-flex items-center gap-2 rounded-xl border border-[#0096AE] px-4 py-2 font-bold text-[#007f93]"><FaDownload/> Exportar Excel</button><button onClick={()=>window.print()} className="rounded-xl border px-4 py-2 font-semibold">Imprimir / Guardar PDF</button><button onClick={drawWinner} className={btnPrimary}><FaTrophy/> REALIZAR SORTEO</button><button onClick={resetTests} disabled={resetting || busyAdmin} className="inline-flex items-center gap-2 rounded-xl border border-red-300 bg-red-50 px-4 py-2 font-bold text-red-800 disabled:opacity-50"><FaTrashAlt/> {resetting ? "Borrando registros…" : "Reiniciar pruebas"}</button></div><p className="mt-2 text-xs text-red-700">Atención: el reinicio elimina todos los registros del evento, no sólo los de prueba. Exporta antes si necesitas conservarlos.</p>
         {winner&&<div className="mt-5 rounded-2xl border-2 border-[#0096AE] bg-cyan-50 p-5"><p className="text-sm font-bold uppercase tracking-widest text-[#941B80]">Ganador de la Dashcam</p><h3 className="mt-2 text-3xl font-black">{winner.nombre}</h3><p className="mt-1">Teléfono: {winner.telefono}</p><p>Folio: {winner.id}</p><p>Fecha: {new Date().toLocaleString("es-MX")}</p><button onClick={()=>window.print()} className="mt-3 rounded-xl bg-[#941B80] px-4 py-2 font-bold text-white">Imprimir constancia</button></div>}
         <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200"><table className="min-w-[1100px] w-full text-left text-sm"><thead className="bg-slate-50"><tr>{["Fecha","Nombre","Teléfono","Vehículo","Aseguradora","Vencimiento","Clasificación","Reto","Participaciones","Cotización"].map(h=><th key={h} className="whitespace-nowrap px-3 py-3">{h}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{rows.map(r=><tr key={r.id}><td className="whitespace-nowrap px-3 py-3">{r.fecha_registro?new Date(r.fecha_registro).toLocaleString("es-MX"):"—"}</td><td className="px-3 py-3 font-semibold">{r.nombre}</td><td className="px-3 py-3">{r.telefono}</td><td className="px-3 py-3">{[r.marca,r.modelo,r.anio].filter(Boolean).join(" ")}</td><td className="px-3 py-3">{r.aseguradora||"—"}</td><td className="px-3 py-3">{r.vencimiento||"—"}</td><td className="px-3 py-3">{r.tipo_cliente}</td><td className="px-3 py-3">{r.puntaje_reto}/5</td><td className="px-3 py-3 font-bold">{r.participaciones}</td><td className="px-3 py-3">{r.interes_cotizacion||"—"}</td></tr>)}</tbody></table></div></>}
       </section>}
-      <footer className="mt-6 text-center text-xs text-slate-500">Quálitas · Aseguramos autos, cuidamos personas. · CALAVERITA SEGURA 2026</footer>
+      <footer className="mt-6 flex flex-col items-center gap-3 text-center text-xs text-slate-500"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-auto w-48 object-contain" /><span>Aseguramos autos, cuidamos personas. · CALAVERITA SEGURA 2026</span></footer>
     </div>
   </main>;
 }
