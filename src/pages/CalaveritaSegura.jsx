@@ -191,7 +191,7 @@ export default function CalaveritaSegura() {
       "Fecha de registro": r.fecha_registro, "Nombre": r.nombre, "Teléfono": r.telefono, "Correo": r.correo,
       "Municipio": r.municipio, "Marca": r.marca, "Modelo": r.modelo, "Año": r.anio,
       "Aseguradora": r.aseguradora, "Vencimiento": r.vencimiento, "Tipo de cliente": r.tipo_cliente,
-      "Puntaje del reto": r.puntaje_reto, "Participaciones": r.participaciones,
+      "Puntaje del reto": r.puntaje_reto, "Participaciones asignadas": r.participaciones,
       "Interés de cotización": r.interes_cotizacion, "Seguimiento": r.estatus_seguimiento
     })));
     worksheet["!cols"] = [{wch:22},{wch:28},{wch:16},{wch:28},{wch:22},{wch:16},{wch:18},{wch:10},{wch:18},{wch:22},{wch:20},{wch:16},{wch:16},{wch:22},{wch:20}];
@@ -222,7 +222,7 @@ export default function CalaveritaSegura() {
         <button onClick={() => { setScreen("admin"); setError(""); }} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"><FaLock/> Administración</button>
       </div>
       <header className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-[#941B80] to-[#0096AE] p-6 text-white shadow-lg md:p-8">
-        <div className="flex items-center gap-4"><div className="flex shrink-0 items-center rounded-xl bg-white p-2"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-auto w-40 object-contain md:w-56" /></div><div><p className="text-xs font-bold uppercase tracking-[.2em] text-white/80">Quálitas · 30 de octubre de 2026</p><h1 className="mt-1 text-2xl font-black md:text-4xl">CALAVERITA SEGURA</h1><p className="mt-1 text-white/90">Evento de Fidelización y Seguridad Vial · 14:30–18:00 h</p></div></div>
+        <div className="flex items-center gap-4"><div className="flex shrink-0 items-center rounded-xl bg-white p-2"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-auto w-40 object-contain md:w-56" /></div><div><p className="text-xs font-bold uppercase tracking-[.2em] text-white/80">Quálitas · 30 de octubre de 2026</p><h1 className="mt-1 text-2xl font-black md:text-4xl">CALAVERITA SEGURA</h1><p className="mt-1 text-white/90">Evento de fidelización y seguridad vial · 14:30–18:00 h</p></div></div>
         <p className="mt-3 text-sm text-white/90">Plaza San Diego · Cuautitlán, Estado de México</p>
       </header>
 
