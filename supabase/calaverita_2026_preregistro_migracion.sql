@@ -52,19 +52,14 @@ language plpgsql security definer set search_path = public
 as $$
 declare v_row public.calaverita_2026_registros;
 declare v_folio text;
+declare v_next bigint;
 begin
   if length(trim(coalesce(p_nombre,'')))<2 then raise exception 'Escribe tu nombre completo.'; end if;
   if length(regexp_replace(coalesce(p_telefono,''),'[^0-9]','','g'))<10 then raise exception 'Escribe un teléfono válido.'; end if;
   if position('@' in coalesce(p_correo,''))<2 then raise exception 'Escribe un correo válido.'; end if;
   if p_tiene_seguro not in ('Sí','No') then raise exception 'Selecciona si cuentas con seguro.'; end if;
   perform pg_advisory_xact_lock(hashtext('calaverita_2026_folio_seq'));
-  if not exists (select 1 from public.calaverita_2026_registros where folio is not null) then
-    perform setval('public.calaverita_2026_folio_seq',1,false);
-  else
-    perform setval(
-      'public.calaverita_2026_folio_seq',
-      greatest(
-        coalesce((select max(substring(folio from '[0-9]+
+  select coalesce(max(substring(folio from '[0-9]+
   insert into public.calaverita_2026_registros(
     folio,preregistrado,fecha_preregistro,participacion_preregistro_reservada,
     asistencia_confirmada,participaciones_activas,codigo_qr,
@@ -164,13 +159,11 @@ grant execute on function public.calaverita_2026_conductor_seguro_completar(uuid
 
 
 notify pgrst, 'reload schema';
-)::bigint)
-          from public.calaverita_2026_registros where folio like 'ODQRR - %'),0)+1,
-        (select last_value from public.calaverita_2026_folio_seq)
-      ),
-      false
-    );
-  end if;
+)::bigint),0)+1
+    into v_next
+    from public.calaverita_2026_registros
+    where folio like 'ODQRR - %';
+  perform setval('public.calaverita_2026_folio_seq',v_next,false);
   v_folio := 'ODQRR - ' || lpad(nextval('public.calaverita_2026_folio_seq')::text,4,'0');
   insert into public.calaverita_2026_registros(
     folio,preregistrado,fecha_preregistro,participacion_preregistro_reservada,
