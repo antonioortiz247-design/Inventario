@@ -1,4 +1,4 @@
-export default function Configuración() {
+export default function Configuracion() {
   return (
     <div className="p-6">
       <div className="bg-white rounded-2xl shadow p-6">
