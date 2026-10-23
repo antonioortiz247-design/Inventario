@@ -41,7 +41,7 @@ export default function Reportes({ inventario = [] }) {
   }), [prospectos, premios, busqueda, fechaDesde, fechaHasta]);
 
   const exportarRuleta = () => {
-    const columnas = ["Nombre","Telefono","Correo","Municipio","Evento","Premio","Fecha de registro","Acepta contacto"];
+    const columnas = ["Nombre","Teléfono","Correo","Municipio","Evento","Premio","Fecha de registro","Acepta contacto"];
     const escapar = (valor) => '"' + String(valor ?? "").replace(/"/g, '""') + '"';
     const filas = filasRuleta.map(p => [p.nombre,p.telefono,p.correo,p.municipio,p.evento,p.premio,p.created_at ? new Date(p.created_at).toLocaleString("es-MX") : "",p.acepta_contacto ? "Sí" : "No"]);
     const csv = "\uFEFF" + [columnas, ...filas].map(row => row.map(escapar).join(",")).join("\n");
