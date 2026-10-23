@@ -159,31 +159,34 @@ begin
 end;
 $$;
 
-create or replace function public.calaverita_2026_conductor_seguro_completar(p_id uuid)
+drop function if exists public.calaverita_2026_conductor_seguro_completar(uuid);
+create or replace function public.calaverita_2026_conductor_seguro_completar(p_id uuid, p_puntaje integer)
 returns public.calaverita_2026_registros
 language plpgsql security definer set search_path = public
 as $$
 declare v_row public.calaverita_2026_registros;
 begin
   if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
+  if p_puntaje < 0 or p_puntaje > 5 then raise exception 'El puntaje debe estar entre 0 y 5.'; end if;
   update public.calaverita_2026_registros
   set conductor_seguro_estado='completado',
-      conductor_seguro_completado=coalesce(conductor_seguro_completado,now()),
-      conductor_seguro_bono_otorgado=true,
-      participaciones_activas=coalesce(participaciones_activas,0)+case when conductor_seguro_bono_otorgado then 0 else 1 end,
-      participaciones=coalesce(participaciones,0)+case when conductor_seguro_bono_otorgado then 0 else 1 end
+      conductor_seguro_completado=now(),
+      puntaje_reto=p_puntaje,
+      conductor_seguro_bono_otorgado=(p_puntaje >= 4),
+      participaciones_activas=coalesce(participaciones_activas,0)+case when p_puntaje >= 4 then 1 else 0 end,
+      participaciones=coalesce(participaciones,0)+case when p_puntaje >= 4 then 1 else 0 end
   where id=p_id and asistencia_confirmada=true
     and conductor_seguro_estado='en_actividad'
   returning * into v_row;
-  if not found then raise exception 'El participante debe estar confirmado y en actividad para registrar la finalización.'; end if;
+  if not found then raise exception 'El participante debe estar confirmado y en actividad para registrar el resultado.'; end if;
   return v_row;
 end;
 $$;
 
 revoke all on function public.calaverita_2026_conductor_seguro_iniciar(uuid) from public;
-revoke all on function public.calaverita_2026_conductor_seguro_completar(uuid) from public;
+revoke all on function public.calaverita_2026_conductor_seguro_completar(uuid,integer) from public;
 grant execute on function public.calaverita_2026_conductor_seguro_iniciar(uuid) to authenticated;
-grant execute on function public.calaverita_2026_conductor_seguro_completar(uuid) to authenticated;
+grant execute on function public.calaverita_2026_conductor_seguro_completar(uuid,integer) to authenticated;
 
 
 notify pgrst, 'reload schema';
