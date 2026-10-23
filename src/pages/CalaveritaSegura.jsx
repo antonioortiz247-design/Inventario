@@ -17,6 +17,8 @@ const cardClass = "rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md
 
 export default function CalaveritaSegura() {
   const [screen, setScreen] = useState("welcome");
+  const [registerStep, setRegisterStep] = useState(0);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [form, setForm] = useState({ nombre: "", telefono: "", correo: "", municipio: "", marca: "", modelo: "", anio: "", tiene_seguro: "", aseguradora: "", vencimiento: "", interes_cotizacion: "" });
   const [registro, setRegistro] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -46,6 +48,40 @@ export default function CalaveritaSegura() {
     return "PROSPECTO";
   };
   const baseParticipations = (r) => 1 + (r.tipo_cliente === "CLIENTE_VIGENTE" ? 1 : r.tipo_cliente === "RENOVACION" ? 2 : 0) + (Number(r.puntaje_reto || 0) >= 4 ? 1 : 0);
+
+  const registrationSteps = [
+    { key: "nombre", title: "¿Cómo te llamas?", subtitle: "Escribe tu nombre completo.", type: "text", placeholder: "Nombre y apellidos", autocomplete: "name" },
+    { key: "telefono", title: "¿Cuál es tu teléfono celular?", subtitle: "Lo usaremos para dar seguimiento a tu participación.", type: "tel", placeholder: "10 dígitos", autocomplete: "tel" },
+    { key: "correo", title: "¿Cuál es tu correo electrónico?", subtitle: "Te ayudará a mantener tus datos de contacto actualizados.", type: "email", placeholder: "tucorreo@ejemplo.com", autocomplete: "email" },
+    { key: "municipio", title: "¿En qué municipio vives?", subtitle: "Queremos conocer la zona de nuestros participantes.", type: "text", placeholder: "Tu municipio", autocomplete: "address-level2" },
+    { key: "marca", title: "¿Qué marca es tu vehículo?", subtitle: "Cuéntanos un poco sobre el auto que conduces.", type: "text", placeholder: "Ej. Nissan" },
+    { key: "modelo", title: "¿Qué modelo es?", subtitle: "Escribe el modelo de tu vehículo.", type: "text", placeholder: "Ej. Versa" },
+    { key: "anio", title: "¿De qué año es tu vehículo?", subtitle: "Selecciona el año modelo.", type: "number", placeholder: "Ej. 2022" },
+    { key: "tiene_seguro", title: "¿Tu vehículo cuenta con seguro actualmente?", subtitle: "Elige la opción que corresponda.", type: "select", options: ["Sí", "No"] },
+    ...(form.tiene_seguro === "Sí" ? [
+      { key: "aseguradora", title: "¿Con qué aseguradora estás protegido?", subtitle: "Selecciona tu aseguradora actual.", type: "select", options: insurers },
+      { key: "vencimiento", title: "¿Cuándo vence tu póliza?", subtitle: "Elige el periodo aproximado.", type: "select", options: ["Menos de 30 días", "30 a 60 días", "60 a 90 días", "Más de 90 días"] }
+    ] : form.tiene_seguro === "No" ? [
+      { key: "interes_cotizacion", title: "¿Te gustaría recibir una cotización?", subtitle: "Es opcional solicitar información sobre una cobertura.", type: "select", options: ["Sí", "No"] }
+    ] : []),
+    { key: "privacidad", title: "¿Nos autorizas a tratar tus datos?", subtitle: "Necesitamos tu autorización para gestionar tu participación en el evento.", type: "privacy" }
+  ];
+
+  const nextRegistrationStep = () => {
+    const current = registrationSteps[registerStep];
+    if (!current) return;
+    if (current.type === "privacy") {
+      if (!privacyAccepted) { setError("Debes aceptar el aviso de privacidad para continuar."); return; }
+    } else {
+      const value = String(form[current.key] ?? "").trim();
+      if (!value) { setError("Completa tu respuesta para continuar."); return; }
+      if (current.key === "correo" && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value)) { setError("Escribe un correo electrónico válido."); return; }
+      if (current.key === "telefono" && !/^[0-9+()\\-\\s]{10,20}$/.test(value)) { setError("Escribe un teléfono válido de 10 a 20 caracteres."); return; }
+      if (current.key === "anio" && (Number(value) < 1950 || Number(value) > new Date().getFullYear() + 1)) { setError("Escribe un año de vehículo válido."); return; }
+    }
+    setError("");
+    setRegisterStep(i => Math.min(i + 1, registrationSteps.length - 1));
+  };
 
   const submitRegistration = async (event) => {
     event.preventDefault(); setError(""); setNotice(""); setSaving(true);
@@ -190,18 +226,30 @@ export default function CalaveritaSegura() {
         <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-6 h-auto w-full max-w-sm object-contain" />
         <p className="text-sm font-bold uppercase tracking-widest text-[#0096AE]">La Calaverita que Protege</p><h2 className="mt-2 text-3xl font-black text-slate-900 md:text-4xl">Bienvenido</h2>
         <p className="mx-auto mt-3 max-w-xl text-slate-600">Participa en nuestro Reto Conductor Seguro y obtén la oportunidad de ganar una Dashcam.</p>
-        <button onClick={() => { setError(""); setScreen("register"); }} className={btnPrimary + " mt-7 min-w-48"}>COMENZAR</button>
+        <button onClick={() => { setError(""); setRegisterStep(0); setPrivacyAccepted(false); setScreen("register"); }} className={btnPrimary + " mt-7 min-w-48"}>COMENZAR</button>
       </section>}
 
-      {screen === "register" && <section className={cardClass}>
-        <p className="text-sm font-bold uppercase tracking-widest text-[#0096AE]">Paso 1 de 3</p><h2 className="mt-1 text-2xl font-black text-slate-900">Registro de participante</h2><p className="mt-2 text-sm text-slate-600">Completa tus datos para participar. Los campos marcados son obligatorios.</p>
-        <form onSubmit={submitRegistration} className="mt-6 grid gap-4 md:grid-cols-2">
-          {[["nombre","Nombre completo","text"],["telefono","Teléfono","tel"],["correo","Correo electrónico","email"],["municipio","Municipio","text"],["marca","Marca del vehículo","text"],["modelo","Modelo","text"],["anio","Año del vehículo","number"]].map(([key,label,type]) => <label key={key} className="text-sm font-semibold text-slate-700">{label}<input className={fieldClass} required value={form[key]} type={type} onChange={e=>setField(key,e.target.value)} min={type==="number" ? 1950 : undefined} max={type==="number" ? new Date().getFullYear()+1 : undefined} /></label>)}
-          <label className="text-sm font-semibold text-slate-700">¿Cuenta con seguro actualmente?<select required className={fieldClass} value={form.tiene_seguro} onChange={e=>{setField("tiene_seguro",e.target.value);setField("aseguradora","");setField("vencimiento","");setField("interes_cotizacion","");}}><option value="">Selecciona</option><option>Sí</option><option>No</option></select></label>
-          {form.tiene_seguro === "Sí" && <><label className="text-sm font-semibold text-slate-700">¿Con qué aseguradora?<select required className={fieldClass} value={form.aseguradora} onChange={e=>setField("aseguradora",e.target.value)}><option value="">Selecciona</option>{insurers.map(i=><option key={i}>{i}</option>)}</select></label><label className="text-sm font-semibold text-slate-700">¿Cuándo vence aproximadamente?<select required className={fieldClass} value={form.vencimiento} onChange={e=>setField("vencimiento",e.target.value)}><option value="">Selecciona</option>{["Menos de 30 días","30 a 60 días","60 a 90 días","Más de 90 días"].map(i=><option key={i}>{i}</option>)}</select></label></>}
-          {form.tiene_seguro === "No" && <label className="text-sm font-semibold text-slate-700">¿Te gustaría recibir una cotización?<select required className={fieldClass} value={form.interes_cotizacion} onChange={e=>setField("interes_cotizacion",e.target.value)}><option value="">Selecciona</option><option>Sí</option><option>No</option></select></label>}
-          <label className="flex items-start gap-3 rounded-xl bg-slate-50 p-4 text-sm text-slate-600 md:col-span-2"><input type="checkbox" required className="mt-1 accent-[#941B80]"/>Autorizo el tratamiento de mis datos personales para la gestión de este evento y he leído el aviso de privacidad de Quálitas.</label>
-          <div className="md:col-span-2"><button disabled={saving} className={btnPrimary}>{saving ? "Guardando registro…" : "GUARDAR Y COMENZAR RETO"}</button></div>
+      {screen === "register" && <section className={cardClass + " mx-auto max-w-2xl"}>
+        <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-5 h-auto w-48 object-contain" />
+        <div className="mb-6">
+          <div className="flex items-center justify-between gap-3"><p className="text-sm font-bold uppercase tracking-widest text-[#0096AE]">Registro de participante</p><span className="text-sm font-bold text-slate-500">{registerStep + 1} de {registrationSteps.length}</span></div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-gradient-to-r from-[#941B80] to-[#0096AE] transition-all duration-300" style={{ width: ((registerStep + 1) / registrationSteps.length * 100) + "%" }} /></div>
+        </div>
+        <form onSubmit={e => { e.preventDefault(); submitRegistration(e); }} className="min-h-[330px]">
+          <div key={registrationSteps[registerStep]?.key} className="animate-[fadeIn_.25s_ease-out]">
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#0096AE]">Paso {registerStep + 1}</p>
+            <h2 className="mt-3 text-2xl font-black leading-tight text-slate-900 md:text-3xl">{registrationSteps[registerStep]?.title}</h2>
+            <p className="mt-2 text-slate-600">{registrationSteps[registerStep]?.subtitle}</p>
+            <div className="mt-7">
+              {registrationSteps[registerStep]?.type === "privacy" ? <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-700"><input type="checkbox" checked={privacyAccepted} onChange={e => setPrivacyAccepted(e.target.checked)} className="mt-1 h-5 w-5 shrink-0 accent-[#941B80]" /><span>Autorizo el tratamiento de mis datos personales para la gestión de este evento y confirmo que he leído el aviso de privacidad de Quálitas. Esta autorización es necesaria para registrar mi participación.</span></label>
+              : registrationSteps[registerStep]?.type === "select" ? <div className="grid gap-3 sm:grid-cols-2">{registrationSteps[registerStep].options.map(option => <button type="button" key={option} onClick={() => { setField(registrationSteps[registerStep].key, option); setError(""); }} className={"rounded-2xl border-2 px-4 py-5 text-left text-lg font-bold transition " + (form[registrationSteps[registerStep].key] === option ? "border-[#941B80] bg-purple-50 text-[#941B80]" : "border-slate-200 bg-white text-slate-700 hover:border-[#0096AE] hover:bg-cyan-50")}>{option}{form[registrationSteps[registerStep].key] === option && <span className="float-right">✓</span>}</button>)}</div>
+              : <input autoFocus className={fieldClass + " py-4 text-lg"} value={form[registrationSteps[registerStep].key] || ""} type={registrationSteps[registerStep].type} inputMode={registrationSteps[registerStep].type === "tel" ? "tel" : undefined} autoComplete={registrationSteps[registerStep].autocomplete} placeholder={registrationSteps[registerStep].placeholder} min={registrationSteps[registerStep].type === "number" ? 1950 : undefined} max={registrationSteps[registerStep].type === "number" ? new Date().getFullYear() + 1 : undefined} onChange={e => setField(registrationSteps[registerStep].key, e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (registerStep < registrationSteps.length - 1) nextRegistrationStep(); } }} />}
+            </div>
+          </div>
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
+            <button type="button" onClick={() => { setError(""); if (registerStep === 0) setScreen("welcome"); else setRegisterStep(i => Math.max(0, i - 1)); }} className="rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-600 hover:bg-slate-50">{registerStep === 0 ? "Cancelar" : "← Anterior"}</button>
+            {registerStep < registrationSteps.length - 1 ? <button type="button" onClick={nextRegistrationStep} className={btnPrimary}>Continuar →</button> : <button type="submit" disabled={saving || !privacyAccepted} className={btnPrimary}>{saving ? "Guardando registro…" : "GUARDAR Y COMENZAR RETO"}</button>}
+          </div>
         </form>
       </section>}
 
@@ -215,7 +263,7 @@ export default function CalaveritaSegura() {
         <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-5 h-auto w-full max-w-xs object-contain" /><FaCheckCircle className="mx-auto text-5xl text-[#0096AE]"/><h2 className="mt-4 text-3xl font-black text-slate-900">{Number(registro.puntaje_reto)>=4 ? "¡Felicidades! Has completado el Reto Conductor Seguro." : "¡Gracias por participar!"}</h2>
         <p className="mt-3 text-slate-600">Has quedado registrado para la rifa de una Dashcam.</p>
         <div className="mx-auto mt-6 grid max-w-2xl gap-3 text-left sm:grid-cols-2"><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">Participante</p><p className="mt-1 text-lg font-bold">{registro.nombre}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">Tipo de cliente</p><p className="mt-1 font-bold text-[#941B80]">{registro.tipo_cliente}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">Resultado del reto</p><p className="mt-1 font-bold">{registro.puntaje_reto}/5 correctas</p></div><div className="rounded-xl bg-purple-50 p-4"><p className="text-xs font-bold uppercase text-[#941B80]">Participaciones asignadas</p><p className="mt-1 text-3xl font-black text-[#941B80]">{registro.participaciones}</p></div></div>
-        <button onClick={()=>{setForm({nombre:"",telefono:"",correo:"",municipio:"",marca:"",modelo:"",anio:"",tiene_seguro:"",aseguradora:"",vencimiento:"",interes_cotizacion:""});setRegistro(null);setAnswers({});setNotice("");setScreen("welcome");}} className={btnPrimary+" mt-6"}>REGISTRAR OTRO PARTICIPANTE</button>
+        <button onClick={()=>{setForm({nombre:"",telefono:"",correo:"",municipio:"",marca:"",modelo:"",anio:"",tiene_seguro:"",aseguradora:"",vencimiento:"",interes_cotizacion:""});setRegisterStep(0);setPrivacyAccepted(false);setRegistro(null);setAnswers({});setNotice("");setScreen("welcome");}} className={btnPrimary+" mt-6"}>REGISTRAR OTRO PARTICIPANTE</button>
       </section>}
 
       {screen === "admin" && <section className={cardClass}>
