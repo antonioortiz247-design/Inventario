@@ -135,10 +135,6 @@ begin
         + case when preregistrado and coalesce(participacion_preregistro_reservada,0)>0 then 1 else 0 end
         + case when tipo_cliente='CLIENTE_VIGENTE' then 1 when tipo_cliente='RENOVACION' then 2 else 0 end
         + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end,
-      participaciones=greatest(coalesce(participaciones_activas,0),1)
-        + case when preregistrado and coalesce(participacion_preregistro_reservada,0)>0 then 1 else 0 end
-        + case when tipo_cliente='CLIENTE_VIGENTE' then 1 when tipo_cliente='RENOVACION' then 2 else 0 end
-        + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end
   where id=p_id and asistencia_confirmada=false
   returning * into v_row;
   if not found then
