@@ -20,24 +20,46 @@ where participaciones_activas is null;
 
 create or replace function public.calaverita_2026_confirmar_asistencia(p_id uuid)
 returns public.calaverita_2026_registros
-language plpgsql security definer set search_path = public
+language plpgsql
+security definer
+set search_path = public
 as $$
-declare v_row public.calaverita_2026_registros;
+declare
+  v_row public.calaverita_2026_registros;
+  v_total integer;
 begin
-  if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
-  update public.calaverita_2026_registros
-  set asistencia_confirmada = true,
-      fecha_confirmacion = coalesce(fecha_confirmacion, now()),
-      participaciones_activas = greatest(coalesce(participaciones_activas,0),1)
-        + case when preregistrado and coalesce(participacion_preregistro_reservada,0)>0 then 1 else 0 end
-        + case when tipo_cliente='CLIENTE_VIGENTE' then 1 when tipo_cliente='RENOVACION' then 2 else 0 end
-        + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end
-  where id=p_id and asistencia_confirmada=false
-  returning * into v_row;
-  if not found then
-    select * into v_row from public.calaverita_2026_registros where id=p_id;
-    if not found then raise exception 'Participante no encontrado'; end if;
+  if auth.uid() is null then
+    raise exception 'Se requiere iniciar sesión como staff.';
   end if;
+
+  select *
+    into v_row
+    from public.calaverita_2026_registros
+   where id = p_id
+   for update;
+
+  if not found then
+    raise exception 'Participante no encontrado';
+  end if;
+
+  if v_row.asistencia_confirmada then
+    return v_row;
+  end if;
+
+  v_total := greatest(coalesce(v_row.participaciones_activas, 0), 1)
+    + case when v_row.preregistrado and coalesce(v_row.participacion_preregistro_reservada, 0) > 0 then 1 else 0 end
+    + case when v_row.tipo_cliente = 'CLIENTE_VIGENTE' then 1 when v_row.tipo_cliente = 'RENOVACION' then 2 else 0 end
+    + case when coalesce(v_row.puntaje_reto, 0) >= 4 then 1 else 0 end;
+
+  update public.calaverita_2026_registros
+     set asistencia_confirmada = true,
+         fecha_confirmacion = coalesce(v_row.fecha_confirmacion, now()),
+         conductor_seguro_estado = case when v_row.conductor_seguro_estado = 'sin_iniciar' then 'en_espera' else v_row.conductor_seguro_estado end,
+         participaciones_activas = v_total,
+         participaciones = v_total
+   where id = p_id
+   returning * into v_row;
+
   return v_row;
 end;
 $$;
