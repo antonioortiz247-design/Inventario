@@ -1,0 +1,86 @@
+-- Ejecutar una sola vez en Supabase SQL Editor para habilitar el formulario de cotización.
+alter table public.calaverita_2026_registros
+  add column if not exists version_vehiculo text,
+  add column if not exists codigo_postal text,
+  add column if not exists uso_vehiculo text,
+  add column if not exists cobertura_interes text,
+  add column if not exists autoriza_contacto_cotizacion boolean not null default false;
+
+drop function if exists public.calaverita_2026_preregistrar(text,text,text,text,text,text,text);
+create function public.calaverita_2026_preregistrar(
+  p_nombre text, p_telefono text, p_correo text, p_municipio text,
+  p_tiene_seguro text, p_aseguradora text default null, p_vencimiento text default null,
+  p_marca text default null, p_modelo text default null, p_anio integer default null,
+  p_version text default null, p_codigo_postal text default null,
+  p_uso_vehiculo text default null, p_cobertura_interes text default null,
+  p_autoriza_contacto boolean default false
+) returns public.calaverita_2026_registros
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_row public.calaverita_2026_registros;
+  v_folio text;
+  v_next bigint;
+  v_phone text := regexp_replace(coalesce(p_telefono,''),'[^0-9]','','g');
+  v_email text := lower(trim(coalesce(p_correo,'')));
+begin
+  if length(trim(coalesce(p_nombre,'')))<2 then raise exception 'Escribe tu nombre completo.'; end if;
+  if length(v_phone)<10 then raise exception 'Escribe un teléfono válido.'; end if;
+  if position('@' in v_email)<2 then raise exception 'Escribe un correo válido.'; end if;
+  if p_tiene_seguro not in ('Sí','No') then raise exception 'Selecciona si cuentas con seguro.'; end if;
+  if coalesce(trim(p_marca),'') = '' then raise exception 'Selecciona la marca del vehículo.'; end if;
+  if coalesce(trim(p_modelo),'') = '' then raise exception 'Escribe el modelo del vehículo.'; end if;
+  if p_anio is null or p_anio < 1980 or p_anio > extract(year from now())::integer + 1 then raise exception 'Selecciona un año modelo válido.'; end if;
+  if coalesce(trim(p_codigo_postal),'') !~ '^[0-9]{5}$' then raise exception 'Escribe un código postal de cinco dígitos.'; end if;
+
+  -- Serialize submissions for the same phone/email to prevent duplicate registrations.
+  perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || least(v_phone,v_email)));
+  perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || greatest(v_phone,v_email)));
+
+  select * into v_row
+  from public.calaverita_2026_registros r
+  where r.preregistrado = true
+    and (
+      regexp_replace(coalesce(r.telefono,''),'[^0-9]','','g') = v_phone
+      or lower(trim(coalesce(r.correo,''))) = v_email
+    )
+  order by r.fecha_preregistro desc nulls last
+  limit 1;
+
+  if found then
+    return v_row;
+  end if;
+
+  perform pg_advisory_xact_lock(hashtext('calaverita_2026_folio_seq'));
+  select coalesce(max(substring(folio from '[0-9]+$')::bigint),0)+1
+    into v_next
+    from public.calaverita_2026_registros
+    where folio like 'ODQRR - %';
+  perform setval('public.calaverita_2026_folio_seq',v_next,false);
+  v_folio := 'ODQRR - ' || lpad(nextval('public.calaverita_2026_folio_seq')::text,4,'0');
+
+  insert into public.calaverita_2026_registros(
+    folio,preregistrado,fecha_preregistro,participacion_preregistro_reservada,
+    asistencia_confirmada,participaciones_activas,codigo_qr,
+    nombre,telefono,correo,municipio,marca,modelo,anio,tiene_seguro,aseguradora,vencimiento,
+    version_vehiculo,codigo_postal,uso_vehiculo,cobertura_interes,autoriza_contacto_cotizacion,
+    tipo_cliente,puntaje_reto,participaciones,interes_cotizacion,estatus_seguimiento
+  ) values (
+    v_folio,true,now(),1,false,0,v_folio,
+    trim(p_nombre),trim(p_telefono),trim(p_correo),trim(p_municipio),trim(p_marca),trim(p_modelo),p_anio,
+    p_tiene_seguro,nullif(p_aseguradora,''),nullif(p_vencimiento,''),
+    nullif(trim(coalesce(p_version,'')),''),trim(p_codigo_postal),nullif(trim(coalesce(p_uso_vehiculo,'')),''),
+    nullif(trim(coalesce(p_cobertura_interes,'')),''),coalesce(p_autoriza_contacto,false),
+    case when p_tiene_seguro='Sí' and p_aseguradora='Quálitas' then 'CLIENTE_VIGENTE'
+         when p_tiene_seguro='Sí' and p_vencimiento in ('Menos de 30 días','30 a 60 días','60 a 90 días') then 'RENOVACION'
+         else 'PROSPECTO' end,
+    0,1,null,'PRERREGISTRADO'
+  ) returning * into v_row;
+  return v_row;
+end;
+$$;
+revoke all on function public.calaverita_2026_preregistrar(text,text,text,text,text,text,text,text,text,integer,text,text,text,text,boolean) from public;
+grant execute on function public.calaverita_2026_preregistrar(text,text,text,text,text,text,text,text,text,integer,text,text,text,text,boolean) to anon, authenticated;
+
+
+notify pgrst, 'reload schema';
