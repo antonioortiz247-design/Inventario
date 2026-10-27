@@ -1,7 +1,7 @@
 {
-  "name": "Calaverita Segura Quálitas 2026",
-  "short_name": "Calaverita 2026",
-  "description": "Registro de asistentes y Reto Conductor Seguro de Quálitas.",
+  "name": "Quálitas Hub",
+  "short_name": "Quálitas Hub",
+  "description": "Gestión de recursos, materiales promocionales, eventos y activaciones de Quálitas.",
   "lang": "es-MX",
   "start_url": "/",
   "scope": "/",
