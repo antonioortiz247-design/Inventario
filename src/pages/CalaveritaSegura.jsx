@@ -99,7 +99,7 @@ export default function CalaveritaSegura() {
             telefono: payload.telefono,
             correo: payload.correo,
             municipio: payload.municipio,
-            marca: payload.marca,
+            marca: payload.tipo_vehiculo === "Motocicleta" ? "Motocicleta · " + payload.marca : payload.marca,
             modelo: payload.modelo,
             anio: payload.anio,
             tiene_seguro: payload.tiene_seguro,
