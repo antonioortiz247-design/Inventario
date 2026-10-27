@@ -3,7 +3,10 @@ import { supabase, supabaseConfigured } from "../lib/supabase";
 
 const field = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 focus:border-[#0096AE] focus:outline-none focus:ring-2 focus:ring-[#0096AE]/20";
 const primary = "rounded-xl bg-[#941B80] px-5 py-3 font-bold text-white hover:bg-[#7e176d] disabled:opacity-50";
-const insurers = ["Quálitas","GNP","AXA","HDI","Banorte","Mapfre","Otra"];\nconst carMakes = ["Audi","BAIC","BMW","Buick","BYD","Chevrolet","Chirey","Chrysler","Dodge","Fiat","Ford","GMC","Honda","Hyundai","JAC","Jeep","Kia","Mazda","Mercedes-Benz","MG","Mitsubishi","Nissan","Peugeot","Renault","SEAT","Subaru","Suzuki","Toyota","Volkswagen","Volvo","Otra"];\nconst carUses = ["Particular","Plataforma de transporte (Uber, DiDi, etc.)","Comercial","Reparto"];\nconst coverageOptions = ["Amplia","Limitada","Responsabilidad civil","No estoy seguro; necesito asesoría"];
+const insurers = ["Quálitas","GNP","AXA","HDI","Banorte","Mapfre","Otra"];
+const carMakes = ["Audi","BAIC","BMW","Buick","BYD","Chevrolet","Chirey","Chrysler","Dodge","Fiat","Ford","GMC","Honda","Hyundai","JAC","Jeep","Kia","Mazda","Mercedes-Benz","MG","Mitsubishi","Nissan","Peugeot","Renault","SEAT","Subaru","Suzuki","Toyota","Volkswagen","Volvo","Otra"];
+const carUses = ["Particular","Plataforma de transporte (Uber, DiDi, etc.)","Comercial","Reparto"];
+const coverageOptions = ["Amplia","Limitada","Responsabilidad civil","No estoy seguro; necesito asesoría"];
 const vencimientos = ["Menos de 30 días","30 a 60 días","60 a 90 días","Más de 90 días"];
 const CONDUCTOR_QUESTIONS = [
   { q: "Después de un accidente, ¿qué debes hacer primero?", a: ["Retirarte del lugar", "Ponerte a salvo y reportar el siniestro", "Llevar el auto al taller por tu cuenta", "Publicarlo en redes"], correct: 1 },
