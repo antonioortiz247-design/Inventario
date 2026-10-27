@@ -96,7 +96,7 @@ begin
   if coalesce(trim(p_marca),'') = '' then raise exception 'Selecciona la marca del vehículo.'; end if;
   if coalesce(trim(p_modelo),'') = '' then raise exception 'Escribe el modelo del vehículo.'; end if;
   if p_anio is null or p_anio < 1980 or p_anio > extract(year from now())::integer + 1 then raise exception 'Selecciona un año modelo válido.'; end if;
-  if coalesce(trim(p_codigo_postal),'') !~ '^[0-9]{5}
+  if coalesce(trim(p_codigo_postal),'') !~ '^[0-9]{5}$' then raise exception 'Escribe un código postal de cinco dígitos.'; end if;
 
   -- Serialize submissions for the same phone/email to prevent duplicate registrations.
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || least(v_phone,v_email)));
@@ -239,8 +239,6 @@ where asistencia_confirmada = true
   and coalesce(participaciones,0) <> coalesce(participaciones_activas,0);
 
 notify pgrst, 'reload schema';
- then raise exception 'Escribe un código postal de cinco dígitos.'; end if;
-
   -- Serialize submissions for the same phone/email to prevent duplicate registrations.
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || least(v_phone,v_email)));
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || greatest(v_phone,v_email)));
@@ -379,8 +377,6 @@ where asistencia_confirmada = true
   and coalesce(participaciones,0) <> coalesce(participaciones_activas,0);
 
 notify pgrst, 'reload schema';
- then raise exception 'Escribe un código postal de cinco dígitos.'; end if;
-
   -- Serialize submissions for the same phone/email to prevent duplicate registrations.
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || least(v_phone,v_email)));
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || greatest(v_phone,v_email)));
@@ -522,8 +518,6 @@ where asistencia_confirmada = true
   and coalesce(participaciones,0) <> coalesce(participaciones_activas,0);
 
 notify pgrst, 'reload schema';
- then raise exception 'Escribe un código postal de cinco dígitos.'; end if;
-
   -- Serialize submissions for the same phone/email to prevent duplicate registrations.
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || least(v_phone,v_email)));
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || greatest(v_phone,v_email)));
