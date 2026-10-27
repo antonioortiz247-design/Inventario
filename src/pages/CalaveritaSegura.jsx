@@ -18,6 +18,7 @@ const cardClass = "rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md
 export default function CalaveritaSegura() {
   const [screen, setScreen] = useState("welcome");
   const [registerStep, setRegisterStep] = useState(0);
+  const [quizStep, setQuizStep] = useState(0);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [form, setForm] = useState({ nombre: "", telefono: "", correo: "", municipio: "", marca: "", modelo: "", anio: "", tiene_seguro: "", aseguradora: "", vencimiento: "", interes_cotizacion: "" });
   const [registro, setRegistro] = useState(null);
@@ -54,6 +55,7 @@ export default function CalaveritaSegura() {
     { key: "telefono", title: "¿Cuál es tu teléfono celular?", subtitle: "Lo usaremos para dar seguimiento a tu participación.", type: "tel", placeholder: "10 dígitos", autocomplete: "tel" },
     { key: "correo", title: "¿Cuál es tu correo electrónico?", subtitle: "Te ayudará a mantener tus datos de contacto actualizados.", type: "email", placeholder: "tucorreo@ejemplo.com", autocomplete: "email" },
     { key: "municipio", title: "¿En qué municipio vives?", subtitle: "Queremos conocer la zona de nuestros participantes.", type: "text", placeholder: "Tu municipio", autocomplete: "address-level2" },
+    { key: "codigo_postal", title: "¿Cuál es tu código postal?", subtitle: "Nos ayuda a identificar tu zona.", type: "text", placeholder: "Ej. 54700", inputMode: "numeric", maxLength: 5, autocomplete: "postal-code" },
     { key: "marca", title: "¿Qué marca es tu vehículo?", subtitle: "Cuéntanos un poco sobre el auto que conduces.", type: "text", placeholder: "Ej. Nissan" },
     { key: "modelo", title: "¿Qué modelo es?", subtitle: "Escribe el modelo de tu vehículo.", type: "text", placeholder: "Ej. Versa" },
     { key: "anio", title: "¿De qué año es tu vehículo?", subtitle: "Selecciona el año modelo.", type: "number", placeholder: "Ej. 2022" },
@@ -189,7 +191,7 @@ export default function CalaveritaSegura() {
   const exportExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(rows.map(r => ({
       "Fecha de registro": r.fecha_registro, "Nombre": r.nombre, "Teléfono": r.telefono, "Correo": r.correo,
-      "Municipio": r.municipio, "Marca": r.marca, "Modelo": r.modelo, "Año": r.anio,
+      "Municipio": r.municipio, "Código postal": r.codigo_postal, "Marca": r.marca, "Modelo": r.modelo, "Año": r.anio,
       "Aseguradora": r.aseguradora, "Vencimiento": r.vencimiento, "Tipo de cliente": r.tipo_cliente,
       "Puntaje del reto": r.puntaje_reto, "Participaciones asignadas": r.participaciones,
       "Interés de cotización": r.interes_cotizacion, "Seguimiento": r.estatus_seguimiento
@@ -233,7 +235,7 @@ export default function CalaveritaSegura() {
         <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-6 h-auto w-full max-w-sm object-contain" />
         <p className="text-sm font-bold uppercase tracking-widest text-[#0096AE]">La Calaverita que Protege</p><h2 className="mt-2 text-3xl font-black text-slate-900 md:text-4xl">Bienvenido</h2>
         <p className="mx-auto mt-3 max-w-xl text-slate-600">Participa en nuestro Reto Conductor Seguro y obtén la oportunidad de ganar una Dashcam.</p>
-        <button onClick={() => { setError(""); setRegisterStep(0); setPrivacyAccepted(false); setScreen("register"); }} className={btnPrimary + " mt-7 min-w-48"}>COMENZAR</button>
+        <button onClick={() => { setError(""); setRegisterStep(0); setPrivacyAccepted(false); setQuizStep(0); setAnswers({}); setScreen("register"); }} className={btnPrimary + " mt-7 min-w-48"}>COMENZAR</button>
       </section>}
 
       {screen === "register" && <section className={cardClass + " mx-auto max-w-2xl"}>
@@ -250,7 +252,7 @@ export default function CalaveritaSegura() {
             <div className="mt-7">
               {registrationSteps[registerStep]?.type === "privacy" ? <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-700"><input type="checkbox" checked={privacyAccepted} onChange={e => setPrivacyAccepted(e.target.checked)} className="mt-1 h-5 w-5 shrink-0 accent-[#941B80]" /><span>Autorizo el tratamiento de mis datos personales para la gestión de este evento y confirmo que he leído el aviso de privacidad de Quálitas. Esta autorización es necesaria para registrar mi participación.</span></label>
               : registrationSteps[registerStep]?.type === "select" ? <div className="grid gap-3 sm:grid-cols-2">{registrationSteps[registerStep].options.map(option => <button type="button" key={option} onClick={() => { setField(registrationSteps[registerStep].key, option); setError(""); }} className={"rounded-2xl border-2 px-4 py-5 text-left text-lg font-bold transition " + (form[registrationSteps[registerStep].key] === option ? "border-[#941B80] bg-purple-50 text-[#941B80]" : "border-slate-200 bg-white text-slate-700 hover:border-[#0096AE] hover:bg-cyan-50")}>{option}{form[registrationSteps[registerStep].key] === option && <span className="float-right">✓</span>}</button>)}</div>
-              : <input autoFocus className={fieldClass + " py-4 text-lg"} value={form[registrationSteps[registerStep].key] || ""} type={registrationSteps[registerStep].type} inputMode={registrationSteps[registerStep].type === "tel" ? "tel" : undefined} autoComplete={registrationSteps[registerStep].autocomplete} placeholder={registrationSteps[registerStep].placeholder} min={registrationSteps[registerStep].type === "number" ? 1950 : undefined} max={registrationSteps[registerStep].type === "number" ? new Date().getFullYear() + 1 : undefined} onChange={e => setField(registrationSteps[registerStep].key, e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (registerStep < registrationSteps.length - 1) nextRegistrationStep(); } }} />}
+              : <input autoFocus className={fieldClass + " py-4 text-lg"} value={form[registrationSteps[registerStep].key] || ""} type={registrationSteps[registerStep].type} inputMode={registrationSteps[registerStep].inputMode || (registrationSteps[registerStep].type === "tel" ? "tel" : undefined)} maxLength={registrationSteps[registerStep].maxLength} autoComplete={registrationSteps[registerStep].autocomplete} placeholder={registrationSteps[registerStep].placeholder} min={registrationSteps[registerStep].type === "number" ? 1950 : undefined} max={registrationSteps[registerStep].type === "number" ? new Date().getFullYear() + 1 : undefined} onChange={e => setField(registrationSteps[registerStep].key, registrationSteps[registerStep].key === "codigo_postal" ? e.target.value.replace(/\\D/g, "").slice(0,5) : e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (registerStep < registrationSteps.length - 1) nextRegistrationStep(); } }} />}
             </div>
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5">
@@ -260,17 +262,33 @@ export default function CalaveritaSegura() {
         </form>
       </section>}
 
-      {screen === "quiz" && <section className={cardClass}>
-        <p className="text-sm font-bold uppercase tracking-widest text-[#0096AE]">Paso 2 de 3</p><h2 className="mt-1 text-2xl font-black text-slate-900">Reto Conductor Seguro</h2><p className="mt-2 text-slate-600">Contesta correctamente y obtén una participación adicional al responder al menos 4 de 5 preguntas.</p>
-        <div className="mt-6 space-y-5">{QUESTIONS.map((q,i)=><fieldset key={q.q} className="rounded-2xl border border-slate-200 p-4"><legend className="px-1 font-bold text-slate-800">{i+1}. {q.q}</legend><div className="mt-3 grid gap-2 sm:grid-cols-2">{q.a.map((a,j)=><label key={a} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm ${Number(answers[i])===j ? "border-[#941B80] bg-purple-50" : "border-slate-200 hover:bg-slate-50"}`}><input type="radio" name={`q${i}`} checked={Number(answers[i])===j} onChange={()=>setAnswers(old=>({...old,[i]:j}))} className="accent-[#941B80]"/>{a}</label>)}</div></fieldset>)}</div>
-        <button disabled={saving || Object.keys(answers).length!==QUESTIONS.length} onClick={finishQuiz} className={btnPrimary + " mt-6"}>{saving ? "Guardando resultado…" : "FINALIZAR RETO"}</button>
+      {screen === "quiz" && <section className={cardClass + " mx-auto max-w-3xl overflow-hidden"}>
+        <div className="rounded-2xl bg-gradient-to-r from-[#941B80] to-[#0096AE] p-5 text-white md:p-7">
+          <div className="flex items-center justify-between gap-3"><span className="rounded-full bg-white/20 px-3 py-1 text-xs font-black uppercase tracking-widest">Misión vial</span><span className="text-sm font-bold">{quizStep + 1} / {QUESTIONS.length}</span></div>
+          <h2 className="mt-4 text-2xl font-black md:text-3xl">Reto Conductor Seguro</h2>
+          <p className="mt-2 text-white/90">Resuelve cada situación vial. Acumula al menos 4 respuestas correctas de 5 para obtener una participación adicional.</p>
+          <div className="mt-5 flex gap-2">{QUESTIONS.map((q,i)=><div key={q.q} className={"h-2 flex-1 rounded-full "+(i<quizStep?"bg-white":i===quizStep?"bg-white/70":"bg-black/20")}/>)}</div>
+        </div>
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 md:p-7">
+          <p className="text-xs font-black uppercase tracking-[.18em] text-[#0096AE]">Situación {quizStep+1}</p>
+          <h3 className="mt-3 text-xl font-black leading-snug text-slate-900 md:text-2xl">{QUESTIONS[quizStep].q}</h3>
+          <p className="mt-2 text-sm text-slate-600">Toca la decisión que tomarías en esta situación.</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">{QUESTIONS[quizStep].a.map((a,j)=>{const chosen=Number(answers[quizStep])===j;const answered=answers[quizStep]!==undefined;const correct=j===QUESTIONS[quizStep].correct;return <button type="button" key={a} disabled={answered} onClick={()=>setAnswers(old=>({...old,[quizStep]:j}))} className={"min-h-20 rounded-2xl border-2 p-4 text-left text-base font-bold transition md:text-lg "+(answered&&correct?"border-emerald-500 bg-emerald-50 text-emerald-800":chosen&&!correct?"border-rose-400 bg-rose-50 text-rose-800":chosen?"border-[#941B80] bg-purple-50 text-[#941B80]":"border-slate-200 bg-white hover:border-[#0096AE] hover:bg-cyan-50")}>
+            <span className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm">{["A","B","C","D"][j]}</span>{a}{answered&&correct?<span className="float-right">✓</span>:null}
+          </button>})}</div>
+          {answers[quizStep]!==undefined&&<div className={"mt-4 rounded-xl p-4 font-semibold "+(Number(answers[quizStep])===QUESTIONS[quizStep].correct?"bg-emerald-50 text-emerald-800":"bg-amber-50 text-amber-900")}>{Number(answers[quizStep])===QUESTIONS[quizStep].correct?"¡Correcto! Buena decisión al volante.":"No es la mejor decisión. La respuesta correcta es: "+QUESTIONS[quizStep].a[QUESTIONS[quizStep].correct]+"."}</div>}
+        </div>
+        <div className="mt-5 flex flex-wrap justify-between gap-3">
+          <button onClick={()=>{setScreen("register");setError("");}} className="rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-600">Salir del reto</button>
+          {quizStep<QUESTIONS.length-1?<button disabled={answers[quizStep]===undefined} onClick={()=>setQuizStep(i=>i+1)} className={btnPrimary}>Siguiente situación →</button>:<button disabled={saving||Object.keys(answers).length!==QUESTIONS.length} onClick={finishQuiz} className={btnPrimary}>{saving?"Guardando resultado…":"Ver resultado del reto"}</button>}
+        </div>
       </section>}
 
       {screen === "summary" && registro && <section className={cardClass + " text-center"}>
         <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-5 h-auto w-full max-w-xs object-contain" /><FaCheckCircle className="mx-auto text-5xl text-[#0096AE]"/><h2 className="mt-4 text-3xl font-black text-slate-900">{Number(registro.puntaje_reto)>=4 ? "¡Felicidades! Has completado el Reto Conductor Seguro." : "¡Gracias por participar!"}</h2>
         <p className="mt-3 text-slate-600">Has quedado registrado para la rifa de una Dashcam.</p>
         <div className="mx-auto mt-6 grid max-w-2xl gap-3 text-left sm:grid-cols-2"><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">Participante</p><p className="mt-1 text-lg font-bold">{registro.nombre}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">Tipo de cliente</p><p className="mt-1 font-bold text-[#941B80]">{registro.tipo_cliente}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-bold uppercase text-slate-500">Resultado del reto</p><p className="mt-1 font-bold">{registro.puntaje_reto}/5 correctas</p></div><div className="rounded-xl bg-purple-50 p-4"><p className="text-xs font-bold uppercase text-[#941B80]">Participaciones asignadas</p><p className="mt-1 text-3xl font-black text-[#941B80]">{registro.participaciones}</p></div></div>
-        <button onClick={()=>{setForm({nombre:"",telefono:"",correo:"",municipio:"",marca:"",modelo:"",anio:"",tiene_seguro:"",aseguradora:"",vencimiento:"",interes_cotizacion:""});setRegisterStep(0);setPrivacyAccepted(false);setRegistro(null);setAnswers({});setNotice("");setScreen("welcome");}} className={btnPrimary+" mt-6"}>REGISTRAR OTRO PARTICIPANTE</button>
+        <button onClick={()=>{setForm({nombre:"",telefono:"",correo:"",municipio:"",marca:"",modelo:"",anio:"",tiene_seguro:"",aseguradora:"",vencimiento:"",interes_cotizacion:""});setRegisterStep(0);setPrivacyAccepted(false);setRegistro(null);setAnswers({});setQuizStep(0);setNotice("");setScreen("welcome");}} className={btnPrimary+" mt-6"}>REGISTRAR OTRO PARTICIPANTE</button>
       </section>}
 
       {screen === "admin" && <section className={cardClass}>
