@@ -77,8 +77,8 @@ export default function Home({ inventario = [], estadisticas, onImport, onNaviga
         <div className="flex flex-wrap gap-4"><ExcelImport onImport={onImport} /><ExcelExport data={inventario} fileName="Inventario_Qualitas" /></div>
       </section>
       <section className="rounded-3xl bg-white p-8 text-center shadow-lg md:p-12">
-        <h3 className="text-2xl font-bold text-[#0096AE]">Bienvenido a Inventario Quálitas</h3>
-        <p className="mt-2 text-gray-600">El inventario y sus indicadores están conectados y se conservan en este navegador.</p>
+        <h3 className="text-2xl font-bold text-[#0096AE]">Bienvenido a Quálitas Hub</h3>
+        <p className="mt-2 text-gray-600">Administra recursos, materiales promocionales, eventos y activaciones desde un solo lugar.</p>
       </section>
     </main>
   );
