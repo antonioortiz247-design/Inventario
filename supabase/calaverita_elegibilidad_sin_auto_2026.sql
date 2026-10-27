@@ -3,6 +3,11 @@
 alter table public.calaverita_2026_registros
   add column if not exists tiene_auto boolean not null default true;
 
+-- Normaliza registros existentes sin automóvil sin borrar información personal ni folios.
+update public.calaverita_2026_registros
+set participaciones_activas = 0
+where tiene_auto = false and coalesce(participaciones_activas, 0) <> 0;
+
 create or replace function public.calaverita_2026_preregistrar(
   p_nombre text, p_telefono text, p_correo text, p_municipio text,
   p_tiene_seguro text default null, p_aseguradora text default null, p_vencimiento text default null,
