@@ -1,6 +1,6 @@
--- Ejecutar en Supabase SQL Editor.
--- Todos los registros reciben folio y una participación visual/reservada.
--- La elegibilidad real para el sorteo debe excluir tiene_auto = false al generar la lista final de participantes.
+-- Ejecutar completo en Supabase SQL Editor.
+-- Genera folio para todos los prerregistros, incluso sin automóvil.
+-- La elegibilidad final debe filtrar tiene_auto = true y asistencia_confirmada = true.
 create or replace function public.calaverita_2026_preregistrar(
   p_nombre text, p_telefono text, p_correo text, p_municipio text,
   p_tiene_seguro text default null, p_aseguradora text default null, p_vencimiento text default null,
@@ -21,9 +21,9 @@ begin
   if (now() at time zone 'America/Mexico_City')::date > date '2026-11-05' then
     raise exception 'El periodo de prerregistro terminó el 5 de noviembre de 2026.';
   end if;
-  if length(trim(coalesce(p_nombre,'')))<2 then raise exception 'Escribe tu nombre completo.'; end if;
-  if length(v_phone)<10 then raise exception 'Escribe un teléfono válido.'; end if;
-  if position('@' in v_email)<2 then raise exception 'Escribe un correo válido.'; end if;
+  if length(trim(coalesce(p_nombre,''))) < 2 then raise exception 'Escribe tu nombre completo.'; end if;
+  if length(v_phone) < 10 then raise exception 'Escribe un teléfono válido.'; end if;
+  if position('@' in v_email) < 2 then raise exception 'Escribe un correo válido.'; end if;
   if p_tiene_auto is null then raise exception 'Selecciona si tienes automóvil.'; end if;
   if p_tiene_auto and p_tiene_seguro not in ('Sí','No') then raise exception 'Selecciona si cuentas con seguro.'; end if;
   if p_tiene_auto and coalesce(trim(p_marca),'') = '' then raise exception 'Selecciona la marca del vehículo.'; end if;
@@ -34,64 +34,40 @@ begin
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || least(v_phone,v_email)));
   perform pg_advisory_xact_lock(hashtext('calaverita_preregistro:' || greatest(v_phone,v_email)));
 
-  select * into v_row from public.calaverita_2026_registros r
-   where regexp_replace(coalesce(r.telefono,''),'[^0-9]','','g') = v_phone
-      or lower(trim(coalesce(r.correo,''))) = v_email
-   order by r.fecha_preregistro desc nulls last limit 1;
+  select * into v_row
+  from public.calaverita_2026_registros r
+  where regexp_replace(coalesce(r.telefono,''),'[^0-9]','','g') = v_phone
+     or lower(trim(coalesce(r.correo,''))) = v_email
+  order by r.fecha_preregistro desc nulls last
+  limit 1;
+
   if found then
-    -- Recupera registros previos que se guardaron sin folio y asígnales uno al volver a consultar.
     if nullif(trim(coalesce(v_row.folio,'')),'') is null then
       perform pg_advisory_xact_lock(hashtext('calaverita_2026_folio_seq'));
-      select coalesce(max(substring(folio from '[0-9]+
-  select coalesce(max(substring(folio from '[0-9]+$')::bigint),0)+1 into v_next
-    from public.calaverita_2026_registros where folio like 'ODQRR - %';
-  perform setval('public.calaverita_2026_folio_seq',v_next,false);
-  v_folio := 'ODQRR - ' || lpad(nextval('public.calaverita_2026_folio_seq')::text,4,'0');
-
-  insert into public.calaverita_2026_registros(
-    folio,preregistrado,fecha_preregistro,participacion_preregistro_reservada,
-    asistencia_confirmada,participaciones_activas,codigo_qr,
-    nombre,telefono,correo,municipio,marca,modelo,anio,tiene_seguro,aseguradora,vencimiento,
-    version_vehiculo,codigo_postal,uso_vehiculo,cobertura_interes,autoriza_contacto_cotizacion,
-    tipo_cliente,puntaje_reto,participaciones,interes_cotizacion,estatus_seguimiento,tiene_auto
-  ) values (
-    v_folio,true,now(),1,false,0,v_folio,
-    trim(p_nombre),trim(p_telefono),trim(p_correo),trim(p_municipio),
-    nullif(trim(coalesce(p_marca,'')),''),nullif(trim(coalesce(p_modelo,'')),''),p_anio,
-    nullif(p_tiene_seguro,''),nullif(p_aseguradora,''),nullif(p_vencimiento,''),
-    nullif(trim(coalesce(p_version,'')),''),nullif(trim(coalesce(p_codigo_postal,'')),''),
-    nullif(trim(coalesce(p_uso_vehiculo,'')),''),nullif(trim(coalesce(p_cobertura_interes,'')),''),coalesce(p_autoriza_contacto,false),
-    case when p_tiene_auto and p_tiene_seguro='Sí' and p_aseguradora='Quálitas' then 'CLIENTE_VIGENTE'
-         when p_tiene_auto and p_tiene_seguro='Sí' and p_vencimiento in ('Menos de 30 días','30 a 60 días','60 a 90 días') then 'RENOVACION'
-         else 'PROSPECTO' end,
-    0,1,null,
-    case when p_tiene_auto then 'PRERREGISTRADO' else 'LEAD_SIN_AUTO' end,p_tiene_auto
-  ) returning * into v_row;
-  return v_row;
-end;
-$$;
-
-revoke all on function public.calaverita_2026_preregistrar(text,text,text,text,text,text,text,text,text,integer,text,text,text,text,boolean,boolean) from public;
-grant execute on function public.calaverita_2026_preregistrar(text,text,text,text,text,text,text,text,text,integer,text,text,text,text,boolean,boolean) to anon, authenticated;
-notify pgrst, 'reload schema';
-)::bigint),0)+1 into v_next
-        from public.calaverita_2026_registros where folio like 'ODQRR - %';
+      select coalesce(max(substring(folio from '[0-9]+$')::bigint),0)+1
+        into v_next
+        from public.calaverita_2026_registros
+       where folio like 'ODQRR - %';
       perform setval('public.calaverita_2026_folio_seq',v_next,false);
       v_folio := 'ODQRR - ' || lpad(nextval('public.calaverita_2026_folio_seq')::text,4,'0');
       update public.calaverita_2026_registros
-         set folio=v_folio, codigo_qr=v_folio,
-             participacion_preregistro_reservada=1,
-             participaciones=greatest(coalesce(participaciones,0),1),
-             participaciones_activas=case when coalesce(tiene_auto,true) then coalesce(participaciones_activas,0) else 0 end,
-             estatus_seguimiento=case when coalesce(tiene_auto,true) then estatus_seguimiento else 'LEAD_SIN_AUTO' end
-       where id=v_row.id returning * into v_row;
+         set folio=v_folio,
+             codigo_qr=v_folio,
+             participacion_preregistro_reservada=case when coalesce(tiene_auto,false) then 1 else 0 end,
+             participaciones=case when coalesce(tiene_auto,false) then greatest(coalesce(participaciones,0),1) else 0 end,
+             participaciones_activas=case when coalesce(tiene_auto,false) then coalesce(participaciones_activas,0) else 0 end,
+             estatus_seguimiento=case when coalesce(tiene_auto,false) then estatus_seguimiento else 'LEAD_SIN_AUTO' end
+       where id=v_row.id
+       returning * into v_row;
     end if;
     return v_row;
   end if;
 
   perform pg_advisory_xact_lock(hashtext('calaverita_2026_folio_seq'));
-  select coalesce(max(substring(folio from '[0-9]+$')::bigint),0)+1 into v_next
-    from public.calaverita_2026_registros where folio like 'ODQRR - %';
+  select coalesce(max(substring(folio from '[0-9]+$')::bigint),0)+1
+    into v_next
+    from public.calaverita_2026_registros
+   where folio like 'ODQRR - %';
   perform setval('public.calaverita_2026_folio_seq',v_next,false);
   v_folio := 'ODQRR - ' || lpad(nextval('public.calaverita_2026_folio_seq')::text,4,'0');
 
@@ -102,7 +78,7 @@ notify pgrst, 'reload schema';
     version_vehiculo,codigo_postal,uso_vehiculo,cobertura_interes,autoriza_contacto_cotizacion,
     tipo_cliente,puntaje_reto,participaciones,interes_cotizacion,estatus_seguimiento,tiene_auto
   ) values (
-    v_folio,true,now(),1,false,0,v_folio,
+    v_folio,true,now(),case when p_tiene_auto then 1 else 0 end,false,0,v_folio,
     trim(p_nombre),trim(p_telefono),trim(p_correo),trim(p_municipio),
     nullif(trim(coalesce(p_marca,'')),''),nullif(trim(coalesce(p_modelo,'')),''),p_anio,
     nullif(p_tiene_seguro,''),nullif(p_aseguradora,''),nullif(p_vencimiento,''),
@@ -111,7 +87,7 @@ notify pgrst, 'reload schema';
     case when p_tiene_auto and p_tiene_seguro='Sí' and p_aseguradora='Quálitas' then 'CLIENTE_VIGENTE'
          when p_tiene_auto and p_tiene_seguro='Sí' and p_vencimiento in ('Menos de 30 días','30 a 60 días','60 a 90 días') then 'RENOVACION'
          else 'PROSPECTO' end,
-    0,1,null,
+    0,case when p_tiene_auto then 1 else 0 end,null,
     case when p_tiene_auto then 'PRERREGISTRADO' else 'LEAD_SIN_AUTO' end,p_tiene_auto
   ) returning * into v_row;
   return v_row;
