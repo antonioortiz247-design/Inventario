@@ -53,8 +53,8 @@ begin
       update public.calaverita_2026_registros
          set folio=v_folio,
              codigo_qr=v_folio,
-             participacion_preregistro_reservada=case when coalesce(tiene_auto,false) then 1 else 0 end,
-             participaciones=case when coalesce(tiene_auto,false) then greatest(coalesce(participaciones,0),1) else 0 end,
+             participacion_preregistro_reservada=1,
+             participaciones=greatest(coalesce(participaciones,0),1),
              participaciones_activas=case when coalesce(tiene_auto,false) then coalesce(participaciones_activas,0) else 0 end,
              estatus_seguimiento=case when coalesce(tiene_auto,false) then estatus_seguimiento else 'LEAD_SIN_AUTO' end
        where id=v_row.id
@@ -78,7 +78,7 @@ begin
     version_vehiculo,codigo_postal,uso_vehiculo,cobertura_interes,autoriza_contacto_cotizacion,
     tipo_cliente,puntaje_reto,participaciones,interes_cotizacion,estatus_seguimiento,tiene_auto
   ) values (
-    v_folio,true,now(),case when p_tiene_auto then 1 else 0 end,false,0,v_folio,
+    v_folio,true,now(),1,false,0,v_folio,
     trim(p_nombre),trim(p_telefono),trim(p_correo),trim(p_municipio),
     nullif(trim(coalesce(p_marca,'')),''),nullif(trim(coalesce(p_modelo,'')),''),p_anio,
     nullif(p_tiene_seguro,''),nullif(p_aseguradora,''),nullif(p_vencimiento,''),
@@ -87,7 +87,7 @@ begin
     case when p_tiene_auto and p_tiene_seguro='Sí' and p_aseguradora='Quálitas' then 'CLIENTE_VIGENTE'
          when p_tiene_auto and p_tiene_seguro='Sí' and p_vencimiento in ('Menos de 30 días','30 a 60 días','60 a 90 días') then 'RENOVACION'
          else 'PROSPECTO' end,
-    0,case when p_tiene_auto then 1 else 0 end,null,
+    0,1,null,
     case when p_tiene_auto then 'PRERREGISTRADO' else 'LEAD_SIN_AUTO' end,p_tiene_auto
   ) returning * into v_row;
   return v_row;
