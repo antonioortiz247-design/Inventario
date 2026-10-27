@@ -223,10 +223,7 @@ export default function CalaveritaSegura() {
         <button onClick={() => setScreen("welcome")} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#941B80] hover:bg-purple-50"><FaArrowLeft/> Salir al inicio</button>
         <button onClick={() => { setScreen("admin"); setError(""); }} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"><FaLock/> Administración</button>
       </div>
-      <header className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-[#941B80] to-[#0096AE] p-6 text-white shadow-lg md:p-8">
-        <div className="flex items-center gap-4"><div className="flex shrink-0 items-center rounded-xl bg-white p-2"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-auto w-40 object-contain md:w-56" /></div><div><p className="text-xs font-bold uppercase tracking-[.2em] text-white/80">Quálitas · 30 de octubre de 2026</p><h1 className="mt-1 text-2xl font-black md:text-4xl">CALAVERITA SEGURA</h1><p className="mt-1 text-white/90">Evento de fidelización y seguridad vial · 14:30–18:00 h</p></div></div>
-        <p className="mt-3 text-sm text-white/90">Plaza San Diego · Cuautitlán, Estado de México</p>
-      </header>
+      <header className="mb-6 overflow-hidden rounded-3xl bg-white shadow-lg"><img src="/calaverita-whatsapp.png" alt="Calaverita Segura 2026" className="block h-auto w-full object-cover" /></header>
 
       {error && <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
       {notice && <div role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{notice}</div>}
