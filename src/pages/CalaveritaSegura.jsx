@@ -4,11 +4,11 @@ import { FaArrowLeft, FaCheckCircle, FaDownload, FaLock, FaTrophy, FaUsers, FaSy
 import * as XLSX from "xlsx";
 
 const QUESTIONS = [
-  { q: "¿Qué es lo primero que debe hacer un conductor después de un accidente?", a: ["Retirarse", "Reportar el siniestro", "Llamar a un taller", "Seguir circulando"], correct: 1 },
-  { q: "¿Cuál es el principal beneficio de contar con seguro?", a: ["Evitar multas", "Protección financiera", "Menor consumo de gasolina", "Menos verificaciones"], correct: 1 },
-  { q: "¿Qué información debe proporcionarse al reportar un siniestro?", a: ["Sólo nombre", "Sólo placas", "Datos del evento y póliza", "Ninguna"], correct: 2 },
-  { q: "¿Qué documento acredita la protección de un vehículo?", a: ["INE", "Factura", "Póliza de seguro", "Tarjeta bancaria"], correct: 2 },
-  { q: "¿Cuál es una práctica segura de conducción?", a: ["Usar el celular", "Mantener distancia", "Rebasar por la derecha", "Frenar bruscamente"], correct: 1 },
+  { q: "Circulas bajo lluvia intensa y el vehículo comienza a perder adherencia sobre el agua. ¿Qué acción es más segura?", a: ["Frenar a fondo y girar bruscamente", "Acelerar para atravesar el agua rápido", "Soltar suavemente el acelerador, mantener el volante firme y evitar maniobras bruscas", "Activar las luces altas y cambiar de carril de inmediato"], correct: 2 },
+  { q: "Llegas a un cruce sin semáforo al mismo tiempo que otro vehículo. No hay señalamiento que te dé preferencia. ¿Qué debes hacer?", a: ["Acelerar para pasar primero", "Reducir la velocidad, observar y ceder el paso cuando corresponda para cruzar sin riesgo", "Usar el claxon y continuar sin detenerte", "Suponer que el vehículo más grande tiene preferencia"], correct: 1 },
+  { q: "Después de un choque sin lesiones aparentes, el otro conductor te propone pagar en efectivo y retirarse sin intercambiar datos. ¿Qué es lo más prudente?", a: ["Aceptar siempre para evitar trámites", "Retirarte si el daño parece pequeño", "Mantener la calma, documentar los datos del incidente y reportarlo a tu aseguradora siguiendo sus indicaciones", "Publicar sus placas en redes antes de hablar con tu aseguradora"], correct: 2 },
+  { q: "Tu distancia respecto al vehículo de adelante parece suficiente en seco, pero empieza a llover. ¿Cómo debes ajustar tu conducción?", a: ["Conservar la misma distancia si respetas el límite de velocidad", "Aumentar la distancia de seguimiento y reducir la velocidad según las condiciones", "Acercarte para que otros no se metan", "Frenar repetidamente para comprobar la adherencia"], correct: 1 },
+  { q: "Al reportar un siniestro, no recuerdas un dato exacto y el operador te lo solicita. ¿Qué debes hacer?", a: ["Adivinar para agilizar el reporte", "Dar la versión de la otra persona como si la hubieras visto", "Explicar qué dato desconoces y proporcionar información verificable de la póliza y del incidente", "Colgar y esperar a que la aseguradora encuentre todos los datos"], correct: 2 },
 ];
 const insurers = ["Quálitas", "GNP", "AXA", "HDI", "Banorte", "Mapfre", "Otra"];
 const fieldClass = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-slate-800 outline-none focus:border-[#0096AE] focus:ring-2 focus:ring-[#0096AE]/20";
