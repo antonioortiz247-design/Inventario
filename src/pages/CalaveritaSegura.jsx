@@ -20,7 +20,7 @@ export default function CalaveritaSegura() {
   const [registerStep, setRegisterStep] = useState(0);
   const [quizStep, setQuizStep] = useState(0);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
-  const [form, setForm] = useState({ nombre: "", telefono: "", correo: "", municipio: "", marca: "", modelo: "", anio: "", tiene_seguro: "", aseguradora: "", vencimiento: "", interes_cotizacion: "" });
+  const [form, setForm] = useState({ nombre: "", telefono: "", correo: "", municipio: "", tipo_vehiculo: "Automóvil", marca: "", modelo: "", anio: "", tiene_seguro: "", aseguradora: "", vencimiento: "", interes_cotizacion: "" });
   const [registro, setRegistro] = useState(null);
   const [answers, setAnswers] = useState({});
   const [saving, setSaving] = useState(false);
@@ -56,7 +56,8 @@ export default function CalaveritaSegura() {
     { key: "correo", title: "¿Cuál es tu correo electrónico?", subtitle: "Te ayudará a mantener tus datos de contacto actualizados.", type: "email", placeholder: "tucorreo@ejemplo.com", autocomplete: "email" },
     { key: "municipio", title: "¿En qué municipio vives?", subtitle: "Queremos conocer la zona de nuestros participantes.", type: "text", placeholder: "Tu municipio", autocomplete: "address-level2" },
     { key: "codigo_postal", title: "¿Cuál es tu código postal?", subtitle: "Nos ayuda a identificar tu zona.", type: "text", placeholder: "Ej. 54700", inputMode: "numeric", maxLength: 5, autocomplete: "postal-code" },
-    { key: "marca", title: "¿Qué marca es tu vehículo?", subtitle: "Cuéntanos un poco sobre el auto que conduces.", type: "text", placeholder: "Ej. Nissan" },
+    { key: "tipo_vehiculo", title: "¿Qué tipo de vehículo tienes?", subtitle: "También participan las personas que tienen motocicleta.", type: "select", options: ["Automóvil", "Motocicleta"] },
+    { key: "marca", title: form.tipo_vehiculo === "Motocicleta" ? "¿Qué marca es tu motocicleta?" : "¿Qué marca es tu automóvil?", subtitle: "Cuéntanos un poco sobre tu vehículo.", type: "text", placeholder: form.tipo_vehiculo === "Motocicleta" ? "Ej. Italika, Honda, Yamaha" : "Ej. Nissan" },
     { key: "modelo", title: "¿Qué modelo es?", subtitle: "Escribe el modelo de tu vehículo.", type: "text", placeholder: "Ej. Versa" },
     { key: "anio", title: "¿De qué año es tu vehículo?", subtitle: "Selecciona el año modelo.", type: "number", placeholder: "Ej. 2022" },
     { key: "tiene_seguro", title: "¿Tu vehículo cuenta con seguro actualmente?", subtitle: "Elige la opción que corresponda.", type: "select", options: ["Sí", "No"] },
