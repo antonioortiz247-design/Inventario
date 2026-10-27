@@ -48,15 +48,12 @@ begin
   limit 1;
   if found then return v_row; end if;
 
-  if p_tiene_auto then
-    perform pg_advisory_xact_lock(hashtext('calaverita_2026_folio_seq'));
+  perform pg_advisory_xact_lock(hashtext('calaverita_2026_folio_seq'));
     select coalesce(max(substring(folio from '[0-9]+$')::bigint),0)+1 into v_next
       from public.calaverita_2026_registros where folio like 'ODQRR - %';
     perform setval('public.calaverita_2026_folio_seq',v_next,false);
     v_folio := 'ODQRR - ' || lpad(nextval('public.calaverita_2026_folio_seq')::text,4,'0');
-  else
-    v_folio := null;
-  end if;
+
 
   insert into public.calaverita_2026_registros(
     folio,preregistrado,fecha_preregistro,participacion_preregistro_reservada,
@@ -74,7 +71,7 @@ begin
     case when p_tiene_auto and p_tiene_seguro='Sí' and p_aseguradora='Quálitas' then 'CLIENTE_VIGENTE'
          when p_tiene_auto and p_tiene_seguro='Sí' and p_vencimiento in ('Menos de 30 días','30 a 60 días','60 a 90 días') then 'RENOVACION'
          else 'PROSPECTO' end,
-    0,case when p_tiene_auto then 1 else 0 end,null,
+    0,1,null,
     case when p_tiene_auto then 'PRERREGISTRADO' else 'LEAD_SIN_AUTO' end,p_tiene_auto
   ) returning * into v_row;
   return v_row;
@@ -92,20 +89,19 @@ begin
   if auth.uid() is null then raise exception 'Se requiere iniciar sesión como staff.'; end if;
   select * into v_row from public.calaverita_2026_registros where id=p_id for update;
   if not found then raise exception 'Participante no encontrado'; end if;
-  if coalesce(v_row.tiene_auto,true)=false then raise exception 'Este registro no está habilitado para confirmación de asistencia.'; end if;
   if v_row.asistencia_confirmada then return v_row; end if;
   update public.calaverita_2026_registros
   set asistencia_confirmada=true,
       fecha_confirmacion=coalesce(fecha_confirmacion,now()),
-      conductor_seguro_estado=case when conductor_seguro_estado='sin_iniciar' then 'en_espera' else conductor_seguro_estado end,
-      participaciones_activas=greatest(coalesce(participaciones_activas,0),1)
+      conductor_seguro_estado=case when coalesce(tiene_auto,true) and conductor_seguro_estado='sin_iniciar' then 'en_espera' else conductor_seguro_estado end,
+      participaciones_activas=case when coalesce(tiene_auto,true)=false then 0 else greatest(coalesce(participaciones_activas,0),1)
         + case when preregistrado and coalesce(participacion_preregistro_reservada,0)>0 then 1 else 0 end
         + case when tipo_cliente='CLIENTE_VIGENTE' then 1 when tipo_cliente='RENOVACION' then 2 else 0 end
-        + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end,
-      participaciones=greatest(coalesce(participaciones_activas,0),1)
+        + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end end,
+      participaciones=case when coalesce(tiene_auto,true)=false then greatest(coalesce(participaciones,1),1) else greatest(coalesce(participaciones_activas,0),1)
         + case when preregistrado and coalesce(participacion_preregistro_reservada,0)>0 then 1 else 0 end
         + case when tipo_cliente='CLIENTE_VIGENTE' then 1 when tipo_cliente='RENOVACION' then 2 else 0 end
-        + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end
+        + case when coalesce(puntaje_reto,0)>=4 then 1 else 0 end end
   where id=p_id returning * into v_row;
   return v_row;
 end;
