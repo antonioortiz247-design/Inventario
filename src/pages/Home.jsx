@@ -29,32 +29,32 @@ export default function Home({ inventario = [], estadisticas, onImport, onNaviga
         stockBajo={estadisticas?.stockBajo ?? 0}
         stockCritico={estadisticas?.stockCritico ?? 0}
       />
-      <section className="rounded-3xl bg-white p-5 shadow-lg md:p-6">
+      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div><p className="text-sm font-semibold uppercase tracking-wider text-[#0096AE]">Agenda</p><h2 className="mt-1 text-2xl font-bold text-[#941B80]">Próximos eventos</h2><p className="mt-1 text-sm text-slate-500">Eventos pendientes y confirmados a partir de hoy.</p></div>
-          <button type="button" onClick={() => onNavigate?.("eventos")} className="rounded-xl bg-[#941B80] px-4 py-2.5 font-semibold text-white">Administrar eventos</button>
+          <button type="button" onClick={() => onNavigate?.("eventos")} className="rounded-md bg-[#941880] px-4 py-2.5 font-semibold text-white hover:bg-[#7A1369]">Administrar eventos</button>
         </div>
-        {proximosEventos.length === 0 ? <p className="mt-4 rounded-xl border border-dashed border-slate-300 p-5 text-center text-slate-500">No hay próximos eventos registrados.</p> : <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{proximosEventos.map((evento) => <button key={evento.id} type="button" onClick={() => onNavigate?.("eventos")} className="rounded-2xl border border-slate-200 p-4 text-left hover:border-[#0096AE] hover:bg-slate-50"><div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-slate-800">{evento.nombre}</h3><span className="shrink-0 rounded-full bg-sky-100 px-2 py-1 text-xs font-semibold text-sky-800">{({ borrador: "Borrador", confirmado: "Confirmado", en_curso: "En curso" })[evento.estado] || evento.estado}</span></div><p className="mt-2 text-sm font-medium text-[#941B80]">{evento.fecha_evento}</p><p className="mt-1 text-sm text-slate-500">{evento.ubicacion || "Ubicación por definir"}</p><p className="mt-1 text-xs text-slate-500">Responsable: {evento.responsable || "Sin asignar"}</p></button>)}</div>}
+        {proximosEventos.length === 0 ? <p className="mt-4 rounded-md border border-dashed border-slate-300 p-5 text-center text-slate-500">No hay próximos eventos registrados.</p> : <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">{proximosEventos.map((evento) => <button key={evento.id} type="button" onClick={() => onNavigate?.("eventos")} className="rounded-md border border-slate-200 p-4 text-left hover:border-[#0096AE] hover:bg-slate-50"><div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-slate-800">{evento.nombre}</h3><span className="shrink-0 rounded-md bg-[#E6F7FA] px-2 py-1 text-xs font-semibold text-[#006B7D]">{({ borrador: "Borrador", confirmado: "Confirmado", en_curso: "En curso" })[evento.estado] || evento.estado}</span></div><p className="mt-2 text-sm font-medium text-[#941B80]">{evento.fecha_evento}</p><p className="mt-1 text-sm text-slate-500">{evento.ubicacion || "Ubicación por definir"}</p><p className="mt-1 text-xs text-slate-500">Responsable: {evento.responsable || "Sin asignar"}</p></button>)}</div>}
       </section>
-      <section className="rounded-3xl bg-white p-5 shadow-lg md:p-6">
+      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wider text-[#0096AE]">Prevención de faltantes</p>
             <h2 className="mt-1 text-2xl font-bold text-[#941B80]">Alertas de existencias</h2>
             <p className="mt-1 text-sm text-slate-500">Se consideran en alerta los artículos cuya cantidad es igual o inferior a su stock mínimo.</p>
           </div>
-          <span className={`rounded-full px-3 py-1 text-sm font-semibold ${alertas.length ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
+          <span className={`rounded-md px-3 py-1 text-sm font-semibold ${alertas.length ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
             {alertas.length} por revisar
           </span>
         </div>
         {alertas.length === 0 ? (
-          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
+          <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
             Todas las existencias están por encima del mínimo configurado.
           </div>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+          <div className="mt-4 overflow-x-auto rounded-md border border-slate-200">
             <table className="w-full min-w-[560px] text-left text-sm">
-              <thead><tr className="bg-[#143B46] text-white"><th className="p-3">Artículo</th><th className="p-3">Ubicación</th><th className="p-3">Existencia</th><th className="p-3">Stock mínimo</th><th className="p-3">Estado</th></tr></thead>
+              <thead><tr className="bg-slate-50 text-slate-700"><th className="p-3">Artículo</th><th className="p-3">Ubicación</th><th className="p-3">Existencia</th><th className="p-3">Stock mínimo</th><th className="p-3">Estado</th></tr></thead>
               <tbody>{alertas.map((item) => {
                 const cantidad = Number(item.cantidad || 0);
                 const minimo = Number(item.stockMinimo ?? item.stock_minimo ?? 10);
@@ -70,13 +70,13 @@ export default function Home({ inventario = [], estadisticas, onImport, onNaviga
             </table>
           </div>
         )}
-        <button type="button" onClick={() => onNavigate?.("inventario")} className="mt-4 rounded-xl bg-[#941B80] px-4 py-2.5 font-semibold text-white hover:bg-[#762067]">Revisar inventario</button>
+        <button type="button" onClick={() => onNavigate?.("inventario")} className="mt-4 rounded-md bg-[#941880] px-4 py-2.5 font-semibold text-white hover:bg-[#7A1369] hover:bg-[#762067]">Revisar inventario</button>
       </section>
-      <section className="rounded-3xl bg-white p-5 shadow-lg md:p-6">
+      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <h2 className="mb-4 text-xl font-bold text-[#941B80]">Herramientas</h2>
         <div className="flex flex-wrap gap-4"><ExcelImport onImport={onImport} /><ExcelExport data={inventario} fileName="Inventario_Qualitas" /></div>
       </section>
-      <section className="rounded-3xl bg-white p-8 text-center shadow-lg md:p-12">
+      <section className="rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm md:p-10">
         <h3 className="text-2xl font-bold text-[#0096AE]">Bienvenido a Quálitas Hub</h3>
         <p className="mt-2 text-gray-600">Administra recursos, materiales promocionales, eventos y activaciones desde un solo lugar.</p>
       </section>
