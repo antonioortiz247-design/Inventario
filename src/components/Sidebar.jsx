@@ -3,7 +3,14 @@ import {
   FaChartBar,
   FaCog,
   FaHome,
-  FaQrcode,
+  FaExchangeAlt,
+  FaCalendarAlt,
+  FaCalculator,
+  FaBullseye,
+  FaClipboardList,
+  FaSkull,
+  FaTicketAlt,
+  FaCamera,
 } from "react-icons/fa";
 
 export default function Sidebar({
@@ -11,35 +18,22 @@ export default function Sidebar({
   onNavigate,
 }) {
   const menu = [
-    {
-      id: "inicio",
-      label: "Inicio",
-      icon: <FaHome />,
-    },
-    {
-      id: "inventario",
-      label: "Inventario",
-      icon: <FaBoxes />,
-    },
-    {
-      id: "escaner",
-      label: "Escáner QR",
-      icon: <FaQrcode />,
-    },
-    {
-      id: "reportes",
-      label: "Reportes",
-      icon: <FaChartBar />,
-    },
-    {
-      id: "configuracion",
-      label: "Configuración",
-      icon: <FaCog />,
-    },
+    { id: "inicio", label: "Inicio", icon: <FaHome /> },
+    { id: "inventario", label: "Inventario", icon: <FaBoxes /> },
+    { id: "movimientos", label: "Entradas y salidas", icon: <FaExchangeAlt /> },
+    { id: "eventos", label: "Modo evento", icon: <FaCalendarAlt /> },
+    { id: "ruleta", label: "Ruleta de activaciones", icon: <FaBullseye /> },
+    { id: "registros-ruleta", label: "Registros de ruleta", icon: <FaClipboardList /> },
+    { id: "calaverita-segura", label: "Calaverita Segura 2026", icon: <FaSkull /> },
+    { id: "calaverita-preregistro", label: "Prerregistro Calaverita", icon: <FaTicketAlt /> },
+    { id: "simulador", label: "Simulador", icon: <FaCalculator /> },
+    { id: "buscar-imagen", label: "Buscar por imagen", icon: <FaCamera /> },
+    { id: "reportes", label: "Reportes", icon: <FaChartBar /> },
+    { id: "configuracion", label: "Configuración", icon: <FaCog /> },
   ];
 
   return (
-    <aside className="w-72 min-h-screen border-r border-slate-800 bg-slate-900 text-white">
+    <aside className="flex min-h-screen max-h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-slate-800 bg-slate-900 text-white lg:w-72">
       <div className="border-b border-slate-800 px-5 py-6">
         <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mb-4 w-full max-w-[210px] object-contain object-left" />
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-300">Inventario y Oficina</p>
