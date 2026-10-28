@@ -10,15 +10,15 @@ export default {
       colors: {
         qualitas: {
           morado: "#941B80",
-          "morado-claro": "#D12893",
-          "morado-suave": "#9279BA",
-          "morado-oscuro": "#692D80",
+          "morado-claro": "#FDF2FA",
+          "morado-suave": "#FDF2FA",
+          "morado-oscuro": "#7A1369",
           "morado-profundo": "#512950",
 
           aqua: "#0096AE",
-          "aqua-claro": "#46B8E9",
-          "aqua-medio": "#0F98D7",
-          "aqua-oscuro": "#037081",
+          "aqua-claro": "#E6F7FA",
+          "aqua-medio": "#0096AE",
+          "aqua-oscuro": "#007A8E",
           "aqua-profundo": "#143B46",
         },
       },
@@ -29,12 +29,12 @@ export default {
       },
 
       borderRadius: {
-        qualitas: "24px",
+        qualitas: "8px",
       },
 
       boxShadow: {
         qualitas:
-          "0 8px 30px rgba(0, 0, 0, 0.15)",
+          "0 1px 2px rgba(15, 23, 42, 0.06)",
       },
     },
   },
