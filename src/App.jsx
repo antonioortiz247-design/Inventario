@@ -72,7 +72,7 @@ function App() {
         <header className="hidden h-16 items-center justify-between border-b border-slate-200 bg-white px-8 md:flex">
           <div className="flex items-center gap-3">
             <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="h-9 w-auto object-contain" />
-            <h1 className="text-lg font-semibold tracking-tight text-slate-800">Quálitas Hub</h1>
+            <h1 className="text-lg font-semibold tracking-tight text-slate-800">Hub</h1>
           </div>
           <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Gestión de recursos y activaciones</span>
         </header>
