@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   FaBars,
-  FaChevronLeft,
   FaChevronRight,
   FaBoxes,
   FaChartBar,
