@@ -1,197 +1,24 @@
-/* Cards */
-
-.card {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  transition: var(--transition-normal);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-/* Buttons */
-
-.btn {
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-.btn-primary {
-  background: var(--qualitas-morado);
-  color: var(--text-light);
-}
-
-.btn-primary:hover {
-  background: var(--qualitas-morado-oscuro);
-}
-
-.btn-secondary {
-  background: var(--qualitas-aqua);
-  color: var(--text-light);
-}
-
-.btn-secondary:hover {
-  background: var(--qualitas-aqua-oscuro);
-}
-
-.btn-danger {
-  background: #dc2626;
-  color: white;
-}
-
-.btn-danger:hover {
-  background: #b91c1c;
-}
-
-/* Inputs */
-
-.input {
-  width: 100%;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  outline: none;
-  transition: var(--transition-fast);
-}
-
-.input:focus {
-  border-color: var(--qualitas-aqua);
-  box-shadow: 0 0 0 3px rgba(0, 150, 174, 0.15);
-}
-
-/* Dashboard */
-
-.dashboard-card {
-  color: white;
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-md);
-}
-
-.dashboard-card h2 {
-  font-size: 0.95rem;
-  opacity: 0.9;
-}
-
-.dashboard-card .value {
-  font-size: 2.5rem;
-  font-weight: 700;
-}
-
-/* Tables */
-
-.table-container {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table thead {
-  background: var(--qualitas-aqua-profundo);
-  color: white;
-}
-
-.table th,
-.table td {
-  padding: 1rem;
-  text-align: left;
-}
-
-.table tbody tr {
-  border-bottom: 1px solid var(--border-color);
-}
-
-.table tbody tr:hover {
-  background: #f8fafc;
-}
-
-/* Status */
-
-.status-success {
-  color: var(--status-success);
-}
-
-.status-warning {
-  color: var(--status-warning);
-}
-
-.status-danger {
-  color: var(--status-danger);
-}
-
-/* Images */
-
-.inventory-image {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-}
-
-.image-preview {
-  width: 220px;
-  height: 220px;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  border: 4px solid var(--qualitas-aqua);
-}
-
-/* Sidebar */
-
-.sidebar {
-  background: var(--qualitas-aqua-profundo);
-  color: white;
-  min-height: 100vh;
-}
-
-.sidebar-item {
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-.sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.sidebar-item.active {
-  background: var(--qualitas-aqua);
-}
-
-/* Header */
-
-.header-gradient {
-  background: var(--qualitas-gradient);
-  color: white;
-}
-
-/* QR */
-
-.qr-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-}
-
-/* Responsive */
-
-@media (max-width: 768px) {
-  .dashboard-card .value {
-    font-size: 2rem;
-  }
-
-  .image-preview {
-    width: 100%;
-    height: auto;
-  }
-}
+/* Quálitas corporate UI components */
+.card{background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:8px;box-shadow:var(--shadow-sm);transition:border-color var(--transition-fast)}
+.card:hover{border-color:#CBD5E1}
+.btn{border:1px solid transparent;cursor:pointer;font-weight:600;border-radius:6px;min-height:2.5rem;padding:.625rem 1rem;transition:background-color var(--transition-fast),border-color var(--transition-fast)}
+.btn-primary{background:#941880;color:#fff}.btn-primary:hover{background:#7A1369}
+.btn-secondary{background:#0096AE;color:#fff}.btn-secondary:hover{background:#007A8E}
+.btn-outline{background:#fff;color:#941880;border-color:#941880}.btn-outline:hover{background:#FDF2FA}
+.btn-danger{background:#B91C1C;color:#fff}.btn-danger:hover{background:#991B1B}
+.input{width:100%;min-height:2.5rem;padding:.625rem .75rem;border:1px solid #CBD5E1;border-radius:6px;background:#fff;color:#0F172A;outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast)}
+.input:focus{border-color:#941880;box-shadow:0 0 0 2px rgba(148,24,128,.2)}
+.dashboard-card{color:#0F172A;background:#fff;border:1px solid #E2E8F0;border-top:3px solid #941880;border-radius:8px;padding:1.125rem;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.dashboard-card h2{font-size:.875rem;font-weight:600;color:#475569}.dashboard-card .value{font-size:2rem;font-weight:700;color:#0F172A}
+.table-container{overflow-x:auto;border:1px solid #E2E8F0;border-radius:8px}.table{width:100%;border-collapse:collapse}
+.table thead{background:#F8FAFC;color:#334155}.table th,.table td{padding:.625rem .75rem;text-align:left;border-bottom:1px solid #E2E8F0}
+.table th{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.035em}.table tbody tr:hover{background:#F8FAFC}
+.status-success{color:#166534}.status-warning{color:#854D0E}.status-danger{color:#991B1B}
+.inventory-image{width:100%;height:220px;object-fit:cover;border-radius:6px}
+.image-preview{width:220px;height:220px;object-fit:cover;border-radius:6px;border:1px solid #CBD5E1}
+.sidebar{background:#0F172A;color:#fff;min-height:100vh;border-right:1px solid #1E293B}
+.sidebar-item{padding:.625rem .75rem;border-radius:6px;transition:background-color var(--transition-fast)}
+.sidebar-item:hover{background:rgba(255,255,255,.06)}.sidebar-item.active{background:#941880;color:#fff;font-weight:600}
+.header-gradient{background:#fff;color:#0F172A;border-bottom:1px solid #E2E8F0}
+.qr-container{display:flex;justify-content:center;align-items:center;padding:1rem}
+@media(max-width:768px){.dashboard-card .value{font-size:1.75rem}.image-preview{width:100%;height:auto}}
