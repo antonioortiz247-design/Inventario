@@ -40,18 +40,13 @@ export default function Sidebar({
 
   return (
     <aside className="w-72 min-h-screen border-r border-slate-800 bg-slate-900 text-white">
-      <div className="p-6 border-b border-white/10">
-        <h2 className="text-2xl font-bold">
-          Quálitas
-        </h2>
-
-        <p className="text-sm text-white/70">
-          Inventario de Promocionales
-        </p>
+      <div className="border-b border-slate-800 px-5 py-6">
+        <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mb-4 w-full max-w-[210px] object-contain object-left" />
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-300">Inventario y Oficina</p>
       </div>
 
-      <nav className="p-4">
-        <ul className="space-y-2">
+      <nav className="p-3">
+        <ul className="space-y-1">
           {menu.map((item) => (
             <li key={item.id}>
               <button
@@ -64,8 +59,8 @@ export default function Sidebar({
                   gap-3
                   px-4
                   py-3
-                  rounded-xl
-                  transition
+                  rounded-md
+                  transition-colors duration-150
                   ${
                     currentPage === item.id
                       ? "bg-[#941880] text-white font-medium"
