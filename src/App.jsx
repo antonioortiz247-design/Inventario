@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaBars } from "react-icons/fa";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import Inventario from "./pages/Inventario";
@@ -18,6 +19,8 @@ import { getInventory, saveInventory } from "./services/inventory.service";
 function App() {
   const publicPreregistro = new URLSearchParams(window.location.search).get("pagina") === "calaverita-preregistro";
   const [currentPage, setCurrentPage] = useState(publicPreregistro ? "calaverita-preregistro" : "inicio");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [touchStartX, setTouchStartX] = useState(null);
   const inventory = useInventory();
   const handleImport = async (data) => {
     const actuales = await getInventory();
@@ -47,11 +50,38 @@ function App() {
   return publicPreregistro ? (
     <div className="min-h-screen bg-slate-100">{renderPage()}</div>
   ) : (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
+    <div
+      className="flex min-h-screen bg-slate-50"
+      onTouchStart={(event) => setTouchStartX(event.changedTouches[0]?.clientX ?? null)}
+      onTouchEnd={(event) => {
+        if (touchStartX === null) return;
+        const endX = event.changedTouches[0]?.clientX ?? touchStartX;
+        const deltaX = endX - touchStartX;
+        if (touchStartX <= 32 && deltaX > 70) setMobileSidebarOpen(true);
+        if (mobileSidebarOpen && deltaX < -70) setMobileSidebarOpen(false);
+        setTouchStartX(null);
+      }}
+    >
+      <Sidebar
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
+      />
       <div className="min-w-0 flex-1">
+        <div className="sticky top-0 z-30 flex h-14 items-center border-b border-slate-200 bg-white/95 px-4 backdrop-blur md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileSidebarOpen(true)}
+            aria-label="Abrir menú"
+            className="flex h-10 w-10 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0096AE]"
+          >
+            <FaBars className="text-xl" />
+          </button>
+          <span className="ml-2 text-sm font-semibold text-slate-800">Quálitas Hub</span>
+        </div>
         {inventory.error && (
-          <div className="mx-auto max-w-7xl px-6 pt-4">
+          <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
             <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">{inventory.error}</div>
           </div>
         )}
