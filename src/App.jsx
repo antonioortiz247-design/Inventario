@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import Inventario from "./pages/Inventario";
 import BuscarImagen from "./pages/BuscarImagen";
@@ -44,6 +44,20 @@ function App() {
       default: return <Home inventario={inventory.items} estadisticas={inventory.estadisticas} onImport={handleImport} onNavigate={setCurrentPage} />;
     }
   };
-  return <div className="min-h-screen bg-slate-100">{!publicPreregistro && <Header currentPage={currentPage} onNavigate={setCurrentPage} />}{inventory.error && <div className="mx-auto max-w-7xl px-6 pt-4"><div className="rounded-xl bg-red-50 border border-red-200 text-red-700 p-4">{inventory.error}</div></div>}{renderPage()}</div>;
+  return publicPreregistro ? (
+    <div className="min-h-screen bg-slate-100">{renderPage()}</div>
+  ) : (
+    <div className="flex min-h-screen bg-slate-50">
+      <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
+      <div className="min-w-0 flex-1">
+        {inventory.error && (
+          <div className="mx-auto max-w-7xl px-6 pt-4">
+            <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">{inventory.error}</div>
+          </div>
+        )}
+        {renderPage()}
+      </div>
+    </div>
+  );
 }
 export default App;
