@@ -39,7 +39,7 @@ export default function Sidebar({
   ];
 
   return (
-    <aside className="w-72 min-h-screen bg-[#143B46] text-white shadow-xl">
+    <aside className="w-72 min-h-screen border-r border-slate-800 bg-slate-900 text-white">
       <div className="p-6 border-b border-white/10">
         <h2 className="text-2xl font-bold">
           Quálitas
@@ -68,8 +68,8 @@ export default function Sidebar({
                   transition
                   ${
                     currentPage === item.id
-                      ? "bg-[#0096AE] text-white"
-                      : "hover:bg-white/10"
+                      ? "bg-[#941880] text-white font-medium"
+                      : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
                   }
                 `}
               >
@@ -85,6 +85,7 @@ export default function Sidebar({
           ))}
         </ul>
       </nav>
+    <div className="mt-auto border-t border-slate-800 px-5 py-4 text-[11px] leading-5 text-slate-400">Control interno · Sucursal Cuautitlán Romero Rubio</div>
     </aside>
   );
 }
