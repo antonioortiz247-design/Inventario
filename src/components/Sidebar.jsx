@@ -20,6 +20,7 @@ export default function Sidebar({
   currentPage = "inicio",
   onNavigate,
 }) {
+  const [collapsed, setCollapsed] = useState(false);
   const menu = [
     { id: "inicio", label: "Inicio", icon: <FaHome /> },
     { id: "inventario", label: "Inventario", icon: <FaBoxes /> },
