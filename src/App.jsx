@@ -69,6 +69,13 @@ function App() {
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
       <div className="min-w-0 flex-1">
+        <header className="hidden h-16 items-center justify-between border-b border-slate-200 bg-white px-8 md:flex">
+          <div className="flex items-center gap-3">
+            <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="h-9 w-auto object-contain" />
+            <h1 className="text-lg font-semibold tracking-tight text-slate-800">Quálitas Hub</h1>
+          </div>
+          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Gestión de recursos y activaciones</span>
+        </header>
         <div className="sticky top-0 z-30 flex h-14 items-center border-b border-slate-200 bg-white/95 px-4 backdrop-blur md:hidden">
           <button
             type="button"
@@ -79,7 +86,7 @@ function App() {
             <FaBars className="text-xl" />
           </button>
           <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="ml-3 h-8 w-auto max-w-[116px] object-contain" />
-          <span className="ml-2 text-sm font-semibold text-slate-800">Quálitas Hub</span>
+          <span className="ml-2 text-sm font-semibold text-slate-800">Hub</span>
         </div>
         {inventory.error && (
           <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
