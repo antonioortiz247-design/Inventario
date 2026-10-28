@@ -8,40 +8,40 @@ export default function Dashboard({
     {
       titulo: "Artículos",
       valor: totalArticulos,
-      color: "bg-[#0096AE]",
+      color: "border-[#0096AE]",
       icono: "📦",
     },
     {
       titulo: "Piezas Totales",
       valor: piezasTotales,
-      color: "bg-[#0F98D7]",
+      color: "border-[#0096AE]",
       icono: "📊",
     },
     {
       titulo: "Stock Bajo",
       valor: stockBajo,
-      color: "bg-[#941B80]",
+      color: "border-[#941880]",
       icono: "⚠️",
     },
     {
       titulo: "Crítico",
       valor: stockCritico,
-      color: "bg-[#692D80]",
+      color: "border-[#7A1369]",
       icono: "🚨",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+    <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => (
         <div
           key={card.titulo}
-          className={`${card.color} text-white rounded-3xl shadow-lg p-6`}
+          className={`rounded-lg border border-slate-200 border-t-[3px] ${card.color} bg-white p-5 shadow-sm`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm opacity-90">{card.titulo}</p>
-              <h2 className="text-4xl font-bold mt-2">
+              <p className="text-sm font-semibold text-slate-500">{card.titulo}</p>
+              <h2 className="mt-2 text-3xl font-bold tabular-nums text-slate-900">
                 {card.valor}
               </h2>
             </div>
