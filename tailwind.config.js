@@ -9,23 +9,23 @@ export default {
     extend: {
       colors: {
         qualitas: {
-          morado: "#941B80",
+          morado: "#941880",
           "morado-claro": "#FDF2FA",
           "morado-suave": "#FDF2FA",
           "morado-oscuro": "#7A1369",
-          "morado-profundo": "#512950",
+          "morado-profundo": "#7A1369",
 
           aqua: "#0096AE",
           "aqua-claro": "#E6F7FA",
           "aqua-medio": "#0096AE",
           "aqua-oscuro": "#007A8E",
-          "aqua-profundo": "#143B46",
+          "aqua-profundo": "#0F172A",
         },
       },
 
       backgroundImage: {
         "qualitas-gradient":
-          "linear-gradient(135deg, #941B80 0%, #692D80 50%, #0096AE 100%)",
+          "linear-gradient(135deg, #941880 0%, #7A1369 50%, #0096AE 100%)",
       },
 
       borderRadius: {
