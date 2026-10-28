@@ -78,6 +78,7 @@ function App() {
           >
             <FaBars className="text-xl" />
           </button>
+          <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="ml-3 h-8 w-auto max-w-[116px] object-contain" />
           <span className="ml-2 text-sm font-semibold text-slate-800">Quálitas Hub</span>
         </div>
         {inventory.error && (
