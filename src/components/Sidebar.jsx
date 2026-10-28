@@ -43,7 +43,7 @@ export default function Sidebar({
             <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="w-full max-w-[190px] object-contain object-left" />
           )}
           {collapsed && (
-            <img src="/Q-morado.png" alt="Quálitas" className="h-10 w-10 object-contain" />
+            <img src="/Q-morado.png" alt="Quálitas" className="h-10 w-10 object-contain" onError={(event) => { event.currentTarget.src = "/Logo-Horizontal.png"; }} />
           )}
         </div>
         <button
