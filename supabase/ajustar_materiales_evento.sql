@@ -61,7 +61,7 @@ begin
       and e.estado in ('confirmado','en_curso')
       and e.id <> p_evento_id;
 
-    v_pendiente_actual := case when found then greatest(0, v_material.cantidad_reservada - v_material.cantidad_entregada) else 0 end;
+    v_pendiente_actual := case when v_material.id is not null then greatest(0, v_material.cantidad_reservada - v_material.cantidad_entregada) else 0 end;
     if p_cantidad_delta > v_articulo.cantidad - v_reservado_otros - v_pendiente_actual then
       raise exception 'Stock insuficiente para "%". Físico: %, reservado en otros eventos: %, disponible adicional: %.',
         v_articulo.articulo, v_articulo.cantidad, v_reservado_otros,
