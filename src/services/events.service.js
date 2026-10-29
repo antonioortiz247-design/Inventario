@@ -105,3 +105,24 @@ export async function eliminarEvento(eventoId) {
   if (!data) throw new Error("Supabase no eliminó el evento. Revisa que la política eventos_delete_public esté aplicada en eventos.sql.");
   return data;
 }
+
+
+export async function quitarMaterialEvento(materialId) {
+  requireSupabase();
+  const { data: material, error: materialError } = await supabase
+    .from("evento_materiales")
+    .select("id, evento_id, cantidad_entregada")
+    .eq("id", materialId)
+    .single();
+  if (materialError) throw new Error("No se encontró el promocional del evento: " + materialError.message);
+  const { data: evento, error: eventError } = await supabase
+    .from("eventos")
+    .select("estado")
+    .eq("id", material.evento_id)
+    .single();
+  if (eventError) throw new Error(eventError.message);
+  if (evento.estado !== "borrador") throw new Error("Solo puedes quitar promocionales de un evento en borrador. Cancela el evento o edítalo antes de confirmar.");
+  if (Number(material.cantidad_entregada || 0) > 0) throw new Error("No se puede quitar un promocional del que ya se registró una entrega.");
+  const { error } = await supabase.from("evento_materiales").delete().eq("id", materialId);
+  if (error) throw new Error("No se pudo quitar el promocional: " + error.message);
+}
