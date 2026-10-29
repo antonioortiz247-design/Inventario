@@ -30,21 +30,17 @@ export async function crearEvento(evento) {
 
 export async function agregarMaterialEvento(eventoId, articuloId, cantidad) {
   requireSupabase();
-  const { data: evento, error: eventError } = await supabase.from("eventos").select("estado").eq("id", eventoId).single();
-  if (eventError) throw new Error(eventError.message);
-  if (evento.estado !== "borrador") throw new Error("Solo puedes modificar materiales de un evento en borrador.");
-  const { data: existing, error: existingError } = await supabase.from("evento_materiales").select("id, cantidad_reservada, cantidad_entregada").eq("evento_id", eventoId).eq("articulo_id", articuloId).maybeSingle();
-  if (existingError) throw new Error(existingError.message);
   const qty = Number(cantidad);
   if (!Number.isInteger(qty) || qty <= 0) throw new Error("La cantidad debe ser un entero mayor que cero.");
-  if (existing) {
-    const { error } = await supabase.from("evento_materiales").update({ cantidad_reservada: Number(existing.cantidad_reservada) + qty }).eq("id", existing.id);
-    if (error) throw new Error("No se pudo aumentar la cantidad reservada: " + error.message);
-  } else {
-    const { error } = await supabase.from("evento_materiales").insert({ evento_id: eventoId, articulo_id: articuloId, cantidad_reservada: qty });
-    if (error) throw new Error("No se pudo agregar el material: " + error.message);
-  }
+  const { data, error } = await supabase.rpc("ajustar_material_evento", {
+    p_evento_id: eventoId,
+    p_articulo_id: articuloId,
+    p_cantidad_delta: qty,
+  });
+  if (error) throw new Error(error.message);
+  return data;
 }
+
 
 export async function confirmarEvento(eventoId) {
   requireSupabase();
@@ -111,18 +107,17 @@ export async function quitarMaterialEvento(materialId) {
   requireSupabase();
   const { data: material, error: materialError } = await supabase
     .from("evento_materiales")
-    .select("id, evento_id, cantidad_entregada")
+    .select("id, evento_id, articulo_id, cantidad_reservada, cantidad_entregada")
     .eq("id", materialId)
     .single();
   if (materialError) throw new Error("No se encontró el promocional del evento: " + materialError.message);
-  const { data: evento, error: eventError } = await supabase
-    .from("eventos")
-    .select("estado")
-    .eq("id", material.evento_id)
-    .single();
-  if (eventError) throw new Error(eventError.message);
-  if (evento.estado !== "borrador") throw new Error("Solo puedes quitar promocionales de un evento en borrador. Cancela el evento o edítalo antes de confirmar.");
-  if (Number(material.cantidad_entregada || 0) > 0) throw new Error("No se puede quitar un promocional del que ya se registró una entrega.");
-  const { error } = await supabase.from("evento_materiales").delete().eq("id", materialId);
-  if (error) throw new Error("No se pudo quitar el promocional: " + error.message);
+  const pendiente = Number(material.cantidad_reservada || 0) - Number(material.cantidad_entregada || 0);
+  if (pendiente <= 0) throw new Error("Este promocional ya no tiene cantidad pendiente por quitar.");
+  const { data, error } = await supabase.rpc("ajustar_material_evento", {
+    p_evento_id: material.evento_id,
+    p_articulo_id: material.articulo_id,
+    p_cantidad_delta: -pendiente,
+  });
+  if (error) throw new Error(error.message);
+  return data;
 }
