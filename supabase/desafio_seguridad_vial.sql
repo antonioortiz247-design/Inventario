@@ -30,6 +30,8 @@ alter table public.desafio_seguridad_vial enable row level security;
 drop policy if exists "desafio_vial_admin_read" on public.desafio_seguridad_vial;
 create policy "desafio_vial_admin_read"
   on public.desafio_seguridad_vial for select to authenticated using (true);
+grant select on public.desafio_seguridad_vial to authenticated;
+revoke all on public.desafio_seguridad_vial from anon;
 
 create or replace function public.registrar_desafio_seguridad_vial(
   p_nombre text,
@@ -59,6 +61,7 @@ begin
   if p_correo !~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$' then raise exception 'El correo electrónico no es válido.'; end if;
   if p_tiene_seguro not in ('Sí','No') then raise exception 'Selecciona si cuentas con seguro.'; end if;
   if p_aseguradora not in ('Quálitas','GNP','AXA','MAPFRE','HDI','Chubb','Otra','Sin seguro') then raise exception 'Selecciona una aseguradora válida.'; end if;
+  if p_tiene_seguro = 'No' and p_aseguradora <> 'Sin seguro' then raise exception 'Si no cuentas con seguro, selecciona Sin seguro.'; end if;
   if p_anio < 1990 or p_anio > extract(year from now())::integer + 1 then raise exception 'El año del vehículo no es válido.'; end if;
   if p_pernocta not in ('Cochera','Calle','Estacionamiento') then raise exception 'Selecciona dónde pasa la noche el vehículo.'; end if;
   if p_uso not in ('Particular','Trabajo','Plataforma') then raise exception 'Selecciona el uso del vehículo.'; end if;
