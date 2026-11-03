@@ -453,3 +453,167 @@ body {
 @media (max-width: 767px) {
   .liquid-sidebar { box-shadow: 20px 0 55px rgba(15,23,42,.28); }
 }
+
+
+/* =========================================================
+   MOBILE FIRST · QUÁLITAS HUB
+   Ajustes transversales para teléfonos y tabletas.
+   ========================================================= */
+html, body, #root {
+  min-width: 320px;
+  overflow-x: clip;
+}
+body {
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-x: none;
+}
+.mobile-app-content {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+.mobile-topbar {
+  padding-top: env(safe-area-inset-top, 0px);
+  min-height: calc(56px + env(safe-area-inset-top, 0px));
+  height: calc(56px + env(safe-area-inset-top, 0px));
+  background: rgba(255,255,255,.82) !important;
+  border-bottom: 1px solid rgba(255,255,255,.9) !important;
+  box-shadow: 0 6px 24px rgba(35,25,55,.07);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  backdrop-filter: blur(20px) saturate(170%);
+}
+.mobile-menu-trigger {
+  background: linear-gradient(145deg, rgba(148,27,128,.10), rgba(0,150,174,.12));
+  border: 1px solid rgba(148,27,128,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 12px rgba(35,25,55,.06);
+}
+.mobile-menu-trigger:active { transform: scale(.96); }
+.mobile-app-content > :not(.mobile-topbar) {
+  min-width: 0;
+}
+@media (max-width: 767px) {
+  /* Navegación móvil */
+  .liquid-sidebar {
+    width: min(86vw, 340px) !important;
+    max-width: 340px;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overscroll-behavior: contain;
+  }
+  .liquid-sidebar-header {
+    padding-top: max(18px, env(safe-area-inset-top, 0px));
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .liquid-sidebar-header img {
+    max-width: 205px;
+    max-height: 66px;
+  }
+  .liquid-sidebar-nav {
+    padding: 14px 12px 22px !important;
+  }
+  .liquid-sidebar-link {
+    min-height: 50px;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.3;
+  }
+  .liquid-sidebar-link.is-active::after { right: 12px; }
+  .liquid-sidebar-footer {
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Evitar desbordamientos y márgenes excesivos */
+  .page-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 14px !important;
+  }
+  main, [role="main"] {
+    min-width: 0;
+    max-width: 100%;
+  }
+  h1, .section-title {
+    overflow-wrap: anywhere;
+    font-size: clamp(1.35rem, 5.5vw, 1.8rem) !important;
+    line-height: 1.2;
+  }
+  h2 { overflow-wrap: anywhere; }
+  p, label, button, a, th, td {
+    overflow-wrap: anywhere;
+  }
+
+  /* Controles táctiles cómodos */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+  button:not(.mobile-menu-trigger), [role="button"] {
+    min-height: 42px;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select, textarea {
+    min-height: 46px !important;
+    max-width: 100%;
+    font-size: 16px !important; /* evita zoom automático en iOS */
+  }
+  textarea { min-height: 100px !important; }
+  input[type="checkbox"], input[type="radio"] {
+    min-width: 18px;
+    min-height: 18px;
+  }
+
+  /* Tablas: desplazamiento horizontal dentro de su propio contenedor */
+  .table-container, .overflow-x-auto, .overflow-auto {
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  table {
+    max-width: 100%;
+  }
+  .table-container table, .overflow-x-auto table {
+    min-width: 620px;
+  }
+  td, th {
+    padding: 10px 9px;
+    font-size: 13px;
+  }
+
+  /* Cuadrículas y tarjetas */
+  .grid {
+    min-width: 0;
+  }
+  .card, .dashboard-card {
+    min-width: 0;
+    border-radius: 17px !important;
+  }
+  .dashboard-card:hover, .card:hover {
+    transform: none;
+  }
+  .modal, [role="dialog"], [role="alertdialog"] {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    overflow-y: auto;
+    margin: 12px auto;
+    border-radius: 20px !important;
+  }
+  /* Medios y elementos visuales */
+  img, video, canvas, svg {
+    max-width: 100%;
+  }
+}
+@media (max-width: 380px) {
+  .page-container { padding: 10px !important; }
+  .mobile-topbar { padding-left: 9px; padding-right: 9px; }
+  .mobile-topbar img { max-width: 104px; }
+  .mobile-topbar span { font-size: 12px; }
+  .liquid-sidebar { width: min(90vw, 320px) !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .liquid-sidebar, .liquid-sidebar-link, .mobile-menu-trigger {
+    transition: none !important;
+  }
+}
