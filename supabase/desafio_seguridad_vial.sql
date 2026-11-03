@@ -58,7 +58,7 @@ declare
 begin
   if length(trim(coalesce(p_nombre,''))) < 3 then raise exception 'Escribe tu nombre completo.'; end if;
   if p_telefono !~ '^[0-9]{10}$' then raise exception 'El teléfono debe contener 10 dígitos.'; end if;
-  if p_correo !~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$' then raise exception 'El correo electrónico no es válido.'; end if;
+  if p_correo !~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$' then raise exception 'El correo electrónico no es válido.'; end if;
   if p_tiene_seguro not in ('Sí','No') then raise exception 'Selecciona si cuentas con seguro.'; end if;
   if p_aseguradora not in ('Quálitas','GNP','AXA','MAPFRE','HDI','Chubb','Otra','Sin seguro') then raise exception 'Selecciona una aseguradora válida.'; end if;
   if p_tiene_seguro = 'No' and p_aseguradora <> 'Sin seguro' then raise exception 'Si no cuentas con seguro, selecciona Sin seguro.'; end if;
@@ -66,7 +66,8 @@ begin
   if p_pernocta not in ('Cochera','Calle','Estacionamiento') then raise exception 'Selecciona dónde pasa la noche el vehículo.'; end if;
   if p_uso not in ('Particular','Trabajo','Plataforma') then raise exception 'Selecciona el uso del vehículo.'; end if;
   if p_preocupacion not in ('Robo','Daños materiales','Accidentes','Responsabilidad civil') then raise exception 'Selecciona tu principal preocupación.'; end if;
-  if p_puntaje < 0 or p_puntaje > 180 then raise exception 'La puntuación no es válida.'; end if;
+  -- Cinco minijuegos otorgan hasta 500 puntos (100 por actividad).
+  if p_puntaje < 0 or p_puntaje > 500 then raise exception 'La puntuación no es válida.'; end if;
   v_folio := 'QSV-' || lpad(nextval('public.desafio_seguridad_vial_folio_seq')::text, 4, '0');
   insert into public.desafio_seguridad_vial (
     folio,nombre,telefono,correo,tiene_seguro,aseguradora,anio,pernocta,uso,preocupacion,
