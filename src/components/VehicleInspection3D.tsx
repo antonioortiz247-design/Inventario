@@ -490,7 +490,7 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
       <Center>
         <primitive object={model} />
         {hotspots.map(({ id, label, Icon, position }) => (
-          <Html key={id} position={position} center distanceFactor={3} style={{ pointerEvents: 'auto', transform: 'translate3d(0,0,0)', background: 'transparent' }}>
+          <Html key={id} position={position} center distanceFactor={3.25} style={{ pointerEvents: 'auto', transform: 'translate3d(0,0,0)', background: 'transparent' }}>
             <button
               type="button"
               aria-label={label}
@@ -502,12 +502,12 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
               }}
               className={'motion-3d-hotspot !flex !items-center !justify-center !rounded-full !p-0 transition-all duration-200 ' + (active === id ? 'is-active' : '')}
               style={{
-                width: 34,
-                height: 34,
-                minWidth: 34,
-                maxWidth: 34,
-                minHeight: 34,
-                maxHeight: 34,
+                width: 28,
+                height: 28,
+                minWidth: 28,
+                maxWidth: 28,
+                minHeight: 28,
+                maxHeight: 28,
                 padding: 0,
                 color: '#941B80',
                 background: 'rgba(255,255,255,.16)',
@@ -523,7 +523,7 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
                 zIndex: 20,
               }}
             >
-              <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
+              <Icon size={13} strokeWidth={2.2} aria-hidden="true" />
             </button>
           </Html>
         ))}
