@@ -55,10 +55,10 @@ export default function Sidebar({
         <div className={`liquid-sidebar-header flex items-center py-5 ${collapsed ? "flex-col gap-3 px-2" : "flex-col gap-4 px-5"}`}>
           <div className={`flex w-full items-center ${collapsed ? "justify-center" : "justify-between"}`}>
             {!collapsed && (
-              <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="w-full max-w-[190px] object-contain object-left" />
+              <img src="/Logo-horizontal-blanco-sin-fondo.png" alt="Quálitas Compañía de Seguros" className="w-full max-w-[190px] object-contain object-left" />
             )}
             {collapsed && (
-              <img src="/Q-morado.png" alt="Quálitas" className="h-10 w-10 object-contain" />
+              <img src="/Q-blanco.png" alt="Quálitas" className="h-10 w-10 object-contain" />
             )}
           </div>
           <button
