@@ -13,6 +13,7 @@ import RuletaActivaciones from "./pages/RuletaActivaciones";
 import RegistrosRuleta from "./pages/RegistrosRuleta";
 import CalaveritaSegura from "./pages/CalaveritaSegura";
 import CalaveritaPreregistro from "./pages/CalaveritaPreregistro";
+import DesafioSeguridadVial from "./pages/DesafioSeguridadVial";
 import useInventory from "./hooks/useInventory";
 import { getInventory, saveInventory } from "./services/inventory.service";
 
@@ -41,6 +42,7 @@ function App() {
       case "registros-ruleta": return <RegistrosRuleta />;
       case "calaverita-segura": return <CalaveritaSegura />;
       case "calaverita-preregistro": return <CalaveritaPreregistro publicMode={publicPreregistro} />;
+      case "desafio-seguridad-vial": return <DesafioSeguridadVial />;
       case "buscar-imagen": return <BuscarImagen inventario={inventory.items} />;
       case "reportes": return <Reportes inventario={inventory.items} />;
       case "configuracion": return <Configuracion />;
