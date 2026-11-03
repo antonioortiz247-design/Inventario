@@ -51,8 +51,8 @@ export default function Sidebar({
           className="fixed inset-0 z-40 bg-slate-950/50 md:hidden"
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-50 flex h-screen max-h-screen w-72 shrink-0 flex-col overflow-y-auto border-r border-slate-800 bg-slate-900 text-white transition-transform duration-200 md:sticky md:top-0 md:z-auto md:translate-x-0 md:transition-[width] ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} ${collapsed ? "md:w-20" : "md:w-64 lg:w-72"}`}>
-        <div className={`flex items-center border-b border-slate-800 py-4 ${collapsed ? "flex-col gap-3 px-2" : "flex-col gap-4 px-5"}`}>
+      <aside className={`liquid-sidebar fixed inset-y-0 left-0 z-50 flex h-screen max-h-screen w-72 shrink-0 flex-col overflow-y-auto text-white transition-transform duration-300 md:sticky md:top-0 md:z-auto md:translate-x-0 md:transition-[width] ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"} ${collapsed ? "md:w-20" : "md:w-64 lg:w-72"}`}>
+        <div className={`liquid-sidebar-header flex items-center py-5 ${collapsed ? "flex-col gap-3 px-2" : "flex-col gap-4 px-5"}`}>
           <div className={`flex w-full items-center ${collapsed ? "justify-center" : "justify-between"}`}>
             {!collapsed && (
               <img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="w-full max-w-[190px] object-contain object-left" />
@@ -69,7 +69,7 @@ export default function Sidebar({
             }}
             aria-label={mobileOpen ? "Cerrar barra lateral" : collapsed ? "Desplegar barra lateral" : "Plegar barra lateral"}
             title={mobileOpen ? "Cerrar menú" : collapsed ? "Desplegar menú" : "Plegar menú"}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-slate-300 transition-colors hover:bg-slate-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#0096AE]"
+            className="liquid-sidebar-toggle flex h-10 w-10 shrink-0 items-center justify-center text-slate-300 transition-all hover:text-white focus:outline-none focus:ring-2 focus:ring-[#0096AE]"
           >
             {mobileOpen ? <FaTimes /> : collapsed ? <FaChevronRight /> : <FaBars />}
           </button>
@@ -78,8 +78,8 @@ export default function Sidebar({
           )}
         </div>
 
-        <nav className={collapsed ? "px-2 py-3" : "p-3"}>
-          <ul className="space-y-1">
+        <nav className={`liquid-sidebar-nav ${collapsed ? "px-2 py-4" : "px-3 py-4"}`}>
+          <ul className="space-y-1.5">
             {menu.map((item) => (
               <li key={item.id}>
                 <button
@@ -91,14 +91,14 @@ export default function Sidebar({
                   title={collapsed ? item.label : undefined}
                   aria-label={item.label}
                   className={`
-                    flex w-full items-center rounded-md py-3 transition-colors duration-150
+                    liquid-sidebar-link relative flex w-full items-center rounded-2xl py-3 transition-all duration-200
                     ${collapsed ? "justify-center px-2" : "gap-3 px-4"}
                     ${currentPage === item.id
-                      ? "bg-[#941880] font-medium text-white"
-                      : "text-slate-300 hover:bg-slate-800/60 hover:text-white"}
+                      ? "is-active font-semibold text-white"
+                      : "text-slate-300 hover:text-white"}
                   `}
                 >
-                  <span className="shrink-0 text-lg">{item.icon}</span>
+                  <span className="liquid-sidebar-icon shrink-0 text-lg">{item.icon}</span>
                   {!collapsed && <span className="text-left font-medium">{item.label}</span>}
                 </button>
               </li>
@@ -106,7 +106,7 @@ export default function Sidebar({
           </ul>
         </nav>
         {!collapsed && (
-          <div className="mt-auto border-t border-slate-800 px-5 py-4 text-[11px] leading-5 text-slate-400">
+          <div className="liquid-sidebar-footer mt-auto px-5 py-4 text-[11px] leading-5 text-slate-400">
             Control interno · Sucursal Cuautitlán Romero Rubio
           </div>
         )}
