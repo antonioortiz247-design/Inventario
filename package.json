@@ -16,7 +16,10 @@
     "xlsx": "^0.18.5",
     "@tensorflow-models/mobilenet": "^2.1.1",
     "@tensorflow/tfjs": "^4.22.0",
-    "@supabase/supabase-js": "^2.76.1"
+    "@supabase/supabase-js": "^2.76.1",
+    "three": "^0.170.0",
+    "@react-three/fiber": "^8.17.10",
+    "@react-three/drei": "^9.120.4"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.0",
