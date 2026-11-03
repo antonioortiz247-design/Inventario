@@ -216,3 +216,133 @@ body {
   :root { --glass-blur: blur(14px) saturate(155%); }
 }
 
+/* Liquid Glass: controles y componentes interactivos */
+:where(button, .btn, [role="button"]) {
+  position: relative;
+  isolation: isolate;
+  border-radius: 14px;
+  transition:
+    transform .18s ease,
+    box-shadow .22s ease,
+    border-color .22s ease,
+    background-color .22s ease,
+    filter .22s ease;
+}
+:where(button:not(:disabled), .btn:not(:disabled), [role="button"]:not([aria-disabled="true"])):active {
+  transform: translateY(1px) scale(.985);
+}
+:where(button:focus-visible, a:focus-visible, [role="button"]:focus-visible) {
+  outline: 3px solid rgba(0,150,174,.32);
+  outline-offset: 3px;
+}
+:where(button:disabled, .btn:disabled) {
+  cursor: not-allowed;
+  filter: saturate(.55);
+  opacity: .58;
+}
+/* Botones de acción Quálitas: conservan color institucional con brillo de cristal */
+:where(button[class*="bg-[#941B80]"], button[class*="bg-[#941880]"], .btn-primary, .sidebar-item.active) {
+  background-image: linear-gradient(135deg, rgba(255,255,255,.17), transparent 58%) !important;
+  border: 1px solid rgba(255,255,255,.28) !important;
+  box-shadow: 0 7px 20px rgba(148,27,128,.2), inset 0 1px 0 rgba(255,255,255,.24);
+}
+:where(button[class*="bg-[#0096AE]"], .btn-secondary) {
+  background-image: linear-gradient(135deg, rgba(255,255,255,.2), transparent 60%) !important;
+  border: 1px solid rgba(255,255,255,.32) !important;
+  box-shadow: 0 7px 20px rgba(0,150,174,.18), inset 0 1px 0 rgba(255,255,255,.28);
+}
+/* Botones neutros y secundarios */
+:where(button[class*="bg-white"], button[class*="bg-slate-50"], button[class*="bg-slate-100"], .btn-outline, button[class*="border-slate-"]) {
+  background-color: rgba(255,255,255,.56) !important;
+  border-color: rgba(255,255,255,.86) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(165%);
+  backdrop-filter: blur(14px) saturate(165%);
+  box-shadow: 0 5px 16px rgba(35,25,55,.055), inset 0 1px 0 rgba(255,255,255,.9);
+}
+:where(button[class*="bg-white"], button[class*="bg-slate-50"], button[class*="bg-slate-100"], .btn-outline, button[class*="border-slate-"]):hover:not(:disabled) {
+  background-color: rgba(255,255,255,.82) !important;
+  border-color: rgba(0,150,174,.34) !important;
+  box-shadow: 0 8px 22px rgba(35,25,55,.09), inset 0 1px 0 rgba(255,255,255,.95);
+}
+/* Formularios */
+:where(form) {
+  color: var(--text-primary);
+}
+:where(form label, .field-label) {
+  color: #334155;
+}
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select, .input) {
+  min-height: 44px;
+  border: 1px solid rgba(255,255,255,.88) !important;
+  border-radius: 15px !important;
+  background: rgba(255,255,255,.58) !important;
+  color: #172033 !important;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,.75), 0 4px 14px rgba(35,25,55,.035);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+:where(input::placeholder, textarea::placeholder) {
+  color: #94a3b8;
+}
+:where(input[type="checkbox"], input[type="radio"]) {
+  accent-color: #941B80;
+}
+:where(input[type="checkbox"], input[type="radio"]) {
+  width: 17px;
+  height: 17px;
+}
+:where(input:not([type="checkbox"]):not([type="radio"]):focus, textarea:focus, select:focus, .input:focus) {
+  outline: none;
+  background: rgba(255,255,255,.88) !important;
+  border-color: rgba(0,150,174,.62) !important;
+  box-shadow: 0 0 0 4px rgba(0,150,174,.105), 0 7px 20px rgba(0,150,174,.075) !important;
+}
+:where(select option) {
+  color: #172033;
+  background: #fff;
+}
+/* Tarjetas, paneles, formularios agrupados y modales */
+:where(.card, .dashboard-card, .table-container, [class*="rounded-xl"][class*="border"], [class*="rounded-2xl"][class*="border"], [class*="rounded-3xl"][class*="border"]) {
+  border-color: rgba(255,255,255,.78);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+}
+:where(.card, .dashboard-card, [class*="shadow-sm"], [class*="shadow-md"], [class*="shadow-lg"]) {
+  box-shadow: 0 9px 28px rgba(35,25,55,.065), inset 0 1px 0 rgba(255,255,255,.72);
+}
+:where(.card, .dashboard-card, [class*="rounded-2xl"][class*="bg-white"], [class*="rounded-xl"][class*="bg-white"]) {
+  border-radius: 20px !important;
+}
+/* Píldoras, indicadores y filtros */
+:where([class*="rounded-full"][class*="bg-white"], [class*="rounded-full"][class*="bg-slate-"]) {
+  border: 1px solid rgba(255,255,255,.72);
+  -webkit-backdrop-filter: blur(12px) saturate(155%);
+  backdrop-filter: blur(12px) saturate(155%);
+}
+/* Tablas */
+:where(table) {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+:where(thead th) {
+  background: rgba(238,243,248,.72) !important;
+  color: #475569;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+:where(tbody tr) {
+  transition: background-color .18s ease;
+}
+:where(tbody tr:hover) {
+  background: rgba(0,150,174,.045);
+}
+/* Mensajes y ventanas emergentes */
+:where([role="dialog"], [role="alertdialog"], .modal) {
+  border: 1px solid rgba(255,255,255,.78);
+  border-radius: 22px;
+  background: rgba(255,255,255,.82);
+  box-shadow: 0 24px 70px rgba(15,23,42,.2), inset 0 1px 0 rgba(255,255,255,.9);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
+}
+
