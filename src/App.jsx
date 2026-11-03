@@ -18,8 +18,10 @@ import useInventory from "./hooks/useInventory";
 import { getInventory, saveInventory } from "./services/inventory.service";
 
 function App() {
-  const publicPreregistro = new URLSearchParams(window.location.search).get("pagina") === "calaverita-preregistro";
-  const [currentPage, setCurrentPage] = useState(publicPreregistro ? "calaverita-preregistro" : "inicio");
+  const requestedPage = new URLSearchParams(window.location.search).get("pagina");
+  const publicPreregistro = requestedPage === "calaverita-preregistro";
+  const publicDesafio = requestedPage === "desafio-seguridad-vial";
+  const [currentPage, setCurrentPage] = useState(publicPreregistro ? "calaverita-preregistro" : publicDesafio ? "desafio-seguridad-vial" : "inicio");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [touchStartX, setTouchStartX] = useState(null);
   const inventory = useInventory();
@@ -42,14 +44,14 @@ function App() {
       case "registros-ruleta": return <RegistrosRuleta />;
       case "calaverita-segura": return <CalaveritaSegura />;
       case "calaverita-preregistro": return <CalaveritaPreregistro publicMode={publicPreregistro} />;
-      case "desafio-seguridad-vial": return <DesafioSeguridadVial />;
+      case "desafio-seguridad-vial": return <DesafioSeguridadVial publicMode={publicDesafio} />;
       case "buscar-imagen": return <BuscarImagen inventario={inventory.items} />;
       case "reportes": return <Reportes inventario={inventory.items} />;
       case "configuracion": return <Configuracion />;
       default: return <Home inventario={inventory.items} estadisticas={inventory.estadisticas} onImport={handleImport} onNavigate={setCurrentPage} />;
     }
   };
-  return publicPreregistro ? (
+  return (publicPreregistro || publicDesafio) ? (
     <div className="min-h-screen bg-slate-100">{renderPage()}</div>
   ) : (
     <div
