@@ -500,35 +500,33 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
                 event.stopPropagation();
                 onSelect(id);
               }}
-              className={'motion-3d-hotspot !flex !items-center !justify-center !gap-1 !rounded-full !p-0 font-bold tracking-wide transition-all duration-200 ' + (active === id ? 'is-active' : '')}
+              className={'motion-3d-hotspot !flex !items-center !justify-center !rounded-full !p-0 transition-all duration-200 ' + (active === id ? 'is-active' : '')}
               style={{
-                width: 64,
-                height: 28,
-                minWidth: 64,
-                maxWidth: 64,
-                minHeight: 28,
-                maxHeight: 28,
-                padding: '0 5px',
-                whiteSpace: 'nowrap',
-                fontSize: 7,
-                lineHeight: 1,
-                color: active === id ? '#fff' : '#641052',
+                width: 34,
+                height: 34,
+                minWidth: 34,
+                maxWidth: 34,
+                minHeight: 34,
+                maxHeight: 34,
+                padding: 0,
+                color: active === id ? '#ffffff' : '#941B80',
                 background: active
-                  ? 'rgba(0,150,174,.68)'
-                  : 'rgba(255,255,255,.58)',
-                border: '1px solid rgba(255,255,255,.82)',
-                outline: '1px solid rgba(148,27,128,.20)',
-                backdropFilter: 'blur(14px) saturate(180%)',
-                WebkitBackdropFilter: 'blur(14px) saturate(180%)',
+                  ? 'rgba(0,150,174,.88)'
+                  : 'rgba(255,255,255,.72)',
+                border: active
+                  ? '1.5px solid rgba(255,255,255,.98)'
+                  : '1px solid rgba(255,255,255,.92)',
+                outline: active ? '2px solid rgba(0,150,174,.24)' : '1px solid rgba(148,27,128,.16)',
+                backdropFilter: 'blur(16px) saturate(190%)',
+                WebkitBackdropFilter: 'blur(16px) saturate(190%)',
                 boxShadow: active
-                  ? '0 4px 14px rgba(0,80,95,.22), inset 0 1px 0 rgba(255,255,255,.7)'
-                  : '0 3px 12px rgba(40,25,45,.16), inset 0 1px 0 rgba(255,255,255,.9)',
-                transform: 'translateZ(0)',
+                  ? '0 5px 18px rgba(0,80,95,.30), inset 0 1px 0 rgba(255,255,255,.85)'
+                  : '0 3px 12px rgba(35,25,45,.20), inset 0 1px 0 rgba(255,255,255,.96)',
+                transform: active ? 'scale(1.08) translateZ(0)' : 'scale(1) translateZ(0)',
                 zIndex: 20,
               }}
             >
-              <Icon size={11} strokeWidth={2.3} aria-hidden="true" />
-              <span>{label}</span>
+              <Icon size={15} strokeWidth={2.2} aria-hidden="true" />
             </button>
           </Html>
         ))}
