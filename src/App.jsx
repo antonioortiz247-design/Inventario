@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
@@ -21,7 +21,8 @@ function App() {
   const requestedPage = new URLSearchParams(window.location.search).get("pagina");
   const publicPreregistro = requestedPage === "calaverita-preregistro";
   const publicDesafio = requestedPage === "desafio-seguridad-vial";
-  const [currentPage, setCurrentPage] = useState(publicPreregistro ? "calaverita-preregistro" : publicDesafio ? "desafio-seguridad-vial" : "inicio");
+  const [currentPage, setCurrentPage] = useState(() => { if (publicPreregistro) return "calaverita-preregistro"; if (publicDesafio) return "desafio-seguridad-vial"; try { return window.sessionStorage.getItem("qualitas-hub-current-page") || "inicio"; } catch { return "inicio"; } });
+  useEffect(() => { try { window.sessionStorage.setItem("qualitas-hub-current-page", currentPage); } catch (error) { console.warn("No se pudo conservar la página actual.", error); } }, [currentPage]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [touchStartX, setTouchStartX] = useState(null);
   const inventory = useInventory();
