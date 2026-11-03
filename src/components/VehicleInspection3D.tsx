@@ -490,7 +490,7 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
       <Center>
         <primitive object={model} />
         {hotspots.map(({ id, label, Icon, position }) => (
-          <Html key={id} position={position} center distanceFactor={3} style={{ pointerEvents: 'auto', transform: 'translate3d(0,0,0)' }}>
+          <Html key={id} position={position} center distanceFactor={3} style={{ pointerEvents: 'auto', transform: 'translate3d(0,0,0)', background: 'transparent' }}>
             <button
               type="button"
               aria-label={label}
@@ -551,11 +551,11 @@ function ModelLoadError() {
 
 export default function VehicleInspection3D({ active = 'llantas', onSelect = () => {}, children }: { active?: string; onSelect?: (id: string) => void; children?: ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-transparent"><div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4"><div><p className="text-xs font-black uppercase tracking-widest text-[#0096AE]">Modelo interactivo</p><p className="text-sm font-bold text-slate-700">Vehículo Quálitas · Toyota Prius</p></div><span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-500 shadow-sm">Modelo 3D personalizado</span></div><div className="flex flex-col sm:flex-row"><div className="motion-3d-viewer relative z-[1] h-[390px] min-w-0 flex-1 sm:h-[460px]" aria-label="Toyota Prius 3D personalizado con puntos de inspección; arrastra para girar el vehículo">
+    <div className="overflow-hidden rounded-3xl border border-slate-200 !bg-transparent"><div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4"><div><p className="text-xs font-black uppercase tracking-widest text-[#0096AE]">Modelo interactivo</p><p className="text-sm font-bold text-slate-700">Vehículo Quálitas · Toyota Prius</p></div><span className="rounded-full border border-slate-200/70 bg-transparent px-3 py-1 text-[11px] font-semibold text-slate-500 shadow-sm">Modelo 3D personalizado</span></div><div className="flex flex-col sm:flex-row"><div className="motion-3d-viewer relative z-[1] h-[390px] min-w-0 flex-1 !bg-transparent sm:h-[460px]" aria-label="Toyota Prius 3D personalizado con puntos de inspección; arrastra para girar el vehículo">
       <Canvas
         camera={{ position: [4.5, 2.65, 4.9], fov: 35 }}
         dpr={[1, 1.5]}
-        gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
+        gl={{ antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: 'low-power' }}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0);
           gl.outputColorSpace = THREE.SRGBColorSpace;
@@ -585,10 +585,10 @@ export default function VehicleInspection3D({ active = 'llantas', onSelect = () 
           rotateSpeed={0.7}
         />
       </Canvas>
-      <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-[11px] font-semibold text-slate-600 shadow-sm">
+      <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-200/60 bg-transparent px-3 py-1.5 text-[11px] font-semibold text-slate-600">
         Arrastra para girar · toca los puntos para explorar
       </div>
-      </div>{children && <div className="shrink-0 border-t border-slate-200 bg-white/95 p-4 sm:w-[330px] sm:border-l sm:border-t-0 sm:p-5">{children}</div>}</div><div className="border-t border-slate-200 bg-white/80 px-4 py-3 text-center text-xs text-slate-500">Arrastra el vehículo para girarlo · selecciona los puntos para revisar cada sistema.</div></div>
+      </div>{children && <div className="shrink-0 border-t border-slate-200/60 bg-transparent p-4 sm:w-[330px] sm:border-l sm:border-t-0 sm:p-5">{children}</div>}</div><div className="border-t border-slate-200/60 bg-transparent px-4 py-3 text-center text-xs text-slate-500">Arrastra el vehículo para girarlo · selecciona los puntos para revisar cada sistema.</div></div>
   );
 }
 
