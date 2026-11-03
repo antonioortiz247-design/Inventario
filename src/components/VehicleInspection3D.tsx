@@ -500,18 +500,34 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
                 event.stopPropagation();
                 onSelect(id);
               }}
-              className={'motion-3d-hotspot flex items-center justify-center gap-1.5 rounded-full border-2 border-white px-3 py-2 text-[10px] font-extrabold tracking-wide text-white shadow-[0_3px_14px_rgba(0,0,0,.45)] transition-all ' + (active === id ? 'is-active' : '')}
+              className={'motion-3d-hotspot !flex !items-center !justify-center !gap-1 !rounded-full !p-0 font-bold tracking-wide transition-all duration-200 ' + (active === id ? 'is-active' : '')}
               style={{
-                minWidth: 88,
-                minHeight: 38,
+                width: 78,
+                height: 34,
+                minWidth: 78,
+                maxWidth: 78,
+                minHeight: 34,
+                maxHeight: 34,
+                padding: '0 7px',
                 whiteSpace: 'nowrap',
-                background: active === id ? '#0096AE' : '#941B80',
-                boxShadow: '0 0 0 2px rgba(255,255,255,.9), 0 4px 14px rgba(0,0,0,.42)',
+                fontSize: 8,
+                lineHeight: 1,
+                color: active === id ? '#fff' : '#641052',
+                background: active
+                  ? 'rgba(0,150,174,.68)'
+                  : 'rgba(255,255,255,.58)',
+                border: '1px solid rgba(255,255,255,.82)',
+                outline: '1px solid rgba(148,27,128,.20)',
+                backdropFilter: 'blur(14px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(14px) saturate(180%)',
+                boxShadow: active
+                  ? '0 4px 14px rgba(0,80,95,.22), inset 0 1px 0 rgba(255,255,255,.7)'
+                  : '0 3px 12px rgba(40,25,45,.16), inset 0 1px 0 rgba(255,255,255,.9)',
                 transform: 'translateZ(0)',
                 zIndex: 20,
               }}
             >
-              <Icon size={17} strokeWidth={2.5} aria-hidden="true" />
+              <Icon size={13} strokeWidth={2.3} aria-hidden="true" />
               <span>{label}</span>
             </button>
           </Html>
