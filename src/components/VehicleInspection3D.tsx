@@ -502,15 +502,15 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
               }}
               className={'motion-3d-hotspot !flex !items-center !justify-center !gap-1 !rounded-full !p-0 font-bold tracking-wide transition-all duration-200 ' + (active === id ? 'is-active' : '')}
               style={{
-                width: 78,
-                height: 34,
-                minWidth: 78,
-                maxWidth: 78,
-                minHeight: 34,
-                maxHeight: 34,
-                padding: '0 7px',
+                width: 64,
+                height: 28,
+                minWidth: 64,
+                maxWidth: 64,
+                minHeight: 28,
+                maxHeight: 28,
+                padding: '0 5px',
                 whiteSpace: 'nowrap',
-                fontSize: 8,
+                fontSize: 7,
                 lineHeight: 1,
                 color: active === id ? '#fff' : '#641052',
                 background: active
@@ -527,7 +527,7 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
                 zIndex: 20,
               }}
             >
-              <Icon size={13} strokeWidth={2.3} aria-hidden="true" />
+              <Icon size={11} strokeWidth={2.3} aria-hidden="true" />
               <span>{label}</span>
             </button>
           </Html>
