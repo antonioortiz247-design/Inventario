@@ -36,10 +36,11 @@ type Hotspot = {
 };
 
 const hotspots: Hotspot[] = [
-  { id: 'llantas', label: 'Llantas: presión, dibujo y desgaste', Icon: CarFront, position: [-0.34, 0.10, 0.42] },
-  { id: 'luces', label: 'Luces: faros y direccionales', Icon: Wrench, position: [0.02, 0.13, 0.48] },
-  { id: 'cinturon', label: 'Cinturones: hebilla y anclajes', Icon: ShieldCheck, position: [0, 0.42, 0.02] },
-  { id: 'espejos', label: 'Espejos: ajuste y visibilidad', Icon: KeyRound, position: [0.36, 0.06, 0.34] },
+  // Anclajes sobre las piezas reales del vehículo: rueda del costado visible, faro delantero, habitáculo y espejo lateral.
+  { id: 'llantas', label: 'Llantas: presión, dibujo y desgaste', Icon: CarFront, position: [-0.36, 0.10, 0.02] },
+  { id: 'luces', label: 'Luces: faros y direccionales', Icon: Wrench, position: [0.02, 0.17, 0.53] },
+  { id: 'cinturon', label: 'Cinturones: hebilla y anclajes', Icon: ShieldCheck, position: [0.02, 0.25, 0.02] },
+  { id: 'espejos', label: 'Espejos: ajuste y visibilidad', Icon: KeyRound, position: [-0.39, 0.22, 0.34] },
 ];
 
 function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string) => void }) {
