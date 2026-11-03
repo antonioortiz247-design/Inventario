@@ -115,3 +115,104 @@ img {
 .bg-aqua {
   background-color: var(--qualitas-aqua);
 }
+
+/* =========================================================
+   QUÁLITAS · LIQUID GLASS DESIGN SYSTEM
+   Capa global para el Hub, módulos y experiencias públicas.
+   ========================================================= */
+:root {
+  --glass-surface: rgba(255, 255, 255, 0.62);
+  --glass-surface-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-shadow: 0 10px 32px rgba(35, 25, 55, 0.08), inset 0 1px 0 rgba(255,255,255,.82);
+  --glass-blur: blur(20px) saturate(165%);
+}
+html {
+  background: #f3f6fa;
+}
+body {
+  background:
+    radial-gradient(ellipse at 8% 4%, rgba(148, 27, 128, .075), transparent 34rem),
+    radial-gradient(ellipse at 92% 18%, rgba(0, 150, 174, .085), transparent 38rem),
+    linear-gradient(145deg, #f8f9fc 0%, #eef3f8 55%, #f7f5fa 100%);
+  background-attachment: fixed;
+}
+.app-container,
+#root {
+  background: transparent;
+}
+:where(header, .card, .dashboard-card, .table-container, .modal, [class~="bg-white"], [class~="bg-slate-50"], [class~="bg-slate-100"]) {
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+:where(.card, .dashboard-card, .table-container, [class~="bg-white"], [class~="bg-slate-50"], [class~="bg-slate-100"]) {
+  background-color: var(--glass-surface) !important;
+  border-color: rgba(255,255,255,.78);
+  box-shadow: var(--glass-shadow);
+}
+:where(header, [class~="sticky"][class~="top-0"]) {
+  background-color: rgba(255,255,255,.68) !important;
+  border-color: rgba(255,255,255,.72) !important;
+  box-shadow: 0 4px 24px rgba(30, 35, 55, .045);
+}
+:where(input:not([type="checkbox"]):not([type="radio"]), textarea, select, .input) {
+  background: rgba(255,255,255,.66) !important;
+  border-color: rgba(148, 163, 184, .34) !important;
+  border-radius: 14px !important;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+:where(input:not([type="checkbox"]):not([type="radio"]), textarea, select, .input):focus {
+  background: rgba(255,255,255,.9) !important;
+  border-color: rgba(0,150,174,.62) !important;
+  box-shadow: 0 0 0 4px rgba(0,150,174,.10), 0 5px 18px rgba(0,150,174,.07) !important;
+}
+:where(button, a, [role="button"]) {
+  -webkit-tap-highlight-color: transparent;
+}
+:where(button:not([class*="bg-[#"]):not([class*="bg-emerald"]):not([class*="bg-red"]):not([class*="bg-amber"]), .btn-outline) {
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+:where(.sidebar, aside[class*="bg-slate-900"]) {
+  background: linear-gradient(160deg, rgba(28, 25, 48, .94), rgba(15, 23, 42, .96)) !important;
+  border-right: 1px solid rgba(255,255,255,.12) !important;
+  box-shadow: 12px 0 36px rgba(15,23,42,.12);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+:where(.sidebar-item.active, aside button[class*="bg-[#941880]"]) {
+  background: linear-gradient(135deg, rgba(148,27,128,.96), rgba(105,45,128,.92)) !important;
+  box-shadow: 0 6px 18px rgba(148,27,128,.24), inset 0 1px 0 rgba(255,255,255,.2);
+}
+:where(.table-container) {
+  overflow: auto;
+  border-radius: 18px;
+}
+:where(.table thead) {
+  background: rgba(236,242,248,.72) !important;
+}
+:where(.table tbody tr:hover) {
+  background: rgba(0,150,174,.055) !important;
+}
+:where(.dashboard-card, .card) {
+  border-radius: 20px !important;
+}
+:where(.dashboard-card:hover, .card:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(35,25,55,.11), inset 0 1px 0 rgba(255,255,255,.9);
+}
+:where(img, canvas, video) {
+  max-width: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+@media (max-width: 640px) {
+  :root { --glass-blur: blur(14px) saturate(155%); }
+}
+
