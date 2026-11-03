@@ -15,6 +15,7 @@ import {
   FaSkull,
   FaTicketAlt,
   FaCamera,
+  FaShieldAlt,
 } from "react-icons/fa";
 
 export default function Sidebar({
@@ -33,6 +34,7 @@ export default function Sidebar({
     { id: "registros-ruleta", label: "Registros de ruleta", icon: <FaClipboardList /> },
     { id: "calaverita-segura", label: "Calaverita Segura 2026", icon: <FaSkull /> },
     { id: "calaverita-preregistro", label: "Prerregistro Calaverita", icon: <FaTicketAlt /> },
+    { id: "desafio-seguridad-vial", label: "Desafío Digital de Seguridad Vial Quálitas", icon: <FaShieldAlt /> },
     { id: "simulador", label: "Simulador", icon: <FaCalculator /> },
     { id: "buscar-imagen", label: "Buscar por imagen", icon: <FaCamera /> },
     { id: "reportes", label: "Reportes", icon: <FaChartBar /> },
