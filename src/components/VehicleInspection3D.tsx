@@ -3,7 +3,7 @@
 import { Component, Suspense, useMemo, type ErrorInfo, type ReactNode } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Bounds, Center, ContactShadows, Html, OrbitControls, useGLTF, useTexture } from '@react-three/drei';
-import { CarFront, HeartPulse, KeyRound, ShieldCheck, Wrench } from 'lucide-react';
+import { Disc3, Lightbulb, ScanEye, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import * as THREE from 'three';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
@@ -37,10 +37,10 @@ type Hotspot = {
 
 const hotspots: Hotspot[] = [
   // Anclajes sobre las piezas reales del vehículo: rueda del costado visible, faro delantero, habitáculo y espejo lateral.
-  { id: 'llantas', label: 'Llantas: presión, dibujo y desgaste', Icon: CarFront, position: [-0.36, 0.10, 0.02] },
-  { id: 'luces', label: 'Luces: faros y direccionales', Icon: Wrench, position: [0.02, 0.17, 0.53] },
-  { id: 'cinturon', label: 'Cinturones: hebilla y anclajes', Icon: ShieldCheck, position: [0.02, 0.25, 0.02] },
-  { id: 'espejos', label: 'Espejos: ajuste y visibilidad', Icon: KeyRound, position: [-0.39, 0.22, 0.34] },
+  { id: 'llantas', label: 'LLANTAS', Icon: Disc3, position: [-0.36, 0.10, 0.02] },
+  { id: 'luces', label: 'LUCES', Icon: Lightbulb, position: [0.02, 0.17, 0.53] },
+  { id: 'cinturon', label: 'CINTURÓN', Icon: ShieldCheck, position: [0.02, 0.25, 0.02] },
+  { id: 'espejos', label: 'ESPEJOS', Icon: ScanEye, position: [-0.39, 0.22, 0.34] },
 ];
 
 function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string) => void }) {
@@ -500,9 +500,19 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
                 event.stopPropagation();
                 onSelect(id);
               }}
-              className={'motion-3d-hotspot !h-6 !w-6 !min-h-0 !min-w-0 !max-h-6 !max-w-6 !p-0 !rounded-full flex items-center justify-center shadow-lg ' + (active === id ? 'is-active' : '')}
+              className={'motion-3d-hotspot flex items-center justify-center gap-1.5 rounded-full border-2 border-white px-3 py-2 text-[10px] font-extrabold tracking-wide text-white shadow-[0_3px_14px_rgba(0,0,0,.45)] transition-all ' + (active === id ? 'is-active' : '')}
+              style={{
+                minWidth: 88,
+                minHeight: 38,
+                whiteSpace: 'nowrap',
+                background: active === id ? '#0096AE' : '#941B80',
+                boxShadow: '0 0 0 2px rgba(255,255,255,.9), 0 4px 14px rgba(0,0,0,.42)',
+                transform: 'translateZ(0)',
+                zIndex: 20,
+              }}
             >
-              <Icon size={11} strokeWidth={2.2} aria-hidden="true" />
+              <Icon size={17} strokeWidth={2.5} aria-hidden="true" />
+              <span>{label}</span>
             </button>
           </Html>
         ))}
