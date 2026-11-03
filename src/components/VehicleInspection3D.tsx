@@ -510,12 +510,15 @@ function SUVModel({ active, onSelect }: { active: string; onSelect: (id: string)
                 maxHeight: 34,
                 padding: 0,
                 color: '#941B80',
-                background: '#FFFFFF',
-                border: '1px solid rgba(255,255,255,.98)',
-                outline: active ? '2px solid rgba(148,27,128,.30)' : 'none',
+                background: 'rgba(255,255,255,.16)',
+                backgroundColor: 'rgba(255,255,255,.16)',
+                WebkitBackdropFilter: 'blur(14px) saturate(180%)',
+                backdropFilter: 'blur(14px) saturate(180%)',
+                border: '1px solid rgba(255,255,255,.58)',
+                outline: active ? '2px solid rgba(148,27,128,.34)' : 'none',
                 boxShadow: active
-                  ? '0 3px 10px rgba(35,25,45,.20)'
-                  : '0 2px 7px rgba(35,25,45,.14)',
+                  ? 'inset 0 1px 1px rgba(255,255,255,.72), 0 5px 18px rgba(35,25,45,.18)'
+                  : 'inset 0 1px 1px rgba(255,255,255,.68), 0 3px 12px rgba(35,25,45,.12)',
                 transform: active ? 'scale(1.08) translateZ(0)' : 'scale(1) translateZ(0)',
                 zIndex: 20,
               }}
