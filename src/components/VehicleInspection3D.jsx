@@ -30,7 +30,7 @@ function StaticFallback() {
   return <div className="flex h-[300px] flex-col items-center justify-center gap-3 bg-gradient-to-br from-slate-50 to-slate-200 px-5 text-center sm:h-[390px]"><div className="text-6xl" role="img" aria-label="Automóvil">🚘</div><p className="font-bold text-slate-700">Vista 3D no disponible en este dispositivo</p><p className="max-w-sm text-xs text-slate-500">La inspección puede completarse con los cuatro puntos de revisión que aparecen debajo.</p><button type="button" onClick={() => window.location.reload()} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-600">Reintentar carga</button></div>;
 }
 
-export default function VehicleInspection3D() {
+export default function VehicleInspection3D({ children }) {
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-[#e8f2f4]">
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4">
@@ -38,7 +38,7 @@ export default function VehicleInspection3D() {
         <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-500 shadow-sm">Modelo 3D</span>
       </div>
       <VehicleErrorBoundary fallback={<StaticFallback />}>
-        <div className="h-[300px] w-full sm:h-[390px]" aria-label="Modelo tridimensional del vehículo. Arrastra para girarlo.">
+        <div className="flex flex-col sm:min-h-[390px] sm:flex-row"><div className="h-[300px] min-w-0 flex-1 sm:h-[390px]" aria-label="Modelo tridimensional del vehículo. Arrastra para girarlo.">
           <Canvas camera={{ position: [4.5, 2.5, 5.2], fov: 36 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true, powerPreference: "low-power" }} onCreated={({ gl }) => { gl.setClearColor("#edf2f4", 0); gl.outputColorSpace = THREE.SRGBColorSpace; }}>
             <ambientLight intensity={1.5} />
             <hemisphereLight args={["#ffffff", "#687681", 1.3]} />
@@ -47,7 +47,7 @@ export default function VehicleInspection3D() {
             <Suspense fallback={<ModelLoader />}><VehicleModel /><ContactShadows position={[0, -0.12, 0]} opacity={0.28} scale={8} blur={2.5} far={5} /></Suspense>
             <OrbitControls makeDefault enablePan={false} minDistance={3} maxDistance={9} minPolarAngle={0.35} maxPolarAngle={Math.PI / 2.02} autoRotate autoRotateSpeed={0.4} enableDamping dampingFactor={0.07} />
           </Canvas>
-        </div>
+        </div>{children&&<div className="shrink-0 sm:w-[330px]">{children}</div>}</div>
       </VehicleErrorBoundary>
       <div className="border-t border-slate-200 bg-white/80 px-4 py-3 text-center text-xs text-slate-500">Arrastra el vehículo para girarlo y observar sus diferentes ángulos.</div>
     </div>
