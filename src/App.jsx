@@ -73,7 +73,7 @@ function App() {
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
-      <div className="min-w-0 flex-1">
+      <div className="mobile-app-content min-w-0 flex-1">
         <header className="hidden h-16 items-center justify-between border-b border-slate-200 bg-white px-8 md:flex">
           <div className="flex items-center gap-3">
             <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="h-9 w-auto object-contain" />
@@ -81,12 +81,12 @@ function App() {
           </div>
           <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Gestión de recursos y activaciones</span>
         </header>
-        <div className="sticky top-0 z-30 flex h-14 items-center border-b border-slate-200 bg-white/95 px-4 backdrop-blur md:hidden">
+        <div className="mobile-topbar sticky top-0 z-30 flex h-14 items-center px-3 sm:px-4 md:hidden">
           <button
             type="button"
             onClick={() => setMobileSidebarOpen(true)}
             aria-label="Abrir menú"
-            className="flex h-10 w-10 items-center justify-center rounded-md text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0096AE]"
+            className="mobile-menu-trigger flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0096AE]"
           >
             <FaBars className="text-xl" />
           </button>
