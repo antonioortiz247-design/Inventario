@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { FaDownload, FaShareSquare, FaPlusSquare, FaEllipsisVertical, FaCheckCircle } from "react-icons/fa";
+import { FaDownload, FaShareSquare, FaPlusSquare, FaCheckCircle } from "react-icons/fa";
 
 export default function InstallAppButton({ compact = false }) {
   const [open, setOpen] = useState(false);
@@ -93,7 +93,7 @@ export default function InstallAppButton({ compact = false }) {
             <li>Confirma pulsando <strong>Instalar</strong> o <strong>Añadir</strong>.</li>
             <li>Abre Quálitas Hub desde el icono que se agregará a tu dispositivo.</li>
           </ol>
-          <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600"><FaEllipsisVertical className="mt-0.5 shrink-0 text-[#941B80]"/>Si no aparece la opción, actualiza Chrome o Edge y vuelve a abrir esta página con ese navegador. La instalación automática solo está disponible cuando el navegador confirma que el sitio cumple sus requisitos de PWA.</div>
+          <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600"><span aria-hidden="true" className="mt-0.5 shrink-0 text-lg font-black text-[#941B80]">⋮</span>Si no aparece la opción, actualiza Chrome o Edge y vuelve a abrir esta página con ese navegador. La instalación automática solo está disponible cuando el navegador confirma que el sitio cumple sus requisitos de PWA.</div>
         </div>}
         <button type="button" onClick={() => setOpen(false)} className="mt-5 w-full rounded-xl bg-[#941B80] px-4 py-3 text-sm font-bold text-white">Cerrar</button>
       </section>
