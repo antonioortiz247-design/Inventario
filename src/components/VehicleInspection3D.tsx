@@ -39,7 +39,7 @@ const hotspots: Hotspot[] = [
   // Anclajes sobre los sistemas: llanta trasera del costado visible, faro delantero,
   // cinturón dentro del habitáculo (ligeramente elevado para mantenerlo visible) y espejo.
   { id: 'llantas', label: 'LLANTAS', Icon: Disc3, position: [-0.36, 0.10, -0.34] },
-  { id: 'luces', label: 'LUCES', Icon: Lightbulb, position: [0.02, 0.17, 0.53] },
+  { id: 'luces', label: 'LUCES', Icon: Lightbulb, position: [-0.36, 0.24, -0.52] },
   { id: 'cinturon', label: 'CINTURÓN', Icon: ShieldCheck, position: [0.02, 0.48, -0.02] },
   { id: 'espejos', label: 'ESPEJOS', Icon: ScanEye, position: [-0.39, 0.22, 0.34] },
 ];
