@@ -60,7 +60,7 @@ function App() {
   ) : (
     <AuthGate>
     <div
-      className="flex min-h-screen bg-slate-50"
+      className="app-entry flex min-h-screen bg-slate-50"
       onTouchStart={(event) => setTouchStartX(event.changedTouches[0]?.clientX ?? null)}
       onTouchEnd={(event) => {
         if (touchStartX === null) return;
