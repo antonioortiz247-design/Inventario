@@ -8,7 +8,7 @@ export default function InstallAppButton({ compact = false }) {
   const [standalone, setStandalone] = useState(false);
   const [desktop, setDesktop] = useState(false);
   const [browserName, setBrowserName] = useState("tu navegador");
-  const [installPrompt, setInstallPrompt] = useState(null);
+  const [installPrompt, setInstallPrompt] = useState(() => window.__qualitasInstallPrompt || null);
 
   useEffect(() => {
     const ua = window.navigator.userAgent || "";
@@ -17,18 +17,37 @@ export default function InstallAppButton({ compact = false }) {
     setIos(/iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
     setStandalone(isStandalone);
-    const capture = (event) => { event.preventDefault(); setInstallPrompt(event); };
-    window.addEventListener("beforeinstallprompt", capture);
-    window.addEventListener("appinstalled", () => { setStandalone(true); setInstallPrompt(null); });
-    return () => window.removeEventListener("beforeinstallprompt", capture);
+    const syncInstallPrompt = () => setInstallPrompt(window.__qualitasInstallPrompt || null);
+    const onInstalled = () => {
+      setStandalone(true);
+      setInstallPrompt(null);
+      window.__qualitasInstallPrompt = null;
+    };
+    window.addEventListener("qualitas-install-available", syncInstallPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    syncInstallPrompt();
+    return () => {
+      window.removeEventListener("qualitas-install-available", syncInstallPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
   }, []);
 
   const install = async () => {
-    if (installPrompt) {
-      installPrompt.prompt();
-      await installPrompt.userChoice;
-      setInstallPrompt(null);
-    } else setOpen(true);
+    const promptEvent = installPrompt || window.__qualitasInstallPrompt;
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+        window.__qualitasInstallPrompt = null;
+        setInstallPrompt(null);
+        if (choice?.outcome === "accepted") setOpen(false);
+      } catch (error) {
+        console.error("No se pudo abrir el diálogo nativo de instalación:", error);
+        setOpen(true);
+      }
+      return;
+    }
+    setOpen(true);
   };
 
   if (standalone) return <span className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">App instalada</span>;
