@@ -79,7 +79,7 @@ function App() {
       <div className="mobile-app-content min-w-0 flex-1">
         <header className="hidden h-16 items-center justify-between border-b border-slate-200 bg-white px-8 md:flex">
           <div className="flex items-center gap-3">
-            <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="h-9 w-auto object-contain" />
+            <img src="/Q-morado.png" alt="Quálitas" className="h-10 w-auto object-contain" />
             <h1 className="text-lg font-semibold tracking-tight text-slate-800">Hub</h1>
           </div>
           <div className="flex items-center gap-4"><span className="text-xs font-medium uppercase tracking-wider text-slate-400">Gestión de recursos y activaciones</span><InstallAppButton /></div>
@@ -93,7 +93,7 @@ function App() {
           >
             <FaBars className="text-xl" />
           </button>
-          <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="ml-3 h-8 w-auto max-w-[116px] object-contain" />
+          <img src="/Q-morado.png" alt="Quálitas" className="ml-3 h-9 w-auto max-w-[54px] object-contain" />
           <span className="ml-2 text-sm font-semibold text-slate-800">Hub</span>
           <div className="ml-auto"><InstallAppButton compact /></div>
         </div>
