@@ -54,7 +54,7 @@ export default function DesafioSeguridadVial({publicMode=false}){
   const correo=window.prompt("Correo:",r.correo||"");if(correo===null)return;
   const {error}=await supabase.from("desafio_seguridad_vial").update({nombre:nombre.trim(),telefono:telefono.trim(),correo:correo.trim()||null}).eq("id",r.id);
   if(error)setError("No se pudo editar el registro: "+error.message);
-  else{setRows(old=>old.map(x=>x.id===r.id?{...x,nombre:nombre.trim(),telefono:telefono.trim(),correo:correo.trim()||null}:x));setError("Registro actualizado correctamente.");}
+  else{setRows(old=>old.map(x=>x.id===r.id?{...x,nombre:nombre.trim(),telefono:telefono.trim(),correo:correo.trim()||null}:x));setError("");}
  };
  const deleteRecord=async r=>{
   if(!window.confirm("¿Eliminar definitivamente el registro de "+(r.nombre||r.folio)+"? Esta acción no se puede deshacer."))return;
