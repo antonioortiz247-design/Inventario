@@ -82,7 +82,7 @@ export default function RegistrosRuleta() {
   const deleteRecord = async (p) => {
     if (!window.confirm("¿Eliminar el registro de " + p.nombre + "? Esta acción no se puede deshacer.")) return;
     setLoading(true);
-    const { error: deleteError } = await supabase.from("ruleta_activaciones_prospectos").delete().eq("id", p.id);
+    const { error: prizeError } = await supabase.from("ruleta_activaciones_historial").delete().eq("prospecto_id", p.id);\n    if (prizeError) { setError("No se pudo eliminar el historial asociado: " + prizeError.message); setLoading(false); return; }\n    const { error: deleteError } = await supabase.from("ruleta_activaciones_prospectos").delete().eq("id", p.id);
     if (deleteError) setError("No se pudo eliminar el registro: " + deleteError.message);
     else { setNotice("Registro eliminado."); await load(); }
     setLoading(false);
