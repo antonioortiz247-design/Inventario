@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import Sidebar from "./components/Sidebar";
 import AuthGate from "./components/AuthGate";
+import InstallAppButton from "./components/InstallAppButton";
 import Home from "./pages/Home";
 import Inventario from "./pages/Inventario";
 import BuscarImagen from "./pages/BuscarImagen";
@@ -81,7 +82,7 @@ function App() {
             <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="h-9 w-auto object-contain" />
             <h1 className="text-lg font-semibold tracking-tight text-slate-800">Hub</h1>
           </div>
-          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Gestión de recursos y activaciones</span>
+          <div className="flex items-center gap-4"><span className="text-xs font-medium uppercase tracking-wider text-slate-400">Gestión de recursos y activaciones</span><InstallAppButton /></div>
         </header>
         <div className="mobile-topbar sticky top-0 z-30 flex h-14 items-center px-3 sm:px-4 md:hidden">
           <button
@@ -94,6 +95,7 @@ function App() {
           </button>
           <img src="/letragrama-qualitas-verde.png" alt="Quálitas" className="ml-3 h-8 w-auto max-w-[116px] object-contain" />
           <span className="ml-2 text-sm font-semibold text-slate-800">Hub</span>
+          <div className="ml-auto"><InstallAppButton compact /></div>
         </div>
         {inventory.error && (
           <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
