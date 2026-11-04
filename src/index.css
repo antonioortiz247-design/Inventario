@@ -617,3 +617,45 @@ body {
     transition: none !important;
   }
 }
+
+
+/* VISOR 3D · FONDO DEGRADADO INSTITUCIONAL QUÁLITAS */
+.motion-3d-viewer {
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.82) 0%, rgba(255,255,255,.28) 42%, transparent 72%),
+    linear-gradient(145deg,
+      #f3e6f1 0%,
+      #e9d7e8 20%,
+      #d9d9ed 48%,
+      #c8e5eb 76%,
+      #e3f4f4 100%) !important;
+}
+.motion-3d-viewer canvas {
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+.motion-3d-viewer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(148,27,128,.07), transparent 34%, rgba(0,150,174,.08)),
+    radial-gradient(ellipse at 50% 100%, rgba(0,150,174,.12), transparent 55%);
+}
+.motion-3d-viewer > div:last-child {
+  z-index: 2;
+}
+@media (max-width: 640px) {
+  .motion-3d-viewer {
+    min-height: 340px;
+    background:
+      radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.82) 0%, rgba(255,255,255,.25) 44%, transparent 74%),
+      linear-gradient(155deg, #f0e1ef 0%, #dfd8eb 48%, #c9e8ed 100%) !important;
+  }
+}
