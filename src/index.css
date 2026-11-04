@@ -681,3 +681,22 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .app-entry { animation: none !important; }
 }
+
+
+/* CARGA DE ACCESO · Quálitas Hub */
+.auth-loading-screen {
+  background: radial-gradient(ellipse at 15% 15%, rgba(148,27,128,.13), transparent 42%), radial-gradient(ellipse at 85% 85%, rgba(0,150,174,.15), transparent 45%), linear-gradient(145deg,#f8f9fc,#edf3f8);
+}
+.auth-loading-card { animation: auth-card-in .45s ease-out both; }
+.auth-loading-ring { animation: auth-ring-spin 1.15s linear infinite; }
+.auth-loading-pulse { animation: auth-pulse 1.8s ease-in-out infinite; }
+.auth-loading-progress { animation: auth-progress 1.6s ease-in-out infinite; }
+@keyframes auth-ring-spin { to { transform: rotate(360deg); } }
+@keyframes auth-pulse { 50% { transform: scale(.86); opacity: .55; } }
+@keyframes auth-progress { 0% { transform: translateX(-110%); } 100% { transform: translateX(260%); } }
+@keyframes auth-card-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .auth-loading-card,.auth-loading-ring,.auth-loading-pulse,.auth-loading-progress { animation:none !important; } }
+@media (max-width: 767px) {
+  .mobile-app-content article { min-width: 0; }
+  .mobile-app-content article button { min-height: 44px; }
+}
