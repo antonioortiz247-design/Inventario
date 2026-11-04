@@ -5,10 +5,14 @@ export default function InstallAppButton({ compact = false }) {
   const [open, setOpen] = useState(false);
   const [ios, setIos] = useState(false);
   const [standalone, setStandalone] = useState(false);
+  const [desktop, setDesktop] = useState(false);
+  const [browserName, setBrowserName] = useState("tu navegador");
   const [installPrompt, setInstallPrompt] = useState(null);
 
   useEffect(() => {
     const ua = window.navigator.userAgent || "";
+    setDesktop(!/Android|iPhone|iPad|iPod/i.test(ua));
+    setBrowserName(/Edg\//.test(ua) ? "Microsoft Edge" : /Chrome\//.test(ua) ? "Google Chrome" : /Safari\//.test(ua) && !/Chrome\//.test(ua) ? "Safari" : "tu navegador");
     setIos(/iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
     setStandalone(isStandalone);
@@ -39,8 +43,8 @@ export default function InstallAppButton({ compact = false }) {
           <li className="flex gap-3"><FaShareSquare className="mt-0.5 shrink-0 text-lg text-[#941B80]"/><span><strong>1. Abre el menú Compartir</strong><br/>En Safari, toca el icono de compartir en la parte inferior.</span></li>
           <li className="flex gap-3"><FaPlusSquare className="mt-0.5 shrink-0 text-lg text-[#941B80]"/><span><strong>2. Selecciona “Añadir a pantalla de inicio”</strong><br/>Si no aparece, desplázate hacia abajo en el menú.</span></li>
           <li className="flex gap-3"><FaDownload className="mt-0.5 shrink-0 text-lg text-[#941B80]"/><span><strong>3. Confirma con “Añadir”</strong><br/>El icono de Quálitas Hub quedará en tu pantalla de inicio.</span></li>
-        </ol> : <div className="text-sm leading-6 text-slate-700">{installPrompt ? "Confirma la instalación en la ventana del navegador." : <>En el menú de tu navegador, selecciona <strong>Instalar aplicación</strong> o <strong>Añadir a pantalla de inicio</strong>.</>}</div>}
-        <p className="mt-4 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-500">En iPhone y iPad, la instalación se realiza desde Safari. Esta opción no instala la app directamente; te guía al menú oficial de iOS.</p>
+        </ol> : <div className="text-sm leading-6 text-slate-700">{installPrompt ? "Confirma la instalación en la ventana del navegador." : desktop ? <div className="space-y-3"><p>Para instalar Quálitas Hub en tu computadora:</p><ol className="list-decimal space-y-2 pl-5"><li>Abre el menú de <strong>{browserName}</strong> (⋮ o ⋯), en la esquina superior derecha.</li><li>Busca <strong>Instalar Quálitas Hub</strong> o <strong>Aplicaciones → Instalar este sitio como aplicación</strong>.</li><li>Confirma la instalación. Se creará un acceso directo en tu escritorio o menú de aplicaciones.</li></ol><p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800">Si no aparece la opción, abre este sitio con Google Chrome o Microsoft Edge actualizado. Firefox no ofrece instalación de PWA de escritorio de la misma manera.</p></div> : <>En el menú de tu navegador, selecciona <strong>Instalar aplicación</strong> o <strong>Añadir a pantalla de inicio</strong>.</>}</div>}
+        <p className="mt-4 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-500">{ios ? "En iPhone y iPad, la instalación se realiza desde Safari. Esta guía te lleva al menú oficial de iOS." : desktop ? "La instalación depende de que el navegador y el sitio sean compatibles con PWA. Si el navegador muestra el botón Instalar en la barra de direcciones, también puedes usarlo." : "Si tu navegador admite instalación de aplicaciones web, aparecerá una confirmación para añadir Quálitas Hub al dispositivo."}</p>
         <button type="button" onClick={() => setOpen(false)} className="mt-5 w-full rounded-xl bg-[#941B80] px-4 py-3 text-sm font-bold text-white">Entendido</button>
       </section>
     </div>}
