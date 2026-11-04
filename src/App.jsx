@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import Sidebar from "./components/Sidebar";
+import AuthGate from "./components/AuthGate";
 import Home from "./pages/Home";
 import Inventario from "./pages/Inventario";
 import BuscarImagen from "./pages/BuscarImagen";
@@ -55,6 +56,7 @@ function App() {
   return (publicPreregistro || publicDesafio) ? (
     <div className="min-h-screen bg-slate-100">{renderPage()}</div>
   ) : (
+    <AuthGate>
     <div
       className="flex min-h-screen bg-slate-50"
       onTouchStart={(event) => setTouchStartX(event.changedTouches[0]?.clientX ?? null)}
@@ -101,6 +103,7 @@ function App() {
         {renderPage()}
       </div>
     </div>
+    </AuthGate>
   );
 }
 export default App;
