@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaSearch, FaSyncAlt, FaDownload, FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 import { supabase, supabaseConfigured } from "../lib/supabase";
+import RecordsLoader from "../components/RecordsLoader";
 
 export default function RegistrosRuleta() {
   const [session, setSession] = useState(null);
@@ -70,6 +71,23 @@ export default function RegistrosRuleta() {
       && (!from || date >= from) && (!to || date <= to);
   }), [prospectos, premios, query, from, to]);
 
+  const editRecord = async (p) => {
+    const nombre = window.prompt("Nombre del prospecto:", p.nombre); if (nombre === null) return;
+    const telefono = window.prompt("Teléfono:", p.telefono); if (telefono === null) return;
+    const correo = window.prompt("Correo:", p.correo || ""); if (correo === null) return;
+    const { error: updateError } = await supabase.from("ruleta_activaciones_prospectos").update({ nombre: nombre.trim(), telefono: telefono.trim(), correo: correo.trim() || null }).eq("id", p.id);
+    if (updateError) setError("No se pudo editar el registro: " + updateError.message);
+    else { setNotice("Registro actualizado."); await load(); }
+  };
+  const deleteRecord = async (p) => {
+    if (!window.confirm("¿Eliminar el registro de " + p.nombre + "? Esta acción no se puede deshacer.")) return;
+    setLoading(true);
+    const { error: deleteError } = await supabase.from("ruleta_activaciones_prospectos").delete().eq("id", p.id);
+    if (deleteError) setError("No se pudo eliminar el registro: " + deleteError.message);
+    else { setNotice("Registro eliminado."); await load(); }
+    setLoading(false);
+  };
+
   const exportCsv = () => {
     const columns = ["Nombre","Teléfono","Correo","Municipio","Marca","Modelo","Año","Tiene seguro","Aseguradora","Vencimiento","Interés de cotización","Evento","Premio","Fecha de registro","Acepta contacto"];
     const escape = (v) => '"' + String(v ?? "").replace(/"/g, '""') + '"';
@@ -94,7 +112,7 @@ export default function RegistrosRuleta() {
       <label className="text-sm text-slate-600">Desde <input type="date" value={from} onChange={e=>setFrom(e.target.value)} className="ml-1 rounded-lg border border-slate-300 p-2"/></label><label className="text-sm text-slate-600">Hasta <input type="date" value={to} onChange={e=>setTo(e.target.value)} className="ml-1 rounded-lg border border-slate-300 p-2"/></label>
       <button onClick={load} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 font-semibold disabled:opacity-50"><FaSyncAlt/>{loading ? "Actualizando…" : "Actualizar"}</button><button onClick={exportCsv} disabled={!rows.length} className="inline-flex items-center gap-2 rounded-xl bg-[#0096AE] px-3 py-2 font-semibold text-white disabled:opacity-50"><FaDownload/> Exportar CSV</button></div>
       <p className="mt-3 text-sm text-slate-500">Mostrando {rows.length} de {prospectos.length} registros.</p>
-      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200"><table className="min-w-[1450px] w-full text-left text-sm"><thead className="bg-slate-50 text-slate-600"><tr>{["Fecha","Nombre","Teléfono","Correo","Municipio","Vehículo","Seguro actual","Aseguradora","Vencimiento","Interés de cotización","Evento","Premio","Contacto comercial"].map(c=><th key={c} className="whitespace-nowrap px-3 py-3 font-semibold">{c}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{rows.map(p=><tr key={p.id} className="hover:bg-slate-50"><td className="whitespace-nowrap px-3 py-3">{p.created_at ? new Date(p.created_at).toLocaleString("es-MX") : "—"}</td><td className="px-3 py-3 font-semibold">{p.nombre}</td><td className="px-3 py-3">{p.telefono}</td><td className="px-3 py-3">{p.correo || "—"}</td><td className="px-3 py-3">{p.municipio || "—"}</td><td className="px-3 py-3">{[p.marca,p.modelo,p.anio].filter(Boolean).join(" ") || "—"}</td><td className="px-3 py-3">{p.tiene_seguro || "—"}</td><td className="px-3 py-3">{p.aseguradora || "—"}</td><td className="px-3 py-3">{p.vencimiento || "—"}</td><td className="px-3 py-3">{p.interes_cotizacion || "—"}</td><td className="px-3 py-3">{p.evento || "—"}</td><td className="px-3 py-3 font-semibold text-[#941B80]">{p.premio}</td><td className="px-3 py-3">{p.acepta_contacto ? "Sí" : "No"}</td></tr>)}{!loading && !rows.length && <tr><td colSpan={13} className="px-3 py-8 text-center text-slate-500">No hay registros que coincidan con los filtros.</td></tr>}</tbody></table></div>
+      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200"><table className="min-w-[1450px] w-full text-left text-sm"><thead className="bg-slate-50 text-slate-600"><tr>{["Fecha","Nombre","Teléfono","Correo","Municipio","Vehículo","Seguro actual","Aseguradora","Vencimiento","Interés de cotización","Evento","Premio","Contacto comercial","Acciones"].map(c=><th key={c} className="whitespace-nowrap px-3 py-3 font-semibold">{c}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{loading ? <tr><td colSpan={14} className="p-4"><RecordsLoader label="Cargando registros de ruleta"/></td></tr> : rows.map(p=><tr key={p.id} className="hover:bg-slate-50"><td className="whitespace-nowrap px-3 py-3">{p.created_at ? new Date(p.created_at).toLocaleString("es-MX") : "—"}</td><td className="px-3 py-3 font-semibold">{p.nombre}</td><td className="px-3 py-3">{p.telefono}</td><td className="px-3 py-3">{p.correo || "—"}</td><td className="px-3 py-3">{p.municipio || "—"}</td><td className="px-3 py-3">{[p.marca,p.modelo,p.anio].filter(Boolean).join(" ") || "—"}</td><td className="px-3 py-3">{p.tiene_seguro || "—"}</td><td className="px-3 py-3">{p.aseguradora || "—"}</td><td className="px-3 py-3">{p.vencimiento || "—"}</td><td className="px-3 py-3">{p.interes_cotizacion || "—"}</td><td className="px-3 py-3">{p.evento || "—"}</td><td className="px-3 py-3 font-semibold text-[#941B80]">{p.premio}</td><td className="px-3 py-3">{p.acepta_contacto ? "Sí" : "No"}</td><td className="px-3 py-3"><div className="flex gap-2"><button type="button" onClick={()=>editRecord(p)} disabled={loading} className="rounded-lg border border-[#941B80] px-3 py-1.5 font-semibold text-[#941B80]">Editar</button><button type="button" onClick={()=>deleteRecord(p)} disabled={loading} className="rounded-lg border border-rose-200 px-3 py-1.5 font-semibold text-rose-700">Eliminar</button></div></td></tr>)}{!loading && !rows.length && <tr><td colSpan={14} className="px-3 py-8 text-center text-slate-500">No hay registros que coincidan con los filtros.</td></tr>}</tbody></table></div>
     </section>}
     {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
     {notice && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{notice}</p>}
