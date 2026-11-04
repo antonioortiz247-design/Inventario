@@ -661,28 +661,6 @@ body {
 }
 
 
-/* ENTRADA DE LA APP · aparición suave del Hub */
-@keyframes qualitas-app-enter {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(.995);
-    filter: blur(3px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-.app-entry {
-  animation: qualitas-app-enter 620ms cubic-bezier(.2,.75,.25,1) both;
-  transform-origin: center top;
-}
-@media (prefers-reduced-motion: reduce) {
-  .app-entry { animation: none !important; }
-}
-
-
 /* CARGA DE ACCESO · Quálitas Hub */
 .auth-loading-screen {
   background: radial-gradient(ellipse at 15% 15%, rgba(148,27,128,.13), transparent 42%), radial-gradient(ellipse at 85% 85%, rgba(0,150,174,.15), transparent 45%), linear-gradient(145deg,#f8f9fc,#edf3f8);
