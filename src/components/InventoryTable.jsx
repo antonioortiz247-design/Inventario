@@ -129,7 +129,40 @@ export default function InventoryTable({ data = [], onEdit, onDelete }) {
     {tableError && <div role="alert" className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{tableError}</div>}
     {tableMessage && <div role="status" className="mb-4 rounded-md border border-[#BCEAF0] bg-[#E6F7FA] p-3 text-sm text-teal-800">{tableMessage}</div>}
     <div className="mb-3 flex items-center justify-between text-sm text-slate-500"><span>{data.length} resultado{data.length === 1 ? "" : "s"}</span><span className="hidden sm:inline">Puedes ajustar existencias directamente en la tabla</span></div>
-    <div className="overflow-x-auto rounded-lg border border-slate-200">
+    {/* Vista móvil: tarjetas para evitar columnas comprimidas y botones con texto vertical */}
+    <div className="grid gap-3 md:hidden">
+      {data.map((item) => {
+        const status = statusFor({ ...item, cantidad: getQuantity(item) });
+        const saving = savingId === item.id;
+        return (
+          <article key={item.id} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex min-w-0 items-start gap-3">
+              <InventoryThumbnail item={item} />
+              <div className="min-w-0 flex-1">
+                <h3 className="break-words font-bold leading-snug text-slate-900">{item.articulo || "Artículo sin nombre"}</h3>
+                <p className="mt-1 break-words text-sm text-slate-500">{item.categoria || "Sin categoría"}</p>
+                {item.ubicacion && <p className="mt-1 break-words text-xs text-slate-500">Ubicación: {item.ubicacion}</p>}
+              </div>
+              <span className={`shrink-0 inline-flex whitespace-nowrap rounded-md px-2 py-1 text-xs font-semibold ${status.classes}`}>{status.label}</span>
+            </div>
+            {item.observaciones && <p className="mt-3 break-words text-xs text-slate-500">{item.observaciones}</p>}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                Existencias
+                <input aria-label={`Existencias de ${item.articulo}`} type="number" min="0" step="1" inputMode="numeric" value={getQuantity(item)} onChange={(event) => handleQuantityChange(item.id, event.target.value)} className="w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-base font-bold tabular-nums text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-200" />
+              </label>
+              <span className="text-xs text-slate-500">Mínimo: {Number(item.stockMinimo ?? item.stock_minimo ?? 10)}</span>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => onEdit?.(item)} className="min-h-11 min-w-0 rounded-lg border border-[#941880] px-3 py-2 text-sm font-semibold text-[#941880] hover:bg-[#FDF2FA] focus:outline-none focus:ring-2 focus:ring-[#941880]/20">Editar</button>
+              <button type="button" disabled={saving || getQuantity(item).trim() === "" || Number(getQuantity(item)) === Number(item.cantidad || 0)} onClick={() => handleUpdateQuantity(item)} className="min-h-11 min-w-0 rounded-lg bg-[#0096AE] px-3 py-2 text-sm font-semibold text-white hover:bg-[#007A8E] disabled:cursor-not-allowed disabled:opacity-50">{saving ? "Actualizando…" : "Actualizar"}</button>
+              <button type="button" disabled={deletingId === item.id || saving} onClick={() => handleDelete(item)} className="col-span-2 min-h-11 min-w-0 rounded-lg border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50">{deletingId === item.id ? "Eliminando…" : "Eliminar"}</button>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+    <div className="hidden overflow-x-auto rounded-lg border border-slate-200 md:block">
       <table className="w-full min-w-[980px] border-collapse text-left text-sm">
         <thead><tr className="bg-slate-50 text-slate-700"><th className="px-4 py-3 font-semibold">Foto</th><th className="px-4 py-3 font-semibold">Artículo</th><th className="px-4 py-3 font-semibold">Categoría</th><th className="px-4 py-3 font-semibold">Existencias</th><th className="px-4 py-3 font-semibold">Ubicación</th><th className="px-4 py-3 font-semibold">Estado</th><th className="px-4 py-3 font-semibold">Acciones</th></tr></thead>
         <tbody>{data.map((item) => {
