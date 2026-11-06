@@ -325,11 +325,7 @@ export default function CalaveritaSegura({ publicMode = false }) {
           <p className="text-xs font-black uppercase tracking-[.34em] text-cyan-300 md:text-sm">La emoción está por comenzar</p>
           <h1 className="mt-4 text-4xl font-black leading-[1.02] tracking-tight md:text-6xl xl:text-7xl"><span className="lava-line">Hoy alguien</span><br/><span className="lava-line lava-gradient">se lleva</span><br/><span className="lava-line">la Dashcam.</span></h1>
           <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-white/55 md:text-base lg:mx-0">Acompáñanos a descubrir quién se lleva este premio de Calaverita Segura 2026.</p>
-          <div className="mt-8 inline-flex min-w-[230px] flex-col items-center rounded-2xl border border-white/10 bg-white/[.055] px-7 py-5 text-center shadow-[0_18px_70px_rgba(0,0,0,.22)] backdrop-blur-xl lg:items-start">
-            <span className="text-[10px] font-black uppercase tracking-[.25em] text-cyan-200">Participantes elegibles</span>
-            <div className="mt-1 flex items-baseline gap-2"><span className="text-6xl font-black tabular-nums tracking-tighter text-white md:text-7xl">{publicLoading ? "…" : publicCount ?? "—"}</span><span className="text-xs font-bold uppercase tracking-widest text-white/40">{publicCount === 1 ? "persona" : "personas"}</span></div>
-            <span className="mt-2 text-[10px] text-white/35">Asistencia confirmada · Participaciones activas</span>
-          </div>
+
         </div>
         <div className="order-1 flex min-h-[330px] items-center justify-center lg:order-2 lg:min-h-[520px]">
           {!winner ? <div className="relative w-full max-w-2xl text-center">
