@@ -286,20 +286,78 @@ export default function CalaveritaSegura({ publicMode = false }) {
     return () => { active = false; };
   }, [publicMode]);
 
-  if (publicMode) return <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-8 text-white">
-    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(148,27,128,.48),transparent_48%),radial-gradient(ellipse_at_bottom_right,rgba(0,150,174,.38),transparent_48%)]" />
-    <div className="relative z-10 w-full max-w-5xl">
-      <header className="mb-8 text-center"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-6 w-56 rounded-lg bg-white p-3 object-contain" /><p className="text-sm font-black uppercase tracking-[.3em] text-cyan-300">Calaverita Segura 2026</p><h1 className="mt-3 text-4xl font-black md:text-6xl">¡Llegó el momento!</h1><p className="mt-3 text-lg text-white/75">Sorteo de la Dashcam</p></header>
-      {error && <div role="alert" className="mb-5 rounded-xl border border-red-300/40 bg-red-950/60 p-4 text-center text-red-100">{error}</div>}
-      <div className="mx-auto mb-7 grid max-w-md grid-cols-1 gap-4">
-        <div className="rounded-3xl border border-white/15 bg-white/10 p-6 text-center shadow-2xl backdrop-blur-xl"><p className="text-sm font-bold uppercase tracking-widest text-cyan-200">Participantes elegibles</p><p className="mt-2 text-6xl font-black tabular-nums">{publicLoading ? "…" : publicCount ?? "—"}</p><p className="mt-2 text-sm text-white/60">Registros con asistencia confirmada y participaciones activas</p></div>
-      </div>
-      {!winner ? <div className="text-center"><button type="button" onClick={drawWinner} disabled={busyAdmin || publicLoading || publicCount === null} className="rounded-2xl bg-gradient-to-r from-[#941B80] to-[#0096AE] px-10 py-5 text-xl font-black tracking-wide text-white shadow-[0_15px_50px_rgba(0,150,174,.28)] transition hover:scale-[1.03] disabled:opacity-50">{busyAdmin ? "PREPARANDO…" : "🏆 REALIZAR SORTEO"}</button></div> :
-      <div className="mx-auto max-w-3xl animate-[winnerReveal_.9s_cubic-bezier(.16,1,.3,1)_both] rounded-[2rem] border border-cyan-200/40 bg-white p-8 text-center text-slate-900 shadow-[0_25px_90px_rgba(0,150,174,.3)] md:p-12">
-        <style>{`@keyframes winnerReveal{0%{opacity:0;transform:translateY(35px) scale(.88);filter:blur(12px)}65%{opacity:1;transform:translateY(-4px) scale(1.02);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}@keyframes winnerName{0%{opacity:0;transform:scale(.7);letter-spacing:.2em}100%{opacity:1;transform:scale(1);letter-spacing:normal}}`}</style>
-        <p className="text-sm font-black uppercase tracking-[.25em] text-[#0096AE]">Y el ganador es…</p><div className="my-5 text-7xl animate-bounce">🏆</div><h2 className="animate-[winnerName_.8s_.2s_ease-out_both] text-4xl font-black text-[#941B80] md:text-6xl">{winner.nombre}</h2><p className="mt-5 text-lg font-bold text-slate-600">Folio {winner.folio}</p><div className="mt-6 inline-flex rounded-full bg-cyan-50 px-5 py-2 font-bold text-[#007f93]">¡Felicidades!</div>
-      </div>}
-      <footer className="mt-10 text-center text-xs font-medium tracking-wide text-white/50">Aseguramos autos, cuidamos personas.</footer>
+  if (publicMode) return <main className="relative isolate min-h-screen overflow-hidden bg-[#090713] px-4 py-5 text-white md:px-8 md:py-7">
+    <style>{`
+      @keyframes stagePulse{0%,100%{opacity:.45;transform:scale(.96)}50%{opacity:.9;transform:scale(1.04)}}
+      @keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+      @keyframes revealWinner{0%{opacity:0;transform:translateY(35px) scale(.86);filter:blur(14px)}65%{opacity:1;transform:translateY(-5px) scale(1.015);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+      @keyframes nameReveal{0%{opacity:0;letter-spacing:.22em;transform:scale(.78)}100%{opacity:1;letter-spacing:normal;transform:scale(1)}}
+      @keyframes floatSpark{0%,100%{transform:translateY(0) scale(.8);opacity:.3}50%{transform:translateY(-18px) scale(1.15);opacity:1}}
+      @keyframes lightSweep{0%{transform:translateX(-130%) skewX(-18deg);opacity:0}35%{opacity:.45}100%{transform:translateX(230%) skewX(-18deg);opacity:0}}
+      .live-stage{background:radial-gradient(ellipse at 50% 0%,rgba(148,27,128,.28),transparent 43%),radial-gradient(ellipse at 90% 90%,rgba(0,150,174,.18),transparent 38%),linear-gradient(135deg,#100b1b 0%,#090713 52%,#10101e 100%)}
+      .stage-grid{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,black,transparent 88%)}
+    `}</style>
+    <div className="live-stage absolute inset-0 -z-20"/>
+    <div className="stage-grid pointer-events-none absolute inset-0 -z-10 opacity-50"/>
+    <div className="pointer-events-none absolute -left-40 top-[-16rem] -z-10 h-[34rem] w-[34rem] rounded-full border border-fuchsia-300/10" />
+    <div className="pointer-events-none absolute -right-44 bottom-[-18rem] -z-10 h-[38rem] w-[38rem] rounded-full border border-cyan-300/10" />
+    <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] w-full max-w-[1500px] flex-col">
+      <header className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-3 md:gap-5">
+          <div className="rounded-xl bg-white px-3 py-2 shadow-[0_0_35px_rgba(255,255,255,.08)]"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-8 w-auto object-contain md:h-10"/></div>
+          <div className="hidden h-9 w-px bg-white/15 sm:block"/>
+          <div><p className="text-[10px] font-black uppercase tracking-[.28em] text-cyan-200 md:text-xs">Experiencia especial</p><p className="mt-1 text-xs font-semibold tracking-wide text-white/65 md:text-sm">CALAVERITA SEGURA <span className="text-fuchsia-300">2026</span></p></div>
+        </div>
+        <div className="flex items-center gap-2 rounded-full border border-rose-300/20 bg-rose-400/10 px-3 py-2 text-[10px] font-black uppercase tracking-[.18em] text-rose-200 md:px-4 md:text-xs"><span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-70"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-400"/></span> En vivo</div>
+      </header>
+      <section className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[.82fr_1.18fr] lg:gap-12">
+        <div className="order-2 text-center lg:order-1 lg:text-left">
+          <p className="text-xs font-black uppercase tracking-[.34em] text-cyan-300 md:text-sm">La emoción está por comenzar</p>
+          <h1 className="mt-4 text-4xl font-black leading-[.98] tracking-tight md:text-6xl xl:text-7xl">Hoy alguien<br/><span className="bg-gradient-to-r from-fuchsia-300 via-white to-cyan-200 bg-clip-text text-transparent">se lleva</span><br/>la Dashcam.</h1>
+          <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-white/55 md:text-base lg:mx-0">Acompáñanos a descubrir quién se lleva este premio de Calaverita Segura 2026.</p>
+          <div className="mt-8 inline-flex min-w-[230px] flex-col items-center rounded-2xl border border-white/10 bg-white/[.055] px-7 py-5 text-center shadow-[0_18px_70px_rgba(0,0,0,.22)] backdrop-blur-xl lg:items-start">
+            <span className="text-[10px] font-black uppercase tracking-[.25em] text-cyan-200">Participantes elegibles</span>
+            <div className="mt-1 flex items-baseline gap-2"><span className="text-6xl font-black tabular-nums tracking-tighter text-white md:text-7xl">{publicLoading ? "…" : publicCount ?? "—"}</span><span className="text-xs font-bold uppercase tracking-widest text-white/40">{publicCount === 1 ? "persona" : "personas"}</span></div>
+            <span className="mt-2 text-[10px] text-white/35">Asistencia confirmada · Participaciones activas</span>
+          </div>
+        </div>
+        <div className="order-1 flex min-h-[330px] items-center justify-center lg:order-2 lg:min-h-[520px]">
+          {!winner ? <div className="relative w-full max-w-2xl text-center">
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[min(76vw,440px)] w-[min(76vw,440px)] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-200/10" style={{animation:"stagePulse 5s ease-in-out infinite"}}/>
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[min(64vw,360px)] w-[min(64vw,360px)] -translate-x-1/2 -translate-y-1/2 rounded-full border border-fuchsia-200/15" style={{animation:"orbit 34s linear infinite"}}/>
+            <div className="relative mx-auto flex aspect-square w-[min(74vw,390px)] items-center justify-center rounded-full border border-white/10 bg-[radial-gradient(circle,rgba(148,27,128,.22)_0%,rgba(16,12,29,.82)_58%,rgba(0,150,174,.10)_100%)] shadow-[0_0_100px_rgba(148,27,128,.18),inset_0_0_55px_rgba(255,255,255,.035)]">
+              <div className="absolute inset-4 rounded-full border border-dashed border-white/15"/>
+              <div className="absolute inset-8 rounded-full border border-cyan-200/10"/>
+              <div className="relative px-5">
+                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/15 bg-white/[.08] text-5xl shadow-[0_0_45px_rgba(0,150,174,.18)] md:h-24 md:w-24">🏆</div>
+                <p className="text-[10px] font-black uppercase tracking-[.3em] text-cyan-200 md:text-xs">Gran premio</p>
+                <h2 className="mt-2 text-3xl font-black tracking-tight md:text-5xl">Dashcam</h2>
+                <p className="mt-2 text-xs font-medium uppercase tracking-[.2em] text-white/40">Calaverita Segura 2026</p>
+              </div>
+              <span className="absolute left-[13%] top-[22%] h-2 w-2 rounded-full bg-cyan-200 shadow-[0_0_18px_5px_rgba(0,150,174,.55)]" style={{animation:"floatSpark 3s ease-in-out infinite"}}/>
+              <span className="absolute bottom-[19%] right-[16%] h-2.5 w-2.5 rounded-full bg-fuchsia-200 shadow-[0_0_18px_5px_rgba(148,27,128,.65)]" style={{animation:"floatSpark 3.7s .4s ease-in-out infinite"}}/>
+            </div>
+            <button type="button" onClick={drawWinner} disabled={busyAdmin || publicLoading || publicCount === null} className="group relative mt-8 overflow-hidden rounded-2xl bg-gradient-to-r from-[#941B80] via-[#a52c91] to-[#007f98] px-9 py-5 text-base font-black uppercase tracking-[.12em] text-white shadow-[0_12px_55px_rgba(148,27,128,.32)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_65px_rgba(0,150,174,.32)] disabled:cursor-wait disabled:opacity-55 md:px-12 md:text-lg">
+              <span className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent" style={{animation:"lightSweep 3.2s ease-in-out infinite"}}/>
+              <span className="relative">{busyAdmin ? "PREPARANDO LA SORPRESA…" : "✦  REALIZAR SORTEO  ✦"}</span>
+            </button>
+          </div> : <div className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-cyan-100/25 bg-[linear-gradient(145deg,rgba(255,255,255,.98),rgba(237,250,252,.97)_55%,rgba(250,240,250,.98))] px-6 py-10 text-center text-slate-900 shadow-[0_25px_100px_rgba(0,150,174,.22)]" style={{animation:"revealWinner 1.05s cubic-bezier(.16,1,.3,1) both"}}>
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#941B80] via-[#d9a5d2] to-[#0096AE]"/>
+            <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-fuchsia-200/30 blur-3xl"/>
+            <div className="pointer-events-none absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-cyan-200/40 blur-3xl"/>
+            <div className="relative">
+              <p className="text-[10px] font-black uppercase tracking-[.34em] text-[#008da4] md:text-xs">El momento que esperábamos</p>
+              <div className="my-5 text-7xl drop-shadow-sm md:text-8xl">🏆</div>
+              <p className="text-xs font-black uppercase tracking-[.28em] text-[#941B80]">¡Tenemos ganador!</p>
+              <h2 className="mt-4 break-words text-4xl font-black leading-tight tracking-tight text-slate-900 md:text-6xl" style={{animation:"nameReveal .8s .25s ease-out both"}}>{winner.nombre}</h2>
+              <div className="mx-auto mt-6 inline-flex items-center gap-3 rounded-full border border-[#0096AE]/20 bg-white/80 px-5 py-3 shadow-sm"><span className="text-[10px] font-black uppercase tracking-[.2em] text-slate-400">Folio</span><span className="text-lg font-black tracking-wider text-[#007f93]">{winner.folio}</span></div>
+              <p className="mt-7 text-sm font-semibold text-slate-500">¡Muchas felicidades!</p>
+            </div>
+          </div>}
+        </div>
+      </section>
+      {error && <div role="alert" className="mx-auto mb-4 max-w-2xl rounded-xl border border-red-300/30 bg-red-950/60 p-3 text-center text-sm text-red-100">{error}</div>}
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4 text-[10px] font-semibold uppercase tracking-[.18em] text-white/35"><span>Aseguramos autos, cuidamos personas.</span><span>Quálitas · Calaverita Segura 2026</span></footer>
     </div>
   </main>;
 
