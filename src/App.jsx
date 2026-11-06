@@ -23,7 +23,8 @@ function App() {
   const requestedPage = new URLSearchParams(window.location.search).get("pagina");
   const publicPreregistro = requestedPage === "calaverita-preregistro";
   const publicDesafio = requestedPage === "desafio-seguridad-vial";
-  const [currentPage, setCurrentPage] = useState(() => { if (publicPreregistro) return "calaverita-preregistro"; if (publicDesafio) return "desafio-seguridad-vial"; try { return window.sessionStorage.getItem("qualitas-hub-current-page") || "inicio"; } catch { return "inicio"; } });
+  const publicCalaveritaSorteo = requestedPage === "calaverita-sorteo";
+  const [currentPage, setCurrentPage] = useState(() => { if (publicPreregistro) return "calaverita-preregistro"; if (publicDesafio) return "desafio-seguridad-vial"; if (publicCalaveritaSorteo) return "calaverita-sorteo"; try { return window.sessionStorage.getItem("qualitas-hub-current-page") || "inicio"; } catch { return "inicio"; } });
   useEffect(() => { try { window.sessionStorage.setItem("qualitas-hub-current-page", currentPage); } catch (error) { console.warn("No se pudo conservar la página actual.", error); } }, [currentPage]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [desafioAdminOpen, setDesafioAdminOpen] = useState(false);
@@ -47,6 +48,7 @@ function App() {
       case "ruleta": return <RuletaActivaciones />;
       case "registros-ruleta": return <RegistrosRuleta />;
       case "calaverita-segura": return <CalaveritaSegura />;
+      case "calaverita-sorteo": return <CalaveritaSegura publicMode />;
       case "calaverita-preregistro": return <CalaveritaPreregistro publicMode={publicPreregistro} />;
       case "desafio-seguridad-vial": return <DesafioSeguridadVial publicMode={publicDesafio} adminMode={desafioAdminOpen} onExitAdmin={() => setDesafioAdminOpen(false)} onOpenAdmin={() => setDesafioAdminOpen(true)} />;
       case "buscar-imagen": return <BuscarImagen inventario={inventory.items} />;
@@ -55,7 +57,7 @@ function App() {
       default: return <Home inventario={inventory.items} estadisticas={inventory.estadisticas} onImport={handleImport} onNavigate={setCurrentPage} />;
     }
   };
-  return (publicPreregistro || publicDesafio) ? (
+  return (publicPreregistro || publicDesafio || publicCalaveritaSorteo) ? (
     <div className="min-h-screen bg-slate-100">{renderPage()}</div>
   ) : (
     <AuthGate>
