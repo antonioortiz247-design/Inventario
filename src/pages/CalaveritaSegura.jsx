@@ -288,32 +288,42 @@ export default function CalaveritaSegura({ publicMode = false }) {
 
   if (publicMode) return <main className="relative isolate min-h-screen overflow-hidden bg-[#090713] px-4 py-5 text-white md:px-8 md:py-7">
     <style>{`
-      @keyframes stagePulse{0%,100%{opacity:.45;transform:scale(.96)}50%{opacity:.9;transform:scale(1.04)}}
+      @keyframes stagePulse{0%,100%{opacity:.42;transform:scale(.96)}50%{opacity:.85;transform:scale(1.045)}}
       @keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
       @keyframes revealWinner{0%{opacity:0;transform:translateY(35px) scale(.86);filter:blur(14px)}65%{opacity:1;transform:translateY(-5px) scale(1.015);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
       @keyframes nameReveal{0%{opacity:0;letter-spacing:.22em;transform:scale(.78)}100%{opacity:1;letter-spacing:normal;transform:scale(1)}}
       @keyframes floatSpark{0%,100%{transform:translateY(0) scale(.8);opacity:.3}50%{transform:translateY(-18px) scale(1.15);opacity:1}}
       @keyframes lightSweep{0%{transform:translateX(-130%) skewX(-18deg);opacity:0}35%{opacity:.45}100%{transform:translateX(230%) skewX(-18deg);opacity:0}}
-      .live-stage{background:radial-gradient(ellipse at 50% 0%,rgba(148,27,128,.28),transparent 43%),radial-gradient(ellipse at 90% 90%,rgba(0,150,174,.18),transparent 38%),linear-gradient(135deg,#100b1b 0%,#090713 52%,#10101e 100%)}
-      .stage-grid{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,black,transparent 88%)}
+      @keyframes lavaDrift{0%,100%{transform:translate3d(0,0,0) rotate(-.6deg);filter:hue-rotate(0deg)}25%{transform:translate3d(0,-5px,0) rotate(.45deg)}50%{transform:translate3d(0,2px,0) rotate(.7deg);filter:hue-rotate(10deg)}75%{transform:translate3d(0,-3px,0) rotate(-.35deg)}}
+      @keyframes lavaFlow{0%,100%{background-position:0% 50%;filter:drop-shadow(0 0 16px rgba(148,27,128,.18))}50%{background-position:100% 50%;filter:drop-shadow(0 0 24px rgba(0,150,174,.28))}}
+      @keyframes glassShine{0%,100%{opacity:.28;transform:translateX(-55%)}50%{opacity:.65;transform:translateX(55%)}}
+      .live-stage{background:radial-gradient(ellipse at 14% 18%,rgba(148,27,128,.36),transparent 42%),radial-gradient(ellipse at 83% 78%,rgba(0,150,174,.28),transparent 42%),radial-gradient(ellipse at 58% 42%,rgba(95,54,139,.16),transparent 48%),linear-gradient(135deg,#130b20 0%,#090b18 48%,#071923 100%)}
+      .live-stage:after{content:"";position:absolute;inset:-15%;pointer-events:none;background:radial-gradient(ellipse at 30% 55%,rgba(148,27,128,.14),transparent 30%),radial-gradient(ellipse at 72% 34%,rgba(0,150,174,.13),transparent 32%);filter:blur(34px);animation:lavaDrift 16s ease-in-out infinite}
+      .stage-grid{background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(to bottom,black,transparent 88%)}
+      .glass-header{position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(255,255,255,.2);border-radius:24px;background:linear-gradient(115deg,rgba(255,255,255,.13),rgba(255,255,255,.055) 48%,rgba(0,150,174,.09));box-shadow:0 18px 65px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.22);backdrop-filter:blur(24px) saturate(155%);-webkit-backdrop-filter:blur(24px) saturate(155%)}
+      .glass-header:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.12) 48%,transparent 72%);animation:glassShine 10s ease-in-out infinite}
+      .lava-line{display:inline-block;transform-origin:50% 65%;animation:lavaDrift 8.5s ease-in-out infinite}
+      .lava-line:nth-of-type(2){animation-delay:-2.2s}
+      .lava-line:nth-of-type(3){animation-delay:-4.4s}
+      .lava-gradient{background:linear-gradient(100deg,#e6b8e5 0%,#fff 28%,#a8eff3 58%,#e4b5df 82%,#fff 100%);background-size:260% 260%;background-clip:text;-webkit-background-clip:text;color:transparent;animation:lavaDrift 8.5s ease-in-out infinite,lavaFlow 12s ease-in-out infinite}
     `}</style>
     <div className="live-stage absolute inset-0 -z-20"/>
     <div className="stage-grid pointer-events-none absolute inset-0 -z-10 opacity-50"/>
     <div className="pointer-events-none absolute -left-40 top-[-16rem] -z-10 h-[34rem] w-[34rem] rounded-full border border-fuchsia-300/10" />
     <div className="pointer-events-none absolute -right-44 bottom-[-18rem] -z-10 h-[38rem] w-[38rem] rounded-full border border-cyan-300/10" />
     <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] w-full max-w-[1500px] flex-col">
-      <header className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
-        <div className="flex items-center gap-3 md:gap-5">
-          <div className="rounded-xl bg-white px-3 py-2 shadow-[0_0_35px_rgba(255,255,255,.08)]"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-8 w-auto object-contain md:h-10"/></div>
-          <div className="hidden h-9 w-px bg-white/15 sm:block"/>
-          <div><p className="text-[10px] font-black uppercase tracking-[.28em] text-cyan-200 md:text-xs">Experiencia especial</p><p className="mt-1 text-xs font-semibold tracking-wide text-white/65 md:text-sm">CALAVERITA SEGURA <span className="text-fuchsia-300">2026</span></p></div>
+      <header className="glass-header flex items-center justify-between gap-3 px-3 py-3 md:gap-6 md:px-6 md:py-4">
+        <div className="flex min-w-0 items-center gap-3 md:gap-5">
+          <div className="rounded-2xl border border-white/65 bg-white/90 px-3 py-2 shadow-[0_8px_30px_rgba(0,0,0,.18)]"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="h-7 w-auto object-contain md:h-9"/></div>
+          <div className="hidden h-10 w-px bg-white/20 sm:block"/>
+          <div className="min-w-0"><p className="text-[9px] font-black uppercase tracking-[.22em] text-cyan-100/90 md:text-[11px] md:tracking-[.3em]">Experiencia especial</p><p className="mt-1 truncate text-[11px] font-bold tracking-[.12em] text-white md:text-sm md:tracking-[.18em]">CALAVERITA SEGURA <span className="text-fuchsia-200">2026</span></p></div>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-rose-300/20 bg-rose-400/10 px-3 py-2 text-[10px] font-black uppercase tracking-[.18em] text-rose-200 md:px-4 md:text-xs"><span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-70"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-400"/></span> En vivo</div>
+        <div className="flex shrink-0 items-center gap-2 rounded-full border border-white/20 bg-white/[.09] px-3 py-2 text-[9px] font-black uppercase tracking-[.16em] text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,.16)] backdrop-blur-xl md:px-4 md:text-[10px]"><span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-70"/><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-400"/></span> En vivo</div>
       </header>
       <section className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[.82fr_1.18fr] lg:gap-12">
         <div className="order-2 text-center lg:order-1 lg:text-left">
           <p className="text-xs font-black uppercase tracking-[.34em] text-cyan-300 md:text-sm">La emoción está por comenzar</p>
-          <h1 className="mt-4 text-4xl font-black leading-[.98] tracking-tight md:text-6xl xl:text-7xl">Hoy alguien<br/><span className="bg-gradient-to-r from-fuchsia-300 via-white to-cyan-200 bg-clip-text text-transparent">se lleva</span><br/>la Dashcam.</h1>
+          <h1 className="mt-4 text-4xl font-black leading-[1.02] tracking-tight md:text-6xl xl:text-7xl"><span className="lava-line">Hoy alguien</span><br/><span className="lava-line lava-gradient">se lleva</span><br/><span className="lava-line">la Dashcam.</span></h1>
           <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-white/55 md:text-base lg:mx-0">Acompáñanos a descubrir quién se lleva este premio de Calaverita Segura 2026.</p>
           <div className="mt-8 inline-flex min-w-[230px] flex-col items-center rounded-2xl border border-white/10 bg-white/[.055] px-7 py-5 text-center shadow-[0_18px_70px_rgba(0,0,0,.22)] backdrop-blur-xl lg:items-start">
             <span className="text-[10px] font-black uppercase tracking-[.25em] text-cyan-200">Participantes elegibles</span>
