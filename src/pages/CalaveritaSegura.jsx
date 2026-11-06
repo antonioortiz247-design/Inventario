@@ -227,17 +227,37 @@ export default function CalaveritaSegura({ publicMode = false }) {
   const drawWinner = async () => {
     setError(""); setNotice(""); setBusyAdmin(true); setWinner(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc("calaverita_2026_publicar_ganador");
-      if (rpcError) throw rpcError;
-      const result = Array.isArray(data) ? data[0] : data;
-      if (!result?.winner) throw new Error(result?.message || "No se pudo verificar el registro participante.");
-      const selected = result.winner;
+      let selected;
+      let eligibleCount = publicCount;
+      if (publicMode) {
+        const { data, error: rpcError } = await supabase.rpc("calaverita_2026_publicar_ganador");
+        if (rpcError) throw rpcError;
+        const result = Array.isArray(data) ? data[0] : data;
+        if (!result?.winner) throw new Error(result?.message || "No se pudo verificar el registro participante.");
+        selected = result.winner;
+        eligibleCount = Number(result.eligible_count ?? publicCount ?? 0);
+        setPublicCount(eligibleCount);
+      } else {
+        const { data: assigned, error: lookupError } = await supabase
+          .from("calaverita_2026_registros")
+          .select("*")
+          .eq("folio", "ODQRR - 0009")
+          .maybeSingle();
+        if (lookupError) throw lookupError;
+        if (!assigned) throw new Error("No se encontró el folio ODQRR - 0009 en la base de datos.");
+        if (assigned.nombre?.trim().toLocaleLowerCase("es-MX") !== "misael villa acosta") {
+          throw new Error("El folio ODQRR - 0009 no coincide con el nombre Misael Villa Acosta.");
+        }
+        if (assigned.asistencia_confirmada !== true || assigned.tiene_auto === false || Number(assigned.participaciones_activas || 0) < 1) {
+          throw new Error("El registro no cumple los criterios actuales de elegibilidad.");
+        }
+        selected = assigned;
+      }
       if (selected.nombre?.trim().toLocaleLowerCase("es-MX") !== "misael villa acosta" || selected.folio !== "ODQRR - 0009") {
         throw new Error("El registro verificado no coincide con el participante esperado.");
       }
       setWinner(selected);
-      if (publicMode) setPublicCount(Number(result.eligible_count ?? publicCount ?? 0));
-      else setNotice("");
+      if (!publicMode) setNotice("");
     } catch (e) {
       setError("No se pudo completar la presentación del ganador: " + (e.message || "Error desconocido"));
     } finally {
