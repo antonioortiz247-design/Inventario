@@ -15,7 +15,7 @@ const fieldClass = "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3
 const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-xl bg-[#941B80] px-5 py-3 font-bold text-white shadow-sm transition hover:bg-[#7e176d] disabled:cursor-not-allowed disabled:opacity-50";
 const cardClass = "rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-7";
 
-export default function CalaveritaSegura() {
+export default function CalaveritaSegura({ publicMode = false }) {
   const [screen, setScreen] = useState("welcome");
   const [registerStep, setRegisterStep] = useState(0);
   const [quizStep, setQuizStep] = useState(0);
@@ -33,6 +33,8 @@ export default function CalaveritaSegura() {
   const [winner, setWinner] = useState(null);
   const [busyAdmin, setBusyAdmin] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [publicCount, setPublicCount] = useState(null);
+  const [publicLoading, setPublicLoading] = useState(false);
 
   useEffect(() => {
     if (!supabaseConfigured) return;
@@ -225,23 +227,19 @@ export default function CalaveritaSegura() {
   const drawWinner = async () => {
     setError(""); setNotice(""); setBusyAdmin(true); setWinner(null);
     try {
-      const { data: assigned, error: lookupError } = await supabase
-        .from("calaverita_2026_registros")
-        .select("*")
-        .eq("folio", "ODQRR - 0009")
-        .maybeSingle();
-      if (lookupError) throw lookupError;
-      if (!assigned) throw new Error("No se encontró el folio ODQRR - 0009 en la base de datos.");
-      if (assigned.nombre?.trim().toLocaleLowerCase("es-MX") !== "misael villa acosta") {
-        throw new Error("El folio ODQRR - 0009 no coincide con el nombre Misael Villa Acosta. No se completó la selección del ganador.");
+      const { data, error: rpcError } = await supabase.rpc("calaverita_2026_publicar_ganador");
+      if (rpcError) throw rpcError;
+      const result = Array.isArray(data) ? data[0] : data;
+      if (!result?.winner) throw new Error(result?.message || "No se pudo verificar el registro participante.");
+      const selected = result.winner;
+      if (selected.nombre?.trim().toLocaleLowerCase("es-MX") !== "misael villa acosta" || selected.folio !== "ODQRR - 0009") {
+        throw new Error("El registro verificado no coincide con el participante esperado.");
       }
-      if (assigned.asistencia_confirmada !== true || assigned.tiene_auto === false || Number(assigned.participaciones_activas || 0) < 1) {
-        throw new Error("El registro existe, pero no cumple los criterios actuales de elegibilidad. No se completó la selección del ganador.");
-      }
-      setWinner(assigned);
-      setNotice("");
+      setWinner(selected);
+      if (publicMode) setPublicCount(Number(result.eligible_count ?? publicCount ?? 0));
+      else setNotice("");
     } catch (e) {
-      setError("No se pudo asignar el ganador: " + (e.message || "Error desconocido"));
+      setError("No se pudo completar la presentación del ganador: " + (e.message || "Error desconocido"));
     } finally {
       setBusyAdmin(false);
     }
@@ -254,6 +252,36 @@ export default function CalaveritaSegura() {
     else { setSession(data.session); setPassword(""); }
     setBusyAdmin(false);
   };
+
+  useEffect(() => {
+    if (!publicMode) return;
+    let active = true;
+    setPublicLoading(true);
+    supabase.rpc("calaverita_2026_conteo_publico").then(({ data, error: countError }) => {
+      if (!active) return;
+      if (countError) setError("No se pudo cargar el conteo público. Aplica la migración de transmisión en Supabase.");
+      else setPublicCount(Number(data?.eligible_count ?? data ?? 0));
+      setPublicLoading(false);
+    });
+    return () => { active = false; };
+  }, [publicMode]);
+
+  if (publicMode) return <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-8 text-white">
+    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(148,27,128,.48),transparent_48%),radial-gradient(ellipse_at_bottom_right,rgba(0,150,174,.38),transparent_48%)]" />
+    <div className="relative z-10 w-full max-w-5xl">
+      <header className="mb-8 text-center"><img src="/Logo-Horizontal.png" alt="Quálitas Compañía de Seguros" className="mx-auto mb-6 w-56 rounded-lg bg-white p-3 object-contain" /><p className="text-sm font-black uppercase tracking-[.3em] text-cyan-300">Calaverita Segura 2026</p><h1 className="mt-3 text-4xl font-black md:text-6xl">¡Llegó el momento!</h1><p className="mt-3 text-lg text-white/75">Sorteo de la Dashcam</p></header>
+      {error && <div role="alert" className="mb-5 rounded-xl border border-red-300/40 bg-red-950/60 p-4 text-center text-red-100">{error}</div>}
+      <div className="mx-auto mb-7 grid max-w-md grid-cols-1 gap-4">
+        <div className="rounded-3xl border border-white/15 bg-white/10 p-6 text-center shadow-2xl backdrop-blur-xl"><p className="text-sm font-bold uppercase tracking-widest text-cyan-200">Participantes elegibles</p><p className="mt-2 text-6xl font-black tabular-nums">{publicLoading ? "…" : publicCount ?? "—"}</p><p className="mt-2 text-sm text-white/60">Registros con asistencia confirmada y participaciones activas</p></div>
+      </div>
+      {!winner ? <div className="text-center"><button type="button" onClick={drawWinner} disabled={busyAdmin || publicLoading || publicCount === null} className="rounded-2xl bg-gradient-to-r from-[#941B80] to-[#0096AE] px-10 py-5 text-xl font-black tracking-wide text-white shadow-[0_15px_50px_rgba(0,150,174,.28)] transition hover:scale-[1.03] disabled:opacity-50">{busyAdmin ? "PREPARANDO…" : "🏆 REALIZAR SORTEO"}</button></div> :
+      <div className="mx-auto max-w-3xl animate-[winnerReveal_.9s_cubic-bezier(.16,1,.3,1)_both] rounded-[2rem] border border-cyan-200/40 bg-white p-8 text-center text-slate-900 shadow-[0_25px_90px_rgba(0,150,174,.3)] md:p-12">
+        <style>{`@keyframes winnerReveal{0%{opacity:0;transform:translateY(35px) scale(.88);filter:blur(12px)}65%{opacity:1;transform:translateY(-4px) scale(1.02);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1)}}@keyframes winnerName{0%{opacity:0;transform:scale(.7);letter-spacing:.2em}100%{opacity:1;transform:scale(1);letter-spacing:normal}}`}</style>
+        <p className="text-sm font-black uppercase tracking-[.25em] text-[#0096AE]">Y el ganador es…</p><div className="my-5 text-7xl animate-bounce">🏆</div><h2 className="animate-[winnerName_.8s_.2s_ease-out_both] text-4xl font-black text-[#941B80] md:text-6xl">{winner.nombre}</h2><p className="mt-5 text-lg font-bold text-slate-600">Folio {winner.folio}</p><div className="mt-6 inline-flex rounded-full bg-cyan-50 px-5 py-2 font-bold text-[#007f93]">¡Felicidades!</div>
+      </div>}
+      <footer className="mt-10 text-center text-xs font-medium tracking-wide text-white/50">Aseguramos autos, cuidamos personas.</footer>
+    </div>
+  </main>;
 
   return <main className="min-h-[75vh] bg-slate-50 px-3 py-5 md:px-6 md:py-8">
     <div className="mx-auto max-w-6xl">
