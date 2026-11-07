@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaTrophy } from "react-icons/fa";
 import Sidebar from "./components/Sidebar";
 import AuthGate from "./components/AuthGate";
 import InstallAppButton from "./components/InstallAppButton";
@@ -85,7 +85,7 @@ function App() {
             <img src="/Q-morado.png" alt="Quálitas" className="h-10 w-auto object-contain" />
             <h1 className="text-lg font-semibold tracking-tight text-slate-800">Hub</h1>
           </div>
-          <div className="flex items-center gap-4"><span className="text-xs font-medium uppercase tracking-wider text-slate-400">Gestión de recursos y activaciones</span><InstallAppButton /></div>
+          <div className="flex items-center gap-4"><span className="text-xs font-medium uppercase tracking-wider text-slate-400">Gestión de recursos y activaciones</span><button type="button" onClick={() => setCurrentPage("calaverita-sorteo")} title="Abrir pantalla del sorteo" className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] font-medium text-slate-400 transition hover:bg-slate-50 hover:text-[#941B80]"><FaTrophy className="text-[10px]" /> Sorteo</button><InstallAppButton /></div>
         </header>
         <div className="mobile-topbar sticky top-0 z-30 flex h-14 items-center px-3 sm:px-4 md:hidden">
           <button
@@ -98,7 +98,7 @@ function App() {
           </button>
           <img src="/Q-morado.png" alt="Quálitas" className="ml-3 h-9 w-auto max-w-[54px] object-contain" />
           <span className="ml-2 text-sm font-semibold text-slate-800">Hub</span>
-          <div className="ml-auto"><InstallAppButton compact /></div>
+          <div className="ml-auto flex items-center gap-2"><button type="button" onClick={() => setCurrentPage("calaverita-sorteo")} aria-label="Abrir pantalla del sorteo" title="Sorteo" className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/70 hover:text-[#941B80]"><FaTrophy className="text-sm" /></button><InstallAppButton compact /></div>
         </div>
         {inventory.error && (
           <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
