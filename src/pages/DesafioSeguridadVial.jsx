@@ -301,7 +301,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 .q-side-sidewalk { position:absolute; top:0; bottom:0; width:30%; background:repeating-linear-gradient(0deg,rgba(112,132,136,.18) 0 2px,transparent 2px 76px),linear-gradient(90deg,#c7d0cc,#e2e4dc 48%,#bac8c4); box-shadow:inset 5px 0 8px rgba(35,58,60,.12),inset -4px 0 7px rgba(35,58,60,.12); animation:qLandscapeFlow 22s linear infinite; }
 .q-side-sidewalk-left { right:0; clip-path:polygon(30% 0,100% 0,100% 100%,0 100%); }
 .q-side-sidewalk-right { left:0; clip-path:polygon(0 0,70% 0,100% 100%,0 100%); }
-.q-side-curb { position:absolute; top:0; bottom:0; width:8px; background:linear-gradient(90deg,#8fa6a2,#edf0e7,#879d99); box-shadow:0 0 8px rgba(30,57,58,.2); }
+
 .q-side-curb-left { right:29%; }
 .q-side-curb-right { left:29%; }
 .q-side-plant { position:absolute; width:clamp(22px,4vw,54px); height:clamp(16px,3vh,34px); border-radius:50% 50% 42% 42%; background:radial-gradient(ellipse at 35% 28%,#9ebc82 0 12%,#4e895f 45%,#286348 100%); box-shadow:0 5px 8px rgba(30,63,46,.24); }
@@ -317,22 +317,22 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 .q-side-ad span { margin-top:7px; font-size:clamp(8px,.85vw,12px); line-height:1.2; font-weight:800; }
 .q-side-ad i { display:block; height:5px; width:100%; margin-top:9px; border-radius:8px; background:#0096AE; }
 `}</style>
-<div className="absolute inset-y-0 left-0 w-[calc(50%-min(24.6vh,162px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
+<div className="absolute inset-y-0 left-0 w-[calc(50%-min(24.6vh,270px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
 <div className="q-side-city"/>
 <div className="q-side-garden"/>
 <div className="q-side-sidewalk q-side-sidewalk-left"/>
-<div className="q-side-curb q-side-curb-left"/>
+
 <div className="q-side-plant left-[12%] top-[22%]"/>
 <div className="q-side-plant left-[46%] top-[57%]"/>
 <div className="q-side-plant left-[8%] top-[78%]"/>
 <div className="q-side-prop" style={{animationDelay:"0s"}}><div className="q-side-ad"><strong>QUÁLITAS</strong><span>ASEGURAMOS AUTOS<br/>CUIDAMOS PERSONAS</span><i/></div></div>
 <div className="q-side-prop" style={{animationDelay:"-15s"}}><div className="q-side-ad" style={{background:"linear-gradient(135deg,#087f96,#07596c)"}}><strong>MANEJA SEGURO</strong><span>EN CADA KILÓMETRO<br/>VAMOS CONTIGO</span><i/></div></div>
 </div>
-<div className="absolute inset-y-0 right-0 w-[calc(50%-min(24.6vh,162px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
+<div className="absolute inset-y-0 right-0 w-[calc(50%-min(24.6vh,270px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
 <div className="q-side-city"/>
 <div className="q-side-garden"/>
 <div className="q-side-sidewalk q-side-sidewalk-right"/>
-<div className="q-side-curb q-side-curb-right"/>
+
 <div className="q-side-plant right-[12%] top-[18%]"/>
 <div className="q-side-plant right-[45%] top-[54%]"/>
 <div className="q-side-plant right-[8%] top-[80%]"/>
