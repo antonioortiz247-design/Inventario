@@ -92,7 +92,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   if(step!=="game"||gameStatus!=="playing")return;
   const canvas=gameCanvasRef.current;if(!canvas)return;
   const ctx=canvas.getContext("2d"),W=540,H=900;
-  const g=gameEngineRef.current||{lane:1,jump:0,obstacles:[],ticks:0,distance:0,speed:5,spawn:25};gameEngineRef.current=g;
+  const g=gameEngineRef.current||{lane:1,jump:0,obstacles:[],ticks:0,distance:0,speed:7.2,spawn:12};gameEngineRef.current=g;
   let raf=0,alive=true,last=0;
   const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return top+(bottom-top)*p;};
   const rounded=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}};
@@ -230,9 +230,9 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.restore();
   };
   const frame=t=>{
-    if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;g.speed=Math.min(12.5,(5+g.distance/2200)*1.25);
+    if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;const difficultyLevel=Math.floor(g.distance/10000);g.speed=Math.min(15.5,7.2+difficultyLevel*0.85);
     ctx.clearRect(0,0,W,H);drawRoad();drawCityForeground();
-    g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});g.spawn=Math.max(34,(82-g.speed*3)/1.25)+Math.random()*19.2;}
+    g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});g.spawn=Math.max(25,42-difficultyLevel*3.5)+Math.random()*8;}
     g.obstacles.forEach(o=>{o.y+=g.speed*dt*1.7;o.phase=(o.phase||0)+dt*.08;});g.obstacles=g.obstacles.filter(o=>o.y<H+70);g.obstacles.slice().sort((a,b)=>a.y-b.y).forEach(drawObstacle);
     if(g.jump>0)g.jump=Math.max(0,g.jump-dt);
     const playerX=laneX(g.lane,H-150),playerY=H-150;
@@ -252,7 +252,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   const key=e=>{if(["ArrowLeft","ArrowRight","ArrowUp"," ","a","d","A","D"].includes(e.key)){e.preventDefault();if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")g.lane=Math.max(0,g.lane-1);if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")g.lane=Math.min(2,g.lane+1);if(e.key===" "||e.key==="ArrowUp")g.jump=22;}};
   window.addEventListener("keydown",key);return()=>{alive=false;cancelAnimationFrame(raf);window.removeEventListener("keydown",key);};
  },[step,gameStatus]);
- const startDriving=()=>{gameEngineRef.current={lane:1,jump:0,obstacles:[],ticks:0,distance:0,speed:5,spawn:25};setScore(0);setGameDistance(0);setGameStatus("playing");};
+ const startDriving=()=>{gameEngineRef.current={lane:1,jump:0,obstacles:[],ticks:0,distance:0,speed:7.2,spawn:12};setScore(0);setGameDistance(0);setGameStatus("playing");};
  const moveCar=direction=>{const g=gameEngineRef.current;if(!g||gameStatus!=="playing")return;if(direction==="left")g.lane=Math.max(0,g.lane-1);if(direction==="right")g.lane=Math.min(2,g.lane+1);if(direction==="jump")g.jump=22;};
  const touchStartRef=useRef(null);
  const handleGamePointerDown=e=>{if(gameStatus!=="playing")return;touchStartRef.current={x:e.clientX,y:e.clientY,id:e.pointerId};};
