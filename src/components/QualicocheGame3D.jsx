@@ -13,7 +13,7 @@ function BrandedCar({ engineRef }) {
     const bounds = new THREE.Box3().setFromObject(clone);
     const size = bounds.getSize(new THREE.Vector3());
     const center = bounds.getCenter(new THREE.Vector3());
-    const scale = 2.15 / Math.max(size.x, size.y, size.z);
+    const scale = 1.4 / Math.max(size.x, size.y, size.z);
     clone.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale);
     clone.scale.setScalar(scale);
     clone.traverse((node) => {
