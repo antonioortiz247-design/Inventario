@@ -50,7 +50,7 @@ function BrandedCar({ engineRef }) {
     const targetY = jumpProgress * 0.85;
     car.position.x = THREE.MathUtils.damp(car.position.x, targetX, 12, delta);
     car.position.y = THREE.MathUtils.damp(car.position.y, targetY, 12, delta);
-    car.rotation.z = THREE.MathUtils.damp(car.rotation.z, g ? (g.lane - 1) * -0.055 : 0, 8, delta);
+    car.rotation.y = Math.PI;\n    car.rotation.z = THREE.MathUtils.damp(car.rotation.z, g ? (g.lane - 1) * -0.035 : 0, 8, delta);
   });
 
   return <primitive object={car} />;
@@ -59,9 +59,9 @@ function BrandedCar({ engineRef }) {
 export default function QualicocheGame3D({ engineRef }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-[2]" aria-label="Modelo 3D del Qualicoche">
-      <Canvas camera={{ position: [0, 2.35, 6.2], fov: 34 }} dpr={[1, 1.35]}
-        gl={{ alpha: true, antialias: true, powerPreference: "low-power" }}
-        onCreated={({ gl }) => { gl.setClearColor(0x000000, 0); gl.outputColorSpace = THREE.SRGBColorSpace; }}>
+      <Canvas style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "transparent" }} camera={{ position: [0, 2.35, 6.2], fov: 34 }} dpr={[1, 1.35]}
+        gl={{ alpha: true, premultipliedAlpha: false, antialias: true, powerPreference: "low-power" }}
+        onCreated={({ gl }) => { gl.setClearColor(0x000000, 0); gl.outputColorSpace = THREE.SRGBColorSpace; gl.domElement.style.background = "transparent"; }}>
         <ambientLight intensity={1.15} />
         <hemisphereLight args={["#ffffff", "#344054", 1.1]} />
         <directionalLight position={[4, 7, 5]} intensity={2.6} />
