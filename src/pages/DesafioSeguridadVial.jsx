@@ -136,36 +136,85 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     const edgeGlow=ctx.createLinearGradient(0,0,0,H);edgeGlow.addColorStop(0,"rgba(0,150,174,.05)");edgeGlow.addColorStop(1,"rgba(0,150,174,.24)");ctx.fillStyle=edgeGlow;ctx.fillRect(0,H-10,W,10);
   };
   const drawCityForeground=()=>{
-    // Render street furniture AFTER the road, clipped strictly to sidewalks.
+    // Endless urban avenue: layered buildings and roadside architecture move with the player's distance.
     const drawSide=(side)=>{
+      const left=side==="left",base=left?0:385;
       ctx.save();ctx.beginPath();
-      if(side==="left"){ctx.moveTo(0,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);}
+      if(left){ctx.moveTo(0,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);}
       else{ctx.moveTo(385,0);ctx.lineTo(540,0);ctx.lineTo(540,H);ctx.lineTo(470,H);}
       ctx.closePath();ctx.clip();
-      for(let k=0;k<3;k++){
-        const y=((k*330+(g.distance*2.15)%990)+H)%(H+120)-60;
-        const p=Math.max(.38,.42+y/H*.9),sign=side==="left"?1:-1;
-        const roadEdge=side==="left"?(155-85*p):(385+85*p);
-        const x=side==="left"?roadEdge-17*p:roadEdge+17*p;
-        // Soft contact shadow on pavement
-        ctx.fillStyle="rgba(36,57,67,.13)";ctx.beginPath();ctx.ellipse(x+5*p,y+13*p,12*p,4*p,0,0,Math.PI*2);ctx.fill();
-        // Pole with subtle metallic gradient
-        ctx.lineCap="round";ctx.strokeStyle="#526477";ctx.lineWidth=2.4*p;
-        ctx.beginPath();ctx.moveTo(x,y+15*p);ctx.lineTo(x,y-49*p);ctx.quadraticCurveTo(x,y-59*p,x+sign*16*p,y-59*p);ctx.stroke();
-        ctx.strokeStyle="rgba(255,255,255,.48)";ctx.lineWidth=.7*p;ctx.beginPath();ctx.moveTo(x-1*p,y+8*p);ctx.lineTo(x-1*p,y-43*p);ctx.stroke();
-        // Lamp housing and restrained warm glow
-        ctx.fillStyle="#34475a";rounded(x+sign*10*p,y-63*p,13*p,7*p,3*p,ctx.fillStyle);
-        ctx.shadowColor="rgba(255,226,151,.65)";ctx.shadowBlur=7*p;
-        ctx.fillStyle="#ffe6a4";ctx.beginPath();ctx.ellipse(x+sign*17*p,y-59*p,5*p,2.2*p,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
-        // Tree trunk and layered canopy, kept outside roadway
-        ctx.fillStyle="#76624f";ctx.fillRect(x-1.8*p,y-3*p,3.6*p,18*p);
-        ctx.fillStyle="#426f65";ctx.beginPath();ctx.arc(x-sign*7*p,y-14*p,12*p,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle="#6f9c83";ctx.beginPath();ctx.arc(x-sign*12*p,y-21*p,8*p,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle="rgba(255,255,255,.2)";ctx.beginPath();ctx.arc(x-sign*14*p,y-24*p,3*p,0,Math.PI*2);ctx.fill();
+      // Deep city blocks, repeating at different speeds to create parallax.
+      for(let i=0;i<4;i++){
+        const spacing=285+i*38;
+        const y=((i*210+(g.distance*(1.05+i*.16))%spacing)+spacing)%(H+spacing)-spacing*.45;
+        const p=Math.max(.42,Math.min(1.25,.48+y/H*.9));
+        const bw=(54+i*8)*p,bh=(150+i*22)*p;
+        const x=left?(18+i*35)*p:540-(18+i*35)*p-bw;
+        const grad=ctx.createLinearGradient(x,y-bh,x+bw,y);
+        grad.addColorStop(0,i%2?"#8299a8":"#718a9a");grad.addColorStop(1,"#b0c1c5");
+        ctx.fillStyle=grad;ctx.fillRect(x,y-bh,bw,bh);
+        ctx.fillStyle="rgba(225,244,242,.62)";
+        const cols=Math.max(2,Math.floor(bw/12)),rows=Math.max(3,Math.floor(bh/19));
+        for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+          const wx=x+6*p+col*(bw-12*p)/cols,wy=y-bh+10*p+row*(bh-18*p)/rows;
+          ctx.fillRect(wx,wy,Math.max(2,3.8*p),Math.max(3,7*p));
+        }
+        ctx.fillStyle="rgba(35,55,70,.12)";ctx.fillRect(left?x+bw-3*p:x,y-bh,3*p,bh);
+      }
+      // Curbs, pavement seams and road-facing storefronts add depth without flat stripes.
+      ctx.strokeStyle="rgba(63,82,94,.19)";ctx.lineWidth=1;
+      for(let k=0;k<7;k++){
+        const y=((k*150+(g.distance*2.3)%150)+H)%H,p=y/H;
+        const edge=left?155-85*p:385+85*p;
+        ctx.beginPath();ctx.moveTo(left?0:540,y);ctx.lineTo(left?edge-8*p:edge+8*p,y+4*p);ctx.stroke();
+      }
+      // Street lamps and trees are spaced along the avenue and scale as they approach.
+      for(let k=0;k<4;k++){
+        const y=((k*290+(g.distance*2.45)%1160)+H+90)%(H+180)-90;
+        const p=Math.max(.38,.42+y/H*.88),sign=left?1:-1;
+        const edge=left?155-85*p:385+85*p,x=left?edge-20*p:edge+20*p;
+        ctx.fillStyle="rgba(25,42,54,.18)";ctx.beginPath();ctx.ellipse(x+4*p,y+13*p,13*p,4*p,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle="#536476";ctx.lineWidth=2.4*p;ctx.beginPath();ctx.moveTo(x,y+14*p);ctx.lineTo(x,y-43*p);ctx.quadraticCurveTo(x,y-52*p,x+sign*14*p,y-52*p);ctx.stroke();
+        ctx.fillStyle="#34475a";rounded(x+sign*9*p,y-56*p,12*p,7*p,3*p,ctx.fillStyle);
+        ctx.shadowColor="rgba(255,226,151,.7)";ctx.shadowBlur=8*p;ctx.fillStyle="#ffe6a4";ctx.beginPath();ctx.ellipse(x+sign*15*p,y-53*p,4.5*p,2*p,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+        const tx=x-sign*9*p,ty=y-13*p;
+        ctx.fillStyle="#765d4a";ctx.fillRect(tx-1.8*p,ty,3.6*p,17*p);
+        ctx.fillStyle="#315f58";ctx.beginPath();ctx.arc(tx,ty-9*p,10*p,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#6f9c83";ctx.beginPath();ctx.arc(tx-sign*4*p,ty-15*p,7*p,0,Math.PI*2);ctx.fill();
       }
       ctx.restore();
     };
     drawSide("left");drawSide("right");
+  };
+  const drawQualitasBillboards=()=>{
+    // Roadside campaign panels pass in alternating sequence, like an arcade city-runner.
+    const campaigns=[
+      ["QUÁLITAS","ASEGURAMOS AUTOS","CUIDAMOS PERSONAS"],
+      ["MANEJA SEGURO","TU FAMILIA","VA CONTIGO"],
+      ["EXCELENCIA","EN EL SERVICIO","QUÁLITAS"]
+    ];
+    for(let i=0;i<5;i++){
+      const raw=((i*430+(g.distance*3.15)%2150)+2150)%2150;
+      const y=raw/2150*(H+150)-95;
+      if(y<-90||y>H+90)continue;
+      const p=.42+y/H*.82,side=i%2===0?"left":"right",sign=side==="left"?1:-1;
+      const x=side==="left"?25+18*p:515-18*p,w=94*p,h=62*p;
+      const [brand,line1,line2]=campaigns[i%campaigns.length];
+      ctx.save();ctx.translate(x,y);ctx.scale(p,p);
+      // Double support posts and a solid, branded roadside structure.
+      ctx.fillStyle="rgba(24,36,52,.28)";ctx.beginPath();ctx.ellipse(0,7,54,8,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#596b7b";ctx.fillRect(-35,20,5,42);ctx.fillRect(30,20,5,42);
+      ctx.fillStyle="#26384c";ctx.beginPath();ctx.roundRect(-w/(2*p)-4,-h/(2*p)-4,w/p+8,h/p+8,5);ctx.fill();
+      const panel=ctx.createLinearGradient(-w/(2*p),-h/(2*p),w/(2*p),h/(2*p));
+      panel.addColorStop(0,"#941B80");panel.addColorStop(1,"#64115f");
+      ctx.fillStyle=panel;ctx.beginPath();ctx.roundRect(-w/(2*p),-h/(2*p),w/p,h/p,4);ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.82)";ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="900 12px Arial";ctx.fillText(brand,0,-13);
+      ctx.fillStyle="#fff";ctx.font="700 6.5px Arial";ctx.fillText(line1,0,1);ctx.fillText(line2,0,11);
+      ctx.fillStyle="#0096AE";ctx.fillRect(-w/(2*p),h/(2*p)-7,w/p,7);
+      ctx.fillStyle="#fff";ctx.font="700 5px Arial";ctx.fillText("QUÁLITAS",0,h/(2*p)-2);
+      ctx.restore();
+    }
   };
   const drawCar=(x,y)=>{
     const jump=g.jump>0?Math.sin((1-g.jump/22)*Math.PI):0;
@@ -241,6 +290,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     const timePhase=(g.distance%40000)/40000;const nightMix=(1-Math.cos(timePhase*Math.PI*2))/2;const twilight=Math.max(0,1-Math.abs(nightMix-.5)*4);
     if(nightMix>.02){ctx.fillStyle="rgba(8,18,48,"+(nightMix*.48).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
     if(twilight>.02){ctx.fillStyle="rgba(255,143,82,"+(twilight*.12).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
+    drawQualitasBillboards();
     // Sun by day, moon and stars by night.
     const celestialX=452,celestialY=150;ctx.save();ctx.shadowBlur=nightMix>.55?14:12;ctx.shadowColor=nightMix>.55?"rgba(224,237,255,.7)":"rgba(255,218,130,.65)";ctx.fillStyle=nightMix>.55?"#e7efff":"#ffe2a0";ctx.beginPath();ctx.arc(celestialX,celestialY,nightMix>.55?13:17,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
     if(nightMix>.42){ctx.fillStyle="rgba(255,255,255,"+(nightMix*.9).toFixed(2)+")";for(let s=0;s<22;s++){const sx=(s*83+29)%W,sy=(s*47+19)%260;if(sx<130||sx>410){ctx.beginPath();ctx.arc(sx,sy,1.2+(s%3)*.35,0,Math.PI*2);ctx.fill();}}}ctx.restore();
