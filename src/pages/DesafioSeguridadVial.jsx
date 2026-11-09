@@ -104,21 +104,6 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     // Sidewalk tile joints
     ctx.strokeStyle="rgba(65,86,102,.18)";ctx.lineWidth=1;
     for(let k=0;k<12;k++){const y=((k*105+(g.distance*2.2)%105)+H)%H;const p=y/H;const lx=112-(42*p),rx=428+(42*p);ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx-20*p,y+3+5*p);ctx.moveTo(rx,y);ctx.lineTo(rx+20*p,y+3+5*p);ctx.stroke();}
-    // Trees, streetlights and shopfronts create urban depth outside the road
-    for(let k=0;k<7;k++){
-      const y=((k*150+(g.distance*3.1)%1050)+H)% (H+100)-50,p=Math.max(.35,.42+y/H*.9);
-      const leftX=30+10*p,rightX=510-10*p;
-      [leftX,rightX].forEach((x,side)=>{
-        const sign=side===0?1:-1;
-        // streetlight pole and curved arm
-        ctx.strokeStyle="#526477";ctx.lineWidth=2.2*p;ctx.beginPath();ctx.moveTo(x,y+12*p);ctx.lineTo(x,y-52*p);ctx.quadraticCurveTo(x,y-61*p,x+sign*17*p,y-61*p);ctx.stroke();
-        ctx.fillStyle="#fff4c5";ctx.shadowColor="#fff1ba";ctx.shadowBlur=8*p;ctx.beginPath();ctx.ellipse(x+sign*17*p,y-60*p,5*p,2.5*p,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
-        // stylized urban tree canopy
-        ctx.fillStyle="#547d72";ctx.beginPath();ctx.arc(x-sign*8*p,y-12*p,13*p,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle="#78a58b";ctx.beginPath();ctx.arc(x-sign*13*p,y-20*p,8*p,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle="#806d5d";ctx.fillRect(x-1.5*p,y-4*p,3*p,17*p);
-      });
-    }
     // Road surface
     const asphalt=ctx.createLinearGradient(70,0,470,0);asphalt.addColorStop(0,"#344357");asphalt.addColorStop(.5,"#46566a");asphalt.addColorStop(1,"#344357");
     ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(385,0);ctx.lineTo(470,H);ctx.lineTo(70,H);ctx.closePath();ctx.fillStyle=asphalt;ctx.fill();
@@ -136,6 +121,37 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.restore();
     ctx.strokeStyle="rgba(255,255,255,.38)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(70,H);ctx.moveTo(385,0);ctx.lineTo(470,H);ctx.stroke();
     const edgeGlow=ctx.createLinearGradient(0,0,0,H);edgeGlow.addColorStop(0,"rgba(0,150,174,.05)");edgeGlow.addColorStop(1,"rgba(0,150,174,.24)");ctx.fillStyle=edgeGlow;ctx.fillRect(0,H-10,W,10);
+  };
+  const drawCityForeground=()=>{
+    // Render street furniture AFTER the road, clipped strictly to sidewalks.
+    const drawSide=(side)=>{
+      ctx.save();ctx.beginPath();
+      if(side==="left"){ctx.moveTo(0,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);}
+      else{ctx.moveTo(385,0);ctx.lineTo(540,0);ctx.lineTo(540,H);ctx.lineTo(470,H);}
+      ctx.closePath();ctx.clip();
+      for(let k=0;k<7;k++){
+        const y=((k*150+(g.distance*3.1)%1050)+H)%(H+100)-50;
+        const p=Math.max(.38,.42+y/H*.9),sign=side==="left"?1:-1;
+        const x=side==="left"?28+13*p:512-13*p;
+        // Soft contact shadow on pavement
+        ctx.fillStyle="rgba(36,57,67,.13)";ctx.beginPath();ctx.ellipse(x+5*p,y+13*p,12*p,4*p,0,0,Math.PI*2);ctx.fill();
+        // Pole with subtle metallic gradient
+        ctx.lineCap="round";ctx.strokeStyle="#526477";ctx.lineWidth=2.4*p;
+        ctx.beginPath();ctx.moveTo(x,y+15*p);ctx.lineTo(x,y-49*p);ctx.quadraticCurveTo(x,y-59*p,x+sign*16*p,y-59*p);ctx.stroke();
+        ctx.strokeStyle="rgba(255,255,255,.48)";ctx.lineWidth=.7*p;ctx.beginPath();ctx.moveTo(x-1*p,y+8*p);ctx.lineTo(x-1*p,y-43*p);ctx.stroke();
+        // Lamp housing and restrained warm glow
+        ctx.fillStyle="#34475a";rounded(x+sign*10*p,y-63*p,13*p,7*p,3*p,ctx.fillStyle);
+        ctx.shadowColor="rgba(255,226,151,.65)";ctx.shadowBlur=7*p;
+        ctx.fillStyle="#ffe6a4";ctx.beginPath();ctx.ellipse(x+sign*17*p,y-59*p,5*p,2.2*p,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+        // Tree trunk and layered canopy, kept outside roadway
+        ctx.fillStyle="#76624f";ctx.fillRect(x-1.8*p,y-3*p,3.6*p,18*p);
+        ctx.fillStyle="#426f65";ctx.beginPath();ctx.arc(x-sign*7*p,y-14*p,12*p,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#6f9c83";ctx.beginPath();ctx.arc(x-sign*12*p,y-21*p,8*p,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="rgba(255,255,255,.2)";ctx.beginPath();ctx.arc(x-sign*14*p,y-24*p,3*p,0,Math.PI*2);ctx.fill();
+      }
+      ctx.restore();
+    };
+    drawSide("left");drawSide("right");
   };
   const drawCar=(x,y)=>{
     const jump=g.jump>0?Math.sin((1-g.jump/22)*Math.PI):0;
@@ -178,16 +194,18 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   };
   const drawObstacle=o=>{
     const x=laneX(o.lane,o.y),y=o.y,p=Math.max(.62,Math.min(1.55,.62+y/H*.9));
-    const emoji=o.type==="cone"?"🚧":o.type==="hole"?"🕳️":o.type==="barrier"?"🚦":"🛑";
+    const emoji=o.type==="cone"?"🚧":o.type==="hole"?"🕳️":o.type==="barrier"?"🚧":"🛑";
     ctx.save();ctx.translate(x,y);ctx.scale(p,p);
-    ctx.shadowColor="rgba(8,20,35,.42)";ctx.shadowBlur=13;ctx.shadowOffsetY=6;
-    ctx.fillStyle="rgba(12,24,40,.22)";ctx.beginPath();ctx.ellipse(0,10,19,6,0,0,Math.PI*2);ctx.fill();
-    ctx.font="40px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(emoji,0,-5);
+    // Draw contact shadow separately; avoid inheriting shadow state into emoji glyph.
+    ctx.shadowColor="transparent";ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;
+    ctx.fillStyle="rgba(8,20,35,.28)";ctx.beginPath();ctx.ellipse(0,12,18,5,0,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;ctx.font="40px 'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif";
+    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(emoji,0,-7);
     ctx.restore();
   };
   const frame=t=>{
     if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;g.speed=Math.min(10,5+g.distance/2200);
-    ctx.clearRect(0,0,W,H);drawRoad();
+    ctx.clearRect(0,0,W,H);drawRoad();drawCityForeground();
     g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});g.spawn=Math.max(42,82-g.speed*3)+Math.random()*24;}
     g.obstacles.forEach(o=>{o.y+=g.speed*dt*1.7;o.phase=(o.phase||0)+dt*.08;});g.obstacles=g.obstacles.filter(o=>o.y<H+70);g.obstacles.slice().sort((a,b)=>a.y-b.y).forEach(drawObstacle);
     if(g.jump>0)g.jump=Math.max(0,g.jump-dt);
