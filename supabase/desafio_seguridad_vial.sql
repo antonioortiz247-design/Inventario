@@ -58,7 +58,7 @@ declare
 begin
   if length(trim(coalesce(p_nombre,''))) < 3 then raise exception 'Escribe tu nombre completo.'; end if;
   if p_telefono !~ '^[0-9]{10}$' then raise exception 'El teléfono debe contener 10 dígitos.'; end if;
-  if p_correo !~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$' then raise exception 'El correo electrónico no es válido.'; end if;
+  if p_correo !~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$' then raise exception 'El correo electrónico no es válido.'; end if;
   if p_tiene_seguro not in ('Sí','No') then raise exception 'Selecciona si cuentas con seguro.'; end if;
   if p_aseguradora not in ('Quálitas','GNP','AXA','MAPFRE','HDI','Chubb','Otra','Sin seguro') then raise exception 'Selecciona una aseguradora válida.'; end if;
   if p_tiene_seguro = 'No' and p_aseguradora <> 'Sin seguro' then raise exception 'Si no cuentas con seguro, selecciona Sin seguro.'; end if;
