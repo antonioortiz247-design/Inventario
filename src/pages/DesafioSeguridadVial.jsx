@@ -97,43 +97,41 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return top+(bottom-top)*p;};
   const rounded=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}};
   const drawRoad=()=>{
-    const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#b8dce8");sky.addColorStop(.38,"#e4f0ec");sky.addColorStop(1,"#d4e8e3");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-    // Distant city skyline
-    const skyline=[[-8,160,104,180],[-2,118,42,220],[40,145,54,190],[82,95,45,245],[118,132,48,208],[420,112,52,228],[458,78,48,262],[500,135,55,205]];
-    skyline.forEach(([x,y,w,h],i)=>{
-      const grad=ctx.createLinearGradient(0,y,0,y+h);grad.addColorStop(0,i%2?"#829eae":"#718d9f");grad.addColorStop(1,"#a9c0c6");
-      ctx.fillStyle=grad;ctx.fillRect(x,y,w,h);
-      ctx.fillStyle="rgba(239,249,241,.65)";
-      for(let wy=y+14;wy<y+h-12;wy+=19)for(let wx=x+8;wx<x+w-6;wx+=14)ctx.fillRect(wx,wy,5,8);
-      ctx.fillStyle="rgba(44,70,88,.12)";ctx.fillRect(x+w-4,y,4,h);
-    });
-    // Sun haze and city atmosphere
-    const haze=ctx.createLinearGradient(0,170,0,430);haze.addColorStop(0,"rgba(255,255,255,.04)");haze.addColorStop(1,"rgba(230,246,239,.82)");ctx.fillStyle=haze;ctx.fillRect(0,150,W,300);
-    // Sidewalks and road shoulders
-    ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(428,0);ctx.lineTo(540,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle="#8998a8";ctx.fill();
-    // Urban sidewalks
-    ctx.fillStyle="#d9e1e5";ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-    ctx.beginPath();ctx.moveTo(385,0);ctx.lineTo(428,0);ctx.lineTo(540,H);ctx.lineTo(470,H);ctx.closePath();ctx.fill();
-    // Sidewalk tile joints
-    ctx.strokeStyle="rgba(0,150,174,.24)";ctx.lineWidth=1;
-    for(let k=0;k<12;k++){const y=((k*105+(g.distance*2.2)%105)+H)%H;const p=y/H;const lx=112-(42*p),rx=428+(42*p);ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx-20*p,y+3+5*p);ctx.moveTo(rx,y);ctx.lineTo(rx+20*p,y+3+5*p);ctx.stroke();}
-    // Road surface
-    const asphalt=ctx.createLinearGradient(70,0,470,0);asphalt.addColorStop(0,"#344357");asphalt.addColorStop(.5,"#46566a");asphalt.addColorStop(1,"#344357");
-    ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(385,0);ctx.lineTo(470,H);ctx.lineTo(70,H);ctx.closePath();ctx.fillStyle=asphalt;ctx.fill();
-    ctx.save();ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(385,0);ctx.lineTo(470,H);ctx.lineTo(70,H);ctx.closePath();ctx.clip();
-    const sheen=ctx.createLinearGradient(0,0,W,0);sheen.addColorStop(0,"rgba(255,255,255,.02)");sheen.addColorStop(.5,"rgba(255,255,255,.055)");sheen.addColorStop(1,"rgba(255,255,255,.015)");ctx.fillStyle=sheen;ctx.fillRect(0,0,W,H);
+    // La vista central contiene únicamente la carretera: las banquetas y el jardín
+    // pertenecen a los paneles laterales del modo expandido.
+    const sky=ctx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,"#344357");
+    sky.addColorStop(.5,"#46566a");
+    sky.addColorStop(1,"#344357");
+    ctx.fillStyle=sky;
+    ctx.fillRect(0,0,W,H);
+    // Asphalt occupies the complete game viewport; no city, sidewalk or curb
+    // is duplicated inside the canvas.
+    ctx.strokeStyle="rgba(0,150,174,.5)";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(3,0);ctx.lineTo(3,H);
+    ctx.moveTo(W-3,0);ctx.lineTo(W-3,H);
+    ctx.stroke();
+    ctx.save();
+    ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();
+    const sheen=ctx.createLinearGradient(0,0,W,0);
+    sheen.addColorStop(0,"rgba(255,255,255,.015)");
+    sheen.addColorStop(.5,"rgba(255,255,255,.06)");
+    sheen.addColorStop(1,"rgba(255,255,255,.015)");
+    ctx.fillStyle=sheen;ctx.fillRect(0,0,W,H);
     ctx.lineCap="round";
     for(let lane=1;lane<=2;lane++){
-      const top=155+lane*76.7,bottom=70+lane*133.3;
+      const x=W*lane/3;
       for(let k=-1;k<16;k++){
-        const y=((k*88+(g.distance*2.5)%176)+H*2)%(H+176)-88,p=y/H,x=top+(bottom-top)*p;
+        const y=((k*88+(g.distance*2.5)%176)+H*2)%(H+176)-88;
+        const p=Math.max(0,Math.min(1,y/H));
         const dashH=12+p*28,thick=1.8+p*2.5;
-        ctx.fillStyle="rgba(255,255,255,.86)";rounded(x-thick/2,y,thick,dashH,thick/2,ctx.fillStyle);
+        ctx.fillStyle="rgba(255,255,255,.86)";
+        rounded(x-thick/2,y,thick,dashH,thick/2,ctx.fillStyle);
       }
     }
     ctx.restore();
-    ctx.strokeStyle="rgba(0,150,174,.72)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(70,H);ctx.moveTo(385,0);ctx.lineTo(470,H);ctx.stroke();
-    const edgeGlow=ctx.createLinearGradient(0,0,0,H);edgeGlow.addColorStop(0,"rgba(148,27,128,.08)");edgeGlow.addColorStop(1,"rgba(0,150,174,.3)");ctx.fillStyle=edgeGlow;ctx.fillRect(0,H-10,W,10);
   };
   const drawCar=(x,y)=>{
     const jump=g.jump>0?Math.sin((1-g.jump/22)*Math.PI):0;
@@ -319,7 +317,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 .q-side-ad span { margin-top:7px; font-size:clamp(8px,.85vw,12px); line-height:1.2; font-weight:800; }
 .q-side-ad i { display:block; height:5px; width:100%; margin-top:9px; border-radius:8px; background:#0096AE; }
 `}</style>
-<div className="absolute inset-y-0 left-0 w-[calc(50%-min(41vh,270px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
+<div className="absolute inset-y-0 left-0 w-[calc(50%-min(24.6vh,162px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
 <div className="q-side-city"/>
 <div className="q-side-garden"/>
 <div className="q-side-sidewalk q-side-sidewalk-left"/>
@@ -330,7 +328,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 <div className="q-side-prop" style={{animationDelay:"0s"}}><div className="q-side-ad"><strong>QUÁLITAS</strong><span>ASEGURAMOS AUTOS<br/>CUIDAMOS PERSONAS</span><i/></div></div>
 <div className="q-side-prop" style={{animationDelay:"-15s"}}><div className="q-side-ad" style={{background:"linear-gradient(135deg,#087f96,#07596c)"}}><strong>MANEJA SEGURO</strong><span>EN CADA KILÓMETRO<br/>VAMOS CONTIGO</span><i/></div></div>
 </div>
-<div className="absolute inset-y-0 right-0 w-[calc(50%-min(41vh,270px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
+<div className="absolute inset-y-0 right-0 w-[calc(50%-min(24.6vh,162px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
 <div className="q-side-city"/>
 <div className="q-side-garden"/>
 <div className="q-side-sidewalk q-side-sidewalk-right"/>
