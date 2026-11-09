@@ -178,10 +178,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=1.5;ctx.stroke();
     // Body highlights and sculpted shoulders
     ctx.beginPath();ctx.moveTo(-37,-67);ctx.quadraticCurveTo(-27,-76,-17,-77);ctx.moveTo(37,-67);ctx.quadraticCurveTo(27,-76,17,-77);ctx.strokeStyle="rgba(255,255,255,.34)";ctx.lineWidth=2;ctx.stroke();
-    // Visible tires and sidewalls, tucked under the wheel arches
-    ctx.shadowColor="rgba(10,18,32,.3)";ctx.shadowBlur=5;
-    rounded(-45,-53,11,29,4,"#202735","#667386");rounded(34,-53,11,29,4,"#202735","#667386");
-    rounded(-45,34,11,27,4,"#202735","#667386");rounded(34,34,11,27,4,"#202735","#667386");ctx.shadowBlur=0;
+    // Vista estrictamente cenital: las ruedas quedan ocultas bajo la carrocería.
     // Side mirrors
     rounded(-53,-48,13,23,6,"#74116b","rgba(255,255,255,.3)");rounded(40,-48,13,23,6,"#74116b","rgba(255,255,255,.3)");
     // Front windshield with glass reflections
