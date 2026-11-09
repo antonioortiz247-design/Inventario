@@ -45,6 +45,22 @@ $;
 revoke all on function public.configurar_modo_competencia(boolean) from public, anon;
 grant execute on function public.configurar_modo_competencia(boolean) to authenticated;
 
+-- Habilita la publicación en tiempo real para que el modo cambie también
+-- en las sesiones públicas que ya estén abiertas.
+do $
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime'
+         and schemaname = 'public'
+         and tablename = 'desafio_seguridad_vial_config'
+     ) then
+    alter publication supabase_realtime add table public.desafio_seguridad_vial_config;
+  end if;
+end;
+$;
+
 create table if not exists public.desafio_seguridad_vial (
   id uuid primary key default gen_random_uuid(),
   folio text not null unique,
