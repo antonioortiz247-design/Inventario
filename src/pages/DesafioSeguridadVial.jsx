@@ -129,10 +129,11 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
       if(side==="left"){ctx.moveTo(0,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);}
       else{ctx.moveTo(385,0);ctx.lineTo(540,0);ctx.lineTo(540,H);ctx.lineTo(470,H);}
       ctx.closePath();ctx.clip();
-      for(let k=0;k<7;k++){
-        const y=((k*150+(g.distance*3.1)%1050)+H)%(H+100)-50;
+      for(let k=0;k<3;k++){
+        const y=((k*330+(g.distance*2.15)%990)+H)%(H+120)-60;
         const p=Math.max(.38,.42+y/H*.9),sign=side==="left"?1:-1;
-        const x=side==="left"?28+13*p:512-13*p;
+        const roadEdge=side==="left"?(155-85*p):(385+85*p);
+        const x=side==="left"?roadEdge-17*p:roadEdge+17*p;
         // Soft contact shadow on pavement
         ctx.fillStyle="rgba(36,57,67,.13)";ctx.beginPath();ctx.ellipse(x+5*p,y+13*p,12*p,4*p,0,0,Math.PI*2);ctx.fill();
         // Pole with subtle metallic gradient
@@ -179,12 +180,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     // Rear bumper and aqua signature
     ctx.beginPath();ctx.moveTo(-34,54);ctx.quadraticCurveTo(0,65,34,54);ctx.strokeStyle="#0096ae";ctx.lineWidth=3;ctx.stroke();
     ctx.beginPath();ctx.moveTo(-28,68);ctx.quadraticCurveTo(0,76,28,68);ctx.strokeStyle="rgba(255,255,255,.38)";ctx.lineWidth=1.2;ctx.stroke();
-    // Wheels
-    for(const side of [-1,1])for(const yy of [-47,45]){
-      rounded(side*39-5,yy-14,11,28,4,"#111923","#596579");
-      rounded(side*39-3,yy-9,7,18,3,"#293444");
-    }
-    // Quálitas identity mark on trunk
+    // Top-down body silhouette: tires remain fully concealed beneath the fenders.\n    // Quálitas identity mark on trunk
     ctx.fillStyle="rgba(255,255,255,.94)";ctx.font="700 10px Arial";ctx.textAlign="center";ctx.fillText("Q",0,25);
     ctx.fillStyle="rgba(255,255,255,.65)";ctx.font="600 4px Arial";ctx.fillText("QUÁLITAS",0,32);
     // Specular central reflections
@@ -193,14 +189,31 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.restore();
   };
   const drawObstacle=o=>{
-    const x=laneX(o.lane,o.y),y=o.y,p=Math.max(.62,Math.min(1.55,.62+y/H*.9));
-    const emoji=o.type==="cone"?"🚧":o.type==="hole"?"🕳️":o.type==="barrier"?"🚧":"🛑";
+    const x=laneX(o.lane,o.y),y=o.y,p=Math.max(.5,Math.min(1.4,.58+y/H*.78)),w=24*p,h=34*p;
     ctx.save();ctx.translate(x,y);ctx.scale(p,p);
-    // Draw contact shadow separately; avoid inheriting shadow state into emoji glyph.
-    ctx.shadowColor="transparent";ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;
-    ctx.fillStyle="rgba(8,20,35,.28)";ctx.beginPath();ctx.ellipse(0,12,18,5,0,0,Math.PI*2);ctx.fill();
-    ctx.globalAlpha=1;ctx.font="40px 'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif";
-    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(emoji,0,-7);
+    // Tight, crisp contact shadow only; no blur on the obstacle artwork.
+    ctx.fillStyle="rgba(10,22,36,.24)";ctx.beginPath();ctx.ellipse(0,h*.68,w*.88,4*p,0,0,Math.PI*2);ctx.fill();
+    if(o.type==="cone"){
+      rounded(-22,-1,44,10,4,"#202b39","#111827");rounded(-18,-3,36,5,2,"#526176");
+      ctx.beginPath();ctx.moveTo(-2,-52);ctx.quadraticCurveTo(0,-55,2,-52);ctx.lineTo(17,-4);ctx.quadraticCurveTo(18,0,13,1);ctx.lineTo(-13,1);ctx.quadraticCurveTo(-18,0,-17,-4);ctx.closePath();
+      const cg=ctx.createLinearGradient(-18,0,18,0);cg.addColorStop(0,"#a83d12");cg.addColorStop(.25,"#f36b1e");cg.addColorStop(.55,"#ff963c");cg.addColorStop(.82,"#df5917");cg.addColorStop(1,"#8d3212");ctx.fillStyle=cg;ctx.fill();
+      ctx.beginPath();ctx.moveTo(-12,-20);ctx.lineTo(12,-20);ctx.lineTo(14,-12);ctx.lineTo(-14,-12);ctx.closePath();ctx.fillStyle="#fff8ed";ctx.fill();
+      ctx.beginPath();ctx.moveTo(-8,-34);ctx.lineTo(8,-34);ctx.lineTo(10,-27);ctx.lineTo(-10,-27);ctx.closePath();ctx.fillStyle="#fff8ed";ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.45)";ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(-2,-49);ctx.lineTo(-13,-5);ctx.stroke();
+    }else if(o.type==="hole"){
+      ctx.beginPath();ctx.ellipse(0,0,32,16,0,0,Math.PI*2);ctx.fillStyle="#8c98a7";ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,-1,28,13,0,0,Math.PI*2);ctx.fillStyle="#202b3a";ctx.fill();
+      ctx.beginPath();ctx.ellipse(-2,-3,22,8,0,-.1,Math.PI*1.1);ctx.fillStyle="#0b1421";ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.3)";ctx.lineWidth=1.3;ctx.beginPath();ctx.ellipse(-2,-3,23,9,-.08,Math.PI,Math.PI*1.85);ctx.stroke();
+      ctx.strokeStyle="#aeb9c5";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-23,-6);ctx.lineTo(-29,-11);ctx.lineTo(-25,-2);ctx.moveTo(18,7);ctx.lineTo(26,11);ctx.lineTo(22,2);ctx.stroke();
+    }else{
+      rounded(-32,10,64,8,3,"#263548","#111827");rounded(-27,5,10,10,2,"#3c4a5c");rounded(17,5,10,10,2,"#3c4a5c");
+      ctx.beginPath();ctx.moveTo(-30,-18);ctx.quadraticCurveTo(-30,-23,-25,-23);ctx.lineTo(25,-23);ctx.quadraticCurveTo(30,-23,30,-18);ctx.lineTo(27,7);ctx.lineTo(-27,7);ctx.closePath();
+      const bg=ctx.createLinearGradient(0,-23,0,8);bg.addColorStop(0,"#ffe36a");bg.addColorStop(.45,"#f3bd22");bg.addColorStop(1,"#bd8111");ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle="#fff0a0";ctx.lineWidth=1.3;ctx.stroke();
+      ctx.save();ctx.beginPath();ctx.roundRect(-27,-19,54,23,3);ctx.clip();ctx.fillStyle="#344052";
+      for(let k=-3;k<4;k++){ctx.beginPath();ctx.moveTo(k*18-7,-20);ctx.lineTo(k*18+2,-20);ctx.lineTo(k*18-8,7);ctx.lineTo(k*18-17,7);ctx.closePath();ctx.fill();}
+      ctx.restore();rounded(-31,-20,5,27,2,"#f7f1d6");rounded(26,-20,5,27,2,"#f7f1d6");
+    }
     ctx.restore();
   };
   const frame=t=>{
