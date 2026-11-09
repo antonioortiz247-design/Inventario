@@ -112,10 +112,10 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     // Sidewalks and road shoulders
     ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(428,0);ctx.lineTo(540,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle="#8998a8";ctx.fill();
     // Urban sidewalks
-    ctx.fillStyle="#c7d0d2";ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#d9e1e5";ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
     ctx.beginPath();ctx.moveTo(385,0);ctx.lineTo(428,0);ctx.lineTo(540,H);ctx.lineTo(470,H);ctx.closePath();ctx.fill();
     // Sidewalk tile joints
-    ctx.strokeStyle="rgba(65,86,102,.18)";ctx.lineWidth=1;
+    ctx.strokeStyle="rgba(0,150,174,.24)";ctx.lineWidth=1;
     for(let k=0;k<12;k++){const y=((k*105+(g.distance*2.2)%105)+H)%H;const p=y/H;const lx=112-(42*p),rx=428+(42*p);ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx-20*p,y+3+5*p);ctx.moveTo(rx,y);ctx.lineTo(rx+20*p,y+3+5*p);ctx.stroke();}
     // Road surface
     const asphalt=ctx.createLinearGradient(70,0,470,0);asphalt.addColorStop(0,"#344357");asphalt.addColorStop(.5,"#46566a");asphalt.addColorStop(1,"#344357");
@@ -132,59 +132,8 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
       }
     }
     ctx.restore();
-    ctx.strokeStyle="rgba(255,255,255,.38)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(70,H);ctx.moveTo(385,0);ctx.lineTo(470,H);ctx.stroke();
-    const edgeGlow=ctx.createLinearGradient(0,0,0,H);edgeGlow.addColorStop(0,"rgba(0,150,174,.05)");edgeGlow.addColorStop(1,"rgba(0,150,174,.24)");ctx.fillStyle=edgeGlow;ctx.fillRect(0,H-10,W,10);
-  };
-  const drawCityForeground=()=>{
-    // Endless urban avenue: layered buildings and roadside architecture move with the player's distance.
-    const drawSide=(side)=>{
-      const left=side==="left",base=left?0:385;
-      ctx.save();ctx.beginPath();
-      if(left){ctx.moveTo(0,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);}
-      else{ctx.moveTo(385,0);ctx.lineTo(540,0);ctx.lineTo(540,H);ctx.lineTo(470,H);}
-      ctx.closePath();ctx.clip();
-      // Deep city blocks, repeating at different speeds to create parallax.
-      for(let i=0;i<4;i++){
-        const spacing=285+i*38;
-        const y=((i*210+(g.distance*(1.05+i*.16))%spacing)+spacing)%(H+spacing)-spacing*.45;
-        const p=Math.max(.42,Math.min(1.25,.48+y/H*.9));
-        const bw=(54+i*8)*p,bh=(150+i*22)*p;
-        const x=left?(18+i*35)*p:540-(18+i*35)*p-bw;
-        const grad=ctx.createLinearGradient(x,y-bh,x+bw,y);
-        grad.addColorStop(0,i%2?"#8299a8":"#718a9a");grad.addColorStop(1,"#b0c1c5");
-        ctx.fillStyle=grad;ctx.fillRect(x,y-bh,bw,bh);
-        ctx.fillStyle="rgba(225,244,242,.62)";
-        const cols=Math.max(2,Math.floor(bw/12)),rows=Math.max(3,Math.floor(bh/19));
-        for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
-          const wx=x+6*p+col*(bw-12*p)/cols,wy=y-bh+10*p+row*(bh-18*p)/rows;
-          ctx.fillRect(wx,wy,Math.max(2,3.8*p),Math.max(3,7*p));
-        }
-        ctx.fillStyle="rgba(35,55,70,.12)";ctx.fillRect(left?x+bw-3*p:x,y-bh,3*p,bh);
-      }
-      // Curbs, pavement seams and road-facing storefronts add depth without flat stripes.
-      ctx.strokeStyle="rgba(63,82,94,.19)";ctx.lineWidth=1;
-      for(let k=0;k<7;k++){
-        const y=((k*150+(g.distance*2.3)%150)+H)%H,p=y/H;
-        const edge=left?155-85*p:385+85*p;
-        ctx.beginPath();ctx.moveTo(left?0:540,y);ctx.lineTo(left?edge-8*p:edge+8*p,y+4*p);ctx.stroke();
-      }
-      // Street lamps and trees are spaced along the avenue and scale as they approach.
-      for(let k=0;k<4;k++){
-        const y=((k*290+(g.distance*2.45)%1160)+H+90)%(H+180)-90;
-        const p=Math.max(.38,.42+y/H*.88),sign=left?1:-1;
-        const edge=left?155-85*p:385+85*p,x=left?edge-20*p:edge+20*p;
-        ctx.fillStyle="rgba(25,42,54,.18)";ctx.beginPath();ctx.ellipse(x+4*p,y+13*p,13*p,4*p,0,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle="#536476";ctx.lineWidth=2.4*p;ctx.beginPath();ctx.moveTo(x,y+14*p);ctx.lineTo(x,y-43*p);ctx.quadraticCurveTo(x,y-52*p,x+sign*14*p,y-52*p);ctx.stroke();
-        ctx.fillStyle="#34475a";rounded(x+sign*9*p,y-56*p,12*p,7*p,3*p,ctx.fillStyle);
-        ctx.shadowColor="rgba(255,226,151,.7)";ctx.shadowBlur=8*p;ctx.fillStyle="#ffe6a4";ctx.beginPath();ctx.ellipse(x+sign*15*p,y-53*p,4.5*p,2*p,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
-        const tx=x-sign*9*p,ty=y-13*p;
-        ctx.fillStyle="#765d4a";ctx.fillRect(tx-1.8*p,ty,3.6*p,17*p);
-        ctx.fillStyle="#315f58";ctx.beginPath();ctx.arc(tx,ty-9*p,10*p,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle="#6f9c83";ctx.beginPath();ctx.arc(tx-sign*4*p,ty-15*p,7*p,0,Math.PI*2);ctx.fill();
-      }
-      ctx.restore();
-    };
-    drawSide("left");drawSide("right");
+    ctx.strokeStyle="rgba(0,150,174,.72)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(70,H);ctx.moveTo(385,0);ctx.lineTo(470,H);ctx.stroke();
+    const edgeGlow=ctx.createLinearGradient(0,0,0,H);edgeGlow.addColorStop(0,"rgba(148,27,128,.08)");edgeGlow.addColorStop(1,"rgba(0,150,174,.3)");ctx.fillStyle=edgeGlow;ctx.fillRect(0,H-10,W,10);
   };
   const drawCar=(x,y)=>{
     const jump=g.jump>0?Math.sin((1-g.jump/22)*Math.PI):0;
@@ -261,7 +210,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   };
   const frame=t=>{
     if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;const difficultyLevel=Math.floor(g.distance/10000);if(difficultyLevel>(g.level||0)){g.level=difficultyLevel;g.levelNotice=150;}g.speed=Math.min(15.5,7.2+difficultyLevel*0.85);
-    ctx.clearRect(0,0,W,H);drawRoad();drawCityForeground();
+    ctx.clearRect(0,0,W,H);drawRoad();
     // Smooth four-stage day/night cycle: dawn, day, sunset and night over 4 km.
     const timePhase=(g.distance%40000)/40000;const nightMix=(1-Math.cos(timePhase*Math.PI*2))/2;const twilight=Math.max(0,1-Math.abs(nightMix-.5)*4);
     if(nightMix>.02){ctx.fillStyle="rgba(8,18,48,"+(nightMix*.48).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
