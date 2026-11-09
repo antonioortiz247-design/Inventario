@@ -84,10 +84,42 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return top+(bottom-top)*p;};
   const rounded=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}};
   const drawRoad=()=>{
-    const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#d9f1f2");sky.addColorStop(.48,"#edf7f6");sky.addColorStop(1,"#c8e4e5");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-    const glow=ctx.createRadialGradient(90,180,8,90,180,250);glow.addColorStop(0,"rgba(255,255,255,.72)");glow.addColorStop(1,"rgba(255,255,255,0)");ctx.fillStyle=glow;ctx.fillRect(0,0,300,450);
-    ctx.fillStyle="rgba(148,27,128,.08)";ctx.beginPath();ctx.ellipse(45,210,54,105,-.2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(500,285,48,115,.2,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(428,0);ctx.lineTo(540,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle="#718197";ctx.fill();
+    const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#b8dce8");sky.addColorStop(.38,"#e4f0ec");sky.addColorStop(1,"#d4e8e3");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    // Distant city skyline
+    const skyline=[[-8,160,104,180],[-2,118,42,220],[40,145,54,190],[82,95,45,245],[118,132,48,208],[420,112,52,228],[458,78,48,262],[500,135,55,205]];
+    skyline.forEach(([x,y,w,h],i)=>{
+      const grad=ctx.createLinearGradient(0,y,0,y+h);grad.addColorStop(0,i%2?"#829eae":"#718d9f");grad.addColorStop(1,"#a9c0c6");
+      ctx.fillStyle=grad;ctx.fillRect(x,y,w,h);
+      ctx.fillStyle="rgba(239,249,241,.65)";
+      for(let wy=y+14;wy<y+h-12;wy+=19)for(let wx=x+8;wx<x+w-6;wx+=14)ctx.fillRect(wx,wy,5,8);
+      ctx.fillStyle="rgba(44,70,88,.12)";ctx.fillRect(x+w-4,y,4,h);
+    });
+    // Sun haze and city atmosphere
+    const haze=ctx.createLinearGradient(0,170,0,430);haze.addColorStop(0,"rgba(255,255,255,.04)");haze.addColorStop(1,"rgba(230,246,239,.82)");ctx.fillStyle=haze;ctx.fillRect(0,150,W,300);
+    // Sidewalks and road shoulders
+    ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(428,0);ctx.lineTo(540,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle="#8998a8";ctx.fill();
+    // Urban sidewalks
+    ctx.fillStyle="#c7d0d2";ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(385,0);ctx.lineTo(428,0);ctx.lineTo(540,H);ctx.lineTo(470,H);ctx.closePath();ctx.fill();
+    // Sidewalk tile joints
+    ctx.strokeStyle="rgba(65,86,102,.18)";ctx.lineWidth=1;
+    for(let k=0;k<12;k++){const y=((k*105+(g.distance*2.2)%105)+H)%H;const p=y/H;const lx=112-(42*p),rx=428+(42*p);ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx-20*p,y+3+5*p);ctx.moveTo(rx,y);ctx.lineTo(rx+20*p,y+3+5*p);ctx.stroke();}
+    // Trees, streetlights and shopfronts create urban depth outside the road
+    for(let k=0;k<7;k++){
+      const y=((k*150+(g.distance*3.1)%1050)+H)% (H+100)-50,p=Math.max(.35,.42+y/H*.9);
+      const leftX=30+10*p,rightX=510-10*p;
+      [leftX,rightX].forEach((x,side)=>{
+        const sign=side===0?1:-1;
+        // streetlight pole and curved arm
+        ctx.strokeStyle="#526477";ctx.lineWidth=2.2*p;ctx.beginPath();ctx.moveTo(x,y+12*p);ctx.lineTo(x,y-52*p);ctx.quadraticCurveTo(x,y-61*p,x+sign*17*p,y-61*p);ctx.stroke();
+        ctx.fillStyle="#fff4c5";ctx.shadowColor="#fff1ba";ctx.shadowBlur=8*p;ctx.beginPath();ctx.ellipse(x+sign*17*p,y-60*p,5*p,2.5*p,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+        // stylized urban tree canopy
+        ctx.fillStyle="#547d72";ctx.beginPath();ctx.arc(x-sign*8*p,y-12*p,13*p,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#78a58b";ctx.beginPath();ctx.arc(x-sign*13*p,y-20*p,8*p,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle="#806d5d";ctx.fillRect(x-1.5*p,y-4*p,3*p,17*p);
+      });
+    }
+    // Road surface
     const asphalt=ctx.createLinearGradient(70,0,470,0);asphalt.addColorStop(0,"#344357");asphalt.addColorStop(.5,"#46566a");asphalt.addColorStop(1,"#344357");
     ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(385,0);ctx.lineTo(470,H);ctx.lineTo(70,H);ctx.closePath();ctx.fillStyle=asphalt;ctx.fill();
     ctx.save();ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(385,0);ctx.lineTo(470,H);ctx.lineTo(70,H);ctx.closePath();ctx.clip();
@@ -96,8 +128,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     for(let lane=1;lane<=2;lane++){
       const top=155+lane*76.7,bottom=70+lane*133.3;
       for(let k=-1;k<16;k++){
-        const y=((k*88+(g.distance*2.5)%176)+H*2)% (H+176)-88;
-        const p=y/H,x=top+(bottom-top)*p;
+        const y=((k*88+(g.distance*2.5)%176)+H*2)%(H+176)-88,p=y/H,x=top+(bottom-top)*p;
         const dashH=12+p*28,thick=1.8+p*2.5;
         ctx.fillStyle="rgba(255,255,255,.86)";rounded(x-thick/2,y,thick,dashH,thick/2,ctx.fillStyle);
       }
@@ -146,51 +177,18 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.restore();
   };
   const drawObstacle=o=>{
-    const x=laneX(o.lane,o.y),y=o.y,p=Math.max(.48,Math.min(1.45,.58+y/H*.82));
-    const pulse=1+Math.sin((g.ticks*.09)+(o.y*.025))*.018;
-    ctx.save();ctx.translate(x,y);ctx.scale(p*pulse,p*pulse);
-    ctx.shadowColor="rgba(8,20,35,.36)";ctx.shadowBlur=12;ctx.shadowOffsetY=7;
-    if(o.type==="cone"){
-      // Weighted rubber base
-      rounded(-22,-1,44,10,4,"#242e3d","#111827");
-      rounded(-18,-3,36,5,2,"#46556a");
-      // Tapered orange body with dimensional lighting
-      ctx.beginPath();ctx.moveTo(-2,-52);ctx.quadraticCurveTo(0,-55,2,-52);ctx.lineTo(17,-4);ctx.quadraticCurveTo(18,0,13,1);ctx.lineTo(-13,1);ctx.quadraticCurveTo(-18,0,-17,-4);ctx.closePath();
-      const cg=ctx.createLinearGradient(-18,0,18,0);cg.addColorStop(0,"#a83d12");cg.addColorStop(.22,"#f36b1e");cg.addColorStop(.55,"#ff9a42");cg.addColorStop(.82,"#e65b17");cg.addColorStop(1,"#8d3212");ctx.fillStyle=cg;ctx.fill();
-      ctx.shadowBlur=0;
-      // Reflective bands follow the cone taper
-      ctx.beginPath();ctx.moveTo(-12,-20);ctx.lineTo(12,-20);ctx.lineTo(14,-12);ctx.lineTo(-14,-12);ctx.closePath();ctx.fillStyle="#fff8ed";ctx.fill();
-      ctx.beginPath();ctx.moveTo(-8,-34);ctx.lineTo(8,-34);ctx.lineTo(10,-27);ctx.lineTo(-10,-27);ctx.closePath();ctx.fillStyle="#fff8ed";ctx.fill();
-      ctx.strokeStyle="rgba(255,255,255,.42)";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-2,-49);ctx.lineTo(-13,-5);ctx.stroke();
-      rounded(-20,2,40,3,1.5,"#f8a05a");
-    }else if(o.type==="hole"){
-      // Broken asphalt rim and layered cavity
-      ctx.beginPath();ctx.ellipse(0,0,32,16,0,0,Math.PI*2);ctx.fillStyle="#8794a4";ctx.fill();
-      ctx.beginPath();ctx.ellipse(0,-1,28,13,0,0,Math.PI*2);ctx.fillStyle="#202b3a";ctx.fill();
-      ctx.beginPath();ctx.ellipse(-2,-3,22,8,0,-.1,Math.PI*1.1);ctx.fillStyle="#0b1421";ctx.fill();
-      ctx.strokeStyle="rgba(255,255,255,.36)";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(-2,-3,23,9,-.08,Math.PI,Math.PI*1.85);ctx.stroke();
-      // Small fractured edges
-      ctx.strokeStyle="#aeb9c5";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-23,-6);ctx.lineTo(-29,-11);ctx.lineTo(-25,-2);ctx.moveTo(18,7);ctx.lineTo(26,11);ctx.lineTo(22,2);ctx.stroke();
-    }else{
-      // Heavy folding roadwork barrier with feet
-      rounded(-32,10,64,8,3,"#263548","#111827");
-      rounded(-27,5,10,10,2,"#3c4a5c");rounded(17,5,10,10,2,"#3c4a5c");
-      // Main beam bevel
-      ctx.beginPath();ctx.moveTo(-30,-18);ctx.quadraticCurveTo(-30,-23,-25,-23);ctx.lineTo(25,-23);ctx.quadraticCurveTo(30,-23,30,-18);ctx.lineTo(27,7);ctx.lineTo(-27,7);ctx.closePath();
-      const bg=ctx.createLinearGradient(0,-23,0,8);bg.addColorStop(0,"#ffe36a");bg.addColorStop(.45,"#f3bd22");bg.addColorStop(1,"#bd8111");ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle="#fff0a0";ctx.lineWidth=1.4;ctx.stroke();
-      ctx.save();ctx.beginPath();ctx.roundRect(-27,-19,54,23,3);ctx.clip();
-      ctx.fillStyle="#344052";for(let k=-3;k<4;k++){ctx.beginPath();ctx.moveTo(k*18-7,-20);ctx.lineTo(k*18+2,-20);ctx.lineTo(k*18-8,7);ctx.lineTo(k*18-17,7);ctx.closePath();ctx.fill();}
-      ctx.restore();
-      // End caps and warning lamps
-      rounded(-31,-20,5,27,2,"#f7f1d6");rounded(26,-20,5,27,2,"#f7f1d6");
-      ctx.shadowColor="#ffb52b";ctx.shadowBlur=8;rounded(-27,-26,7,5,2,"#fff0a0");rounded(20,-26,7,5,2,"#fff0a0");ctx.shadowBlur=0;
-    }
+    const x=laneX(o.lane,o.y),y=o.y,p=Math.max(.62,Math.min(1.55,.62+y/H*.9));
+    const emoji=o.type==="cone"?"🚧":o.type==="hole"?"🕳️":o.type==="barrier"?"🚦":"🛑";
+    ctx.save();ctx.translate(x,y);ctx.scale(p,p);
+    ctx.shadowColor="rgba(8,20,35,.42)";ctx.shadowBlur=13;ctx.shadowOffsetY=6;
+    ctx.fillStyle="rgba(12,24,40,.22)";ctx.beginPath();ctx.ellipse(0,10,19,6,0,0,Math.PI*2);ctx.fill();
+    ctx.font="40px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(emoji,0,-5);
     ctx.restore();
   };
   const frame=t=>{
     if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;g.speed=Math.min(10,5+g.distance/2200);
     ctx.clearRect(0,0,W,H);drawRoad();
-    g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier"][Math.floor(Math.random()*3)]});g.spawn=Math.max(42,82-g.speed*3)+Math.random()*24;}
+    g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});g.spawn=Math.max(42,82-g.speed*3)+Math.random()*24;}
     g.obstacles.forEach(o=>{o.y+=g.speed*dt*1.7;o.phase=(o.phase||0)+dt*.08;});g.obstacles=g.obstacles.filter(o=>o.y<H+70);g.obstacles.slice().sort((a,b)=>a.y-b.y).forEach(drawObstacle);
     if(g.jump>0)g.jump=Math.max(0,g.jump-dt);
     const playerX=laneX(g.lane,H-150),playerY=H-150;
