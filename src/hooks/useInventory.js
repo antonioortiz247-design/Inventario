@@ -48,10 +48,12 @@ export default function useInventory({ enabled = true } = {}) {
     let active = true;
     let loadedUserId = null;
     let loadingUserId = null;
+    let activeUserId = null;
 
     const syncSession = async (session) => {
       if (!active) return;
       const userId = session?.user?.id || null;
+      activeUserId = userId;
 
       if (!userId) {
         loadedUserId = null;
@@ -68,7 +70,7 @@ export default function useInventory({ enabled = true } = {}) {
 
       try {
         const data = await getInventory();
-        if (!active) return;
+        if (!active || activeUserId !== userId) return;
         setItems(data);
         loadedUserId = userId;
       } catch (err) {
