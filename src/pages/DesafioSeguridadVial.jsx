@@ -114,6 +114,21 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     const haze=ctx.createLinearGradient(0,170,0,440);
     haze.addColorStop(0,"rgba(255,255,255,.04)");haze.addColorStop(1,"rgba(230,246,239,.9)");
     ctx.fillStyle=haze;ctx.fillRect(0,150,W,310);
+    // Sidewalks live inside the game viewport and follow the same vanishing point.
+    const sidewalk=ctx.createLinearGradient(0,0,W,0);
+    sidewalk.addColorStop(0,"#c3cfca");sidewalk.addColorStop(.5,"#e2e7df");sidewalk.addColorStop(1,"#c3cfca");
+    ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);ctx.closePath();
+    ctx.fillStyle=sidewalk;ctx.fill();
+    ctx.beginPath();ctx.moveTo(385,0);ctx.lineTo(428,0);ctx.lineTo(W,H);ctx.lineTo(470,H);ctx.closePath();
+    ctx.fillStyle=sidewalk;ctx.fill();
+    // Subtle moving expansion joints make the sidewalks feel continuous.
+    ctx.strokeStyle="rgba(103,128,126,.22)";ctx.lineWidth=1;
+    for(let k=0;k<12;k++){
+      const y=((k*105+(g.distance*2.2)%105)+H)%H,p=y/H;
+      const lx=112-42*p,rx=428+42*p;
+      ctx.beginPath();ctx.moveTo(lx,y);ctx.lineTo(lx-20*p,y+3+5*p);
+      ctx.moveTo(rx,y);ctx.lineTo(rx+20*p,y+3+5*p);ctx.stroke();
+    }
     // Road trapezoid: narrow at the horizon, broad in the foreground.
     const roadPath=()=>{ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(385,0);ctx.lineTo(470,H);ctx.lineTo(70,H);ctx.closePath();};
     const asphalt=ctx.createLinearGradient(70,0,470,0);
