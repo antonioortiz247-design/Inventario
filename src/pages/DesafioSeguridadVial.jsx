@@ -215,8 +215,15 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     const timePhase=(g.distance%40000)/40000;const nightMix=(1-Math.cos(timePhase*Math.PI*2))/2;const twilight=Math.max(0,1-Math.abs(nightMix-.5)*4);
     if(nightMix>.02){ctx.fillStyle="rgba(8,18,48,"+(nightMix*.48).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
     if(twilight>.02){ctx.fillStyle="rgba(255,143,82,"+(twilight*.12).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
-    // Sun by day, moon and stars by night.
-    const celestialX=452,celestialY=150;ctx.save();ctx.shadowBlur=nightMix>.55?14:12;ctx.shadowColor=nightMix>.55?"rgba(224,237,255,.7)":"rgba(255,218,130,.65)";ctx.fillStyle=nightMix>.55?"#e7efff":"#ffe2a0";ctx.beginPath();ctx.arc(celestialX,celestialY,nightMix>.55?13:17,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    // Sun / moon integrated into the sky with atmospheric halo and daylight rays.
+    const celestialX=452,celestialY=150;ctx.save();
+    const celestialGlow=ctx.createRadialGradient(celestialX,celestialY,5,celestialX,celestialY,82);
+    if(nightMix>.55){celestialGlow.addColorStop(0,"rgba(225,239,255,.28)");celestialGlow.addColorStop(1,"rgba(225,239,255,0)");}
+    else{celestialGlow.addColorStop(0,"rgba(255,220,139,.42)");celestialGlow.addColorStop(.42,"rgba(255,220,139,.16)");celestialGlow.addColorStop(1,"rgba(255,220,139,0)");}
+    ctx.fillStyle=celestialGlow;ctx.beginPath();ctx.arc(celestialX,celestialY,82,0,Math.PI*2);ctx.fill();
+    if(nightMix<=.55){ctx.strokeStyle="rgba(255,226,165,.42)";ctx.lineWidth=2;for(let ray=0;ray<12;ray++){const a=ray*Math.PI/6;ctx.beginPath();ctx.moveTo(celestialX+Math.cos(a)*23,celestialY+Math.sin(a)*23);ctx.lineTo(celestialX+Math.cos(a)*31,celestialY+Math.sin(a)*31);ctx.stroke();}}
+    ctx.shadowBlur=nightMix>.55?8:18;ctx.shadowColor=nightMix>.55?"rgba(224,237,255,.7)":"rgba(255,218,130,.8)";ctx.fillStyle=nightMix>.55?"#e7efff":"#ffd77e";ctx.beginPath();ctx.arc(celestialX,celestialY,nightMix>.55?13:19,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    ctx.strokeStyle=nightMix>.55?"rgba(255,255,255,.55)":"rgba(255,249,218,.85)";ctx.lineWidth=nightMix>.55?1:2;ctx.stroke();
     if(nightMix>.42){ctx.fillStyle="rgba(255,255,255,"+(nightMix*.9).toFixed(2)+")";for(let s=0;s<22;s++){const sx=(s*83+29)%W,sy=(s*47+19)%260;if(sx<130||sx>410){ctx.beginPath();ctx.arc(sx,sy,1.2+(s%3)*.35,0,Math.PI*2);ctx.fill();}}}ctx.restore();
     g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});g.spawn=Math.max(25,42-difficultyLevel*3.5)+Math.random()*8;}
     g.obstacles.forEach(o=>{o.y+=g.speed*dt*1.7;o.phase=(o.phase||0)+dt*.08;});g.obstacles=g.obstacles.filter(o=>o.y<H+70);g.obstacles.slice().sort((a,b)=>a.y-b.y).forEach(drawObstacle);
@@ -273,13 +280,19 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
  <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><span className="rounded-full bg-[#941B80]/15 px-3 py-1 text-xs font-black text-[#dca3d4]">QUALICOCHE RUN</span><h2 className={isGameFullscreen?"mt-1 text-xl font-black text-white sm:mt-2 sm:text-3xl":"mt-1 text-lg font-black text-slate-900 sm:mt-3 sm:text-3xl"}>¡A la ruta de la seguridad!</h2><p className={isGameFullscreen?"hidden text-sm text-slate-300 sm:block sm:mt-1":"hidden text-sm text-slate-500 sm:mt-1 sm:block"}>Conduce el Qualicoche, esquiva obstáculos y consigue la mayor distancia.</p></div><div className="flex items-center gap-2"><div className={isGameFullscreen?"rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-right sm:rounded-2xl sm:px-5 sm:py-2":"rounded-xl bg-[#941B80]/5 px-3 py-1.5 text-right sm:rounded-2xl sm:px-5 sm:py-3"}><p className="text-[9px] font-black uppercase tracking-wider opacity-70 sm:text-[10px]">Puntuación</p><p className="text-2xl font-black leading-none text-[#6FE3E8] sm:text-3xl">{score}</p></div><button type="button" onClick={toggleGameFullscreen} className={"inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-black text-white shadow-md transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0096AE] sm:px-4 sm:py-3 sm:text-sm "+(isGameFullscreen?"border-white/30 bg-white/15 hover:bg-white/25":"border-[#941B80] bg-[#941B80] hover:bg-[#781568]") }>{isGameFullscreen?"Salir de pantalla completa":"⛶ Expandir juego"}</button></div></div>
  <div onPointerDown={handleGamePointerDown} onPointerUp={handleGamePointerUp} onPointerCancel={()=>{touchStartRef.current=null;}} className={(isGameFullscreen?"relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-[#e7f7f8] shadow-2xl":"relative mx-auto flex w-full max-w-[540px] items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-[#e7f7f8] shadow-xl sm:rounded-2xl sm:border-4")+" touch-none select-none"}><div aria-hidden="true" className={isGameFullscreen?"pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#b8d1d5]":"hidden"}>
 <style>{`
-@keyframes qSideDrift { from { transform:translateY(-135%); } to { transform:translateY(150vh); } }
-@keyframes qSideBuildings { from { background-position-y:0px; } to { background-position-y:460px; } }
-.q-side-city { position:absolute; inset:0; overflow:hidden; background-image:linear-gradient(90deg,rgba(255,255,255,.16) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px); background-size:34px 42px; animation:qSideBuildings 18s linear infinite; }
-.q-side-building { position:absolute; bottom:-8%; width:28%; border:1px solid rgba(255,255,255,.34); background:linear-gradient(90deg,#7895a2,#9fb8bb 48%,#718c99); box-shadow:0 8px 24px rgba(35,57,70,.16); }
-.q-side-building:after { content:""; position:absolute; inset:10px 7px; background-image:repeating-linear-gradient(90deg,rgba(226,244,241,.8) 0 5px,transparent 5px 17px),repeating-linear-gradient(0deg,transparent 0 13px,rgba(226,244,241,.72) 13px 18px,transparent 18px 29px); }
-.q-side-ad { position:absolute; left:50%; top:-140%; width:min(76%,230px); height:clamp(88px,17vh,150px); transform:translateX(-50%); border:5px solid #26394c; border-radius:8px; background:linear-gradient(135deg,#a32291,#64115f); box-shadow:0 12px 28px rgba(22,35,51,.28); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:10px; animation:qSideDrift 13s linear infinite; }
-.q-side-ad:before { content:""; position:absolute; left:13%; right:13%; bottom:-38px; height:38px; border-left:5px solid #596d79; border-right:5px solid #596d79; }
+@keyframes qSidePass { 0% { transform:translate(-50%,125%) scale(1.16); opacity:0; } 12% { opacity:1; } 88% { opacity:1; } 100% { transform:translate(-50%,-155%) scale(.58); opacity:0; } }
+@keyframes qSideBuildings { from { background-position:0 0; } to { background-position:0 520px; } }
+.q-side-city { position:absolute; inset:0; overflow:hidden; background:linear-gradient(180deg,rgba(216,236,235,.92) 0%,rgba(197,220,215,.55) 42%,rgba(112,145,145,.2) 100%); }
+.q-side-city:before { content:""; position:absolute; inset:0; background-image:linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px); background-size:46px 54px; animation:qSideBuildings 22s linear infinite; }
+.q-side-building { position:absolute; bottom:-9%; width:28%; border:1px solid rgba(255,255,255,.4); background:linear-gradient(90deg,#718c9a 0%,#9db6bb 42%,#6d8794 100%); box-shadow:inset -10px 0 18px rgba(29,54,68,.16),0 18px 34px rgba(35,57,70,.2); transform:perspective(720px) rotateY(12deg); }
+.q-side-building:after { content:""; position:absolute; inset:10px 7px; background-image:repeating-linear-gradient(90deg,rgba(226,244,241,.82) 0 5px,transparent 5px 17px),repeating-linear-gradient(0deg,transparent 0 13px,rgba(226,244,241,.72) 13px 18px,transparent 18px 29px); }
+.q-side-building-right { transform:perspective(720px) rotateY(-12deg); }
+.q-side-road-edge { position:absolute; top:0; bottom:0; width:18%; opacity:.7; background:linear-gradient(90deg,transparent,rgba(0,150,174,.22)); }
+.q-side-road-edge-left { right:0; clip-path:polygon(78% 0,100% 0,100% 100%,0 100%); }
+.q-side-road-edge-right { left:0; transform:scaleX(-1); clip-path:polygon(78% 0,100% 0,100% 100%,0 100%); }
+.q-side-ad { position:absolute; left:50%; top:0; width:min(70%,220px); height:clamp(82px,15vh,138px); border:4px solid #26394c; border-radius:7px; background:linear-gradient(145deg,#a32291,#64115f); box-shadow:0 8px 0 rgba(29,48,60,.3),0 20px 34px rgba(22,35,51,.3); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:9px; animation:qSidePass 16s linear infinite; transform-origin:center bottom; }
+.q-side-ad:before { content:""; position:absolute; left:24%; right:24%; bottom:-58px; height:58px; border-left:6px solid #536b78; border-right:6px solid #536b78; filter:drop-shadow(2px 2px 1px rgba(20,35,44,.25)); }
+.q-side-ad:after { content:""; position:absolute; left:18%; right:18%; bottom:-62px; height:7px; border-radius:50%; background:rgba(22,39,49,.24); filter:blur(4px); }
 .q-side-ad strong { font-size:clamp(13px,1.5vw,22px); line-height:1.05; font-weight:950; letter-spacing:.02em; }
 .q-side-ad span { margin-top:7px; font-size:clamp(8px,.85vw,12px); line-height:1.2; font-weight:800; }
 .q-side-ad i { display:block; height:5px; width:100%; margin-top:9px; border-radius:8px; background:#0096AE; }
@@ -294,8 +307,8 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 </div>
 <div className="absolute inset-y-0 right-0 w-[calc(50%-min(41vh,270px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
 <div className="q-side-city"/>
-<div className="q-side-building right-[3%] h-[69%]"/>
-<div className="q-side-building right-[36%] h-[46%] w-[22%]"/>
+<div className="q-side-building q-side-building-right right-[3%] h-[69%]"/>
+<div className="q-side-building q-side-building-right right-[36%] h-[46%] w-[22%]"/>
 <div className="absolute bottom-0 right-0 h-[22%] w-full bg-gradient-to-t from-[#829e91]/55 to-transparent"/>
 <div className="q-side-ad" style={{animationDelay:"-5s"}}><strong>EXCELENCIA</strong><span>EN EL SERVICIO<br/>QUÁLITAS</span><i/></div>
 <div className="q-side-ad" style={{animationDelay:"-11s",background:"linear-gradient(135deg,#087f96,#07596c)"}}><strong>PROTEGE LO QUE AMAS</strong><span>CONDUCE CON PRECAUCIÓN</span><i/></div>
