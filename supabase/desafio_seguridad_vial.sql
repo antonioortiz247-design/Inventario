@@ -66,8 +66,8 @@ begin
   if p_pernocta not in ('Cochera','Calle','Estacionamiento') then raise exception 'Selecciona dónde pasa la noche el vehículo.'; end if;
   if p_uso not in ('Particular','Trabajo','Plataforma') then raise exception 'Selecciona el uso del vehículo.'; end if;
   if p_preocupacion not in ('Robo','Daños materiales','Accidentes','Responsabilidad civil') then raise exception 'Selecciona tu principal preocupación.'; end if;
-  -- Cinco minijuegos otorgan hasta 500 puntos (100 por actividad).
-  if p_puntaje < 0 or p_puntaje > 500 then raise exception 'La puntuación no es válida.'; end if;
+  -- El puntaje del recorrido no tiene un tope fijo de 500 puntos.
+  if p_puntaje is null or p_puntaje < 0 then raise exception 'La puntuación no es válida.'; end if;
   v_folio := 'QSV-' || lpad(nextval('public.desafio_seguridad_vial_folio_seq')::text, 4, '0');
   insert into public.desafio_seguridad_vial (
     folio,nombre,telefono,correo,tiene_seguro,aseguradora,anio,pernocta,uso,preocupacion,
