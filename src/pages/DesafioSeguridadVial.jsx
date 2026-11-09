@@ -281,17 +281,24 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
  <div onPointerDown={handleGamePointerDown} onPointerUp={handleGamePointerUp} onPointerCancel={()=>{touchStartRef.current=null;}} className={(isGameFullscreen?"relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-[#e7f7f8] shadow-2xl":"relative mx-auto flex w-full max-w-[540px] items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-[#e7f7f8] shadow-xl sm:rounded-2xl sm:border-4")+" touch-none select-none"}><div aria-hidden="true" className={isGameFullscreen?"pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#b8d1d5]":"hidden"}>
 <style>{`
 @keyframes qWorldPass { 0% { transform:translate3d(-50%,125vh,0) scale(1.22); opacity:0; } 8% { opacity:1; } 86% { opacity:1; } 100% { transform:translate3d(-50%,-150vh,0) scale(.34); opacity:0; } }
-@keyframes qSideBuildings { from { background-position:0 0; } to { background-position:0 600px; } }
-@keyframes qGroundFlow { from { background-position:0 0; } to { background-position:0 420px; } }
-.q-side-city { position:absolute; inset:0; overflow:hidden; perspective:700px; background:linear-gradient(180deg,#b9d7df 0%,#d4e4df 36%,#a9c4bd 100%); }
-.q-side-city:before { content:""; position:absolute; inset:-12%; background-image:linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px); background-size:44px 52px; animation:qSideBuildings 24s linear infinite; transform:rotateX(5deg); }
-.q-side-city:after { content:""; position:absolute; left:-30%; right:-30%; bottom:-16%; height:48%; background:repeating-linear-gradient(90deg,rgba(0,150,174,.2) 0 2px,transparent 2px 48px),repeating-linear-gradient(0deg,rgba(255,255,255,.18) 0 2px,transparent 2px 42px); transform:perspective(360px) rotateX(62deg); transform-origin:bottom; animation:qGroundFlow 18s linear infinite; opacity:.75; }
-.q-side-building { position:absolute; bottom:-9%; width:28%; border:2px solid rgba(239,249,246,.6); background:linear-gradient(90deg,#617f90 0%,#a3bbc0 42%,#6a8794 100%); box-shadow:inset -12px 0 20px rgba(29,54,68,.2),0 18px 34px rgba(35,57,70,.24); transform:perspective(700px) rotateY(14deg); }
-.q-side-building:after { content:""; position:absolute; inset:10px 7px; background-image:repeating-linear-gradient(90deg,rgba(226,244,241,.86) 0 5px,transparent 5px 17px),repeating-linear-gradient(0deg,transparent 0 13px,rgba(226,244,241,.76) 13px 18px,transparent 18px 29px); }
-.q-side-building-right { transform:perspective(700px) rotateY(-14deg); }
-.q-side-road-edge { position:absolute; top:0; bottom:0; width:18%; opacity:.7; background:linear-gradient(90deg,transparent,rgba(0,150,174,.22)); }
-.q-side-road-edge-left { right:0; clip-path:polygon(78% 0,100% 0,100% 100%,0 100%); }
-.q-side-road-edge-right { left:0; transform:scaleX(-1); clip-path:polygon(78% 0,100% 0,100% 100%,0 100%); }
+@keyframes qLandscapeFlow { from { background-position:0 0; } to { background-position:0 620px; } }
+@keyframes qGardenFlow { from { background-position:0 0,0 0; } to { background-position:0 540px,0 540px; } }
+.q-side-city { position:absolute; inset:0; overflow:hidden; background:linear-gradient(180deg,#c7e0e4 0%,#dbe8df 42%,#b9cfc3 100%); }
+.q-side-city:before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 44%,rgba(55,94,83,.12)); }
+.q-side-garden { position:absolute; inset:0; overflow:hidden; background:linear-gradient(90deg,#779c82 0%,#9ab58c 38%,#b2c49a 100%); }
+.q-side-garden:before { content:""; position:absolute; inset:-10%; background-image:radial-gradient(ellipse at 20% 30%,rgba(43,105,73,.55) 0 7%,transparent 8%),radial-gradient(ellipse at 75% 65%,rgba(55,119,79,.5) 0 8%,transparent 9%),repeating-linear-gradient(0deg,rgba(255,255,255,.12) 0 2px,transparent 2px 76px); background-size:160px 180px,190px 210px,100% 100%; animation:qGardenFlow 25s linear infinite; }
+.q-side-garden:after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,rgba(28,70,54,.12),transparent 25%,transparent 75%,rgba(28,70,54,.12)); }
+.q-side-sidewalk { position:absolute; top:0; bottom:0; width:30%; background:repeating-linear-gradient(0deg,rgba(112,132,136,.18) 0 2px,transparent 2px 76px),linear-gradient(90deg,#c7d0cc,#e2e4dc 48%,#bac8c4); box-shadow:inset 5px 0 8px rgba(35,58,60,.12),inset -4px 0 7px rgba(35,58,60,.12); animation:qLandscapeFlow 22s linear infinite; }
+.q-side-sidewalk-left { right:0; clip-path:polygon(30% 0,100% 0,100% 100%,0 100%); }
+.q-side-sidewalk-right { left:0; clip-path:polygon(0 0,70% 0,100% 100%,0 100%); }
+.q-side-curb { position:absolute; top:0; bottom:0; width:8px; background:linear-gradient(90deg,#8fa6a2,#edf0e7,#879d99); box-shadow:0 0 8px rgba(30,57,58,.2); }
+.q-side-curb-left { right:29%; }
+.q-side-curb-right { left:29%; }
+.q-side-plant { position:absolute; width:clamp(22px,4vw,54px); height:clamp(16px,3vh,34px); border-radius:50% 50% 42% 42%; background:radial-gradient(ellipse at 35% 28%,#9ebc82 0 12%,#4e895f 45%,#286348 100%); box-shadow:0 5px 8px rgba(30,63,46,.24); }
+.q-side-prop { position:absolute; z-index:3; left:50%; top:0; width:100%; height:1px; pointer-events:none; animation:qWorldPass 30s linear infinite; transform-origin:center center; }
+.q-side-prop:before { content:""; position:absolute; left:50%; top:0; height:clamp(52px,9vh,82px); border-left:5px solid #526b79; border-right:5px solid #526b79; transform:translateX(-50%); filter:drop-shadow(3px 3px 1px rgba(20,35,44,.3)); }
+.q-side-prop:after { content:""; position:absolute; left:50%; top:clamp(49px,8.7vh,79px); width:48%; height:8px; border-radius:50%; background:rgba(22,39,49,.28); transform:translateX(-50%); filter:blur(5px); }
+.q-side-ad { position:absolute; left:50%; top:0; width:min(72%,220px); height:clamp(82px,15vh,138px); border:4px solid #26394c; border-radius:5px; background:linear-gradient(145deg,#a32291,#64115f); box-shadow:0 7px 0 rgba(29,48,60,.32),0 15px 24px rgba(22,35,51,.26); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:9px; transform:translate(-50%,-100%); image-rendering:pixelated; }
 .q-side-prop { position:absolute; z-index:3; left:50%; top:0; width:100%; height:1px; pointer-events:none; animation:qWorldPass 30s linear infinite; transform-origin:center center; }
 .q-side-prop:before { content:""; position:absolute; left:50%; top:0; height:clamp(52px,9vh,82px); border-left:5px solid #526b79; border-right:5px solid #526b79; transform:translateX(-50%); filter:drop-shadow(3px 3px 1px rgba(20,35,44,.3)); }
 .q-side-prop:after { content:""; position:absolute; left:50%; top:clamp(49px,8.7vh,79px); width:48%; height:8px; border-radius:50%; background:rgba(22,39,49,.28); transform:translateX(-50%); filter:blur(5px); }
@@ -302,17 +309,23 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 `}</style>
 <div className="absolute inset-y-0 left-0 w-[calc(50%-min(41vh,270px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
 <div className="q-side-city"/>
-<div className="q-side-building left-[3%] h-[64%]"/>
-<div className="q-side-building left-[34%] h-[43%] w-[22%]"/>
-<div className="absolute bottom-0 left-0 h-[22%] w-full bg-gradient-to-t from-[#829e91]/55 to-transparent"/>
+<div className="q-side-garden"/>
+<div className="q-side-sidewalk q-side-sidewalk-left"/>
+<div className="q-side-curb q-side-curb-left"/>
+<div className="q-side-plant left-[12%] top-[22%]"/>
+<div className="q-side-plant left-[46%] top-[57%]"/>
+<div className="q-side-plant left-[8%] top-[78%]"/>
 <div className="q-side-prop" style={{animationDelay:"0s"}}><div className="q-side-ad"><strong>QUÁLITAS</strong><span>ASEGURAMOS AUTOS<br/>CUIDAMOS PERSONAS</span><i/></div></div>
 <div className="q-side-prop" style={{animationDelay:"-15s"}}><div className="q-side-ad" style={{background:"linear-gradient(135deg,#087f96,#07596c)"}}><strong>MANEJA SEGURO</strong><span>EN CADA KILÓMETRO<br/>VAMOS CONTIGO</span><i/></div></div>
 </div>
 <div className="absolute inset-y-0 right-0 w-[calc(50%-min(41vh,270px))] overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
 <div className="q-side-city"/>
-<div className="q-side-building q-side-building-right right-[3%] h-[69%]"/>
-<div className="q-side-building q-side-building-right right-[36%] h-[46%] w-[22%]"/>
-<div className="absolute bottom-0 right-0 h-[22%] w-full bg-gradient-to-t from-[#829e91]/55 to-transparent"/>
+<div className="q-side-garden"/>
+<div className="q-side-sidewalk q-side-sidewalk-right"/>
+<div className="q-side-curb q-side-curb-right"/>
+<div className="q-side-plant right-[12%] top-[18%]"/>
+<div className="q-side-plant right-[45%] top-[54%]"/>
+<div className="q-side-plant right-[8%] top-[80%]"/>
 <div className="q-side-prop" style={{animationDelay:"-7.5s"}}><div className="q-side-ad"><strong>EXCELENCIA</strong><span>EN EL SERVICIO<br/>QUÁLITAS</span><i/></div></div>
 <div className="q-side-prop" style={{animationDelay:"-22.5s"}}><div className="q-side-ad" style={{background:"linear-gradient(135deg,#087f96,#07596c)"}}><strong>PROTEGE LO QUE AMAS</strong><span>CONDUCE CON PRECAUCIÓN</span><i/></div></div>
 </div>
