@@ -220,6 +220,8 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     const jump=g.jump>0?Math.sin((1-g.jump/22)*Math.PI):0;
     const lift=jump*46,scale=1+jump*.055;
     ctx.save();ctx.translate(x,y-lift);ctx.scale(scale,scale);
+    // Forward headlight beams, projected ahead of the car in the top-down view.
+    const beam=ctx.createLinearGradient(0,-78,0,-205);beam.addColorStop(0,"rgba(255,244,190,.24)");beam.addColorStop(1,"rgba(255,244,190,0)");ctx.fillStyle=beam;ctx.beginPath();ctx.moveTo(-29,-78);ctx.lineTo(-53,-205);ctx.lineTo(53,-205);ctx.lineTo(29,-78);ctx.closePath();ctx.fill();
     ctx.shadowColor="rgba(13,28,46,.42)";ctx.shadowBlur=22;ctx.shadowOffsetY=14;
     ctx.beginPath();ctx.moveTo(-37,-77);ctx.quadraticCurveTo(-45,-72,-46,-48);ctx.lineTo(-43,49);ctx.quadraticCurveTo(-42,72,-29,78);ctx.quadraticCurveTo(0,85,29,78);ctx.quadraticCurveTo(42,72,43,49);ctx.lineTo(46,-48);ctx.quadraticCurveTo(45,-72,37,-77);ctx.quadraticCurveTo(0,-91,-37,-77);ctx.closePath();
     const body=ctx.createLinearGradient(-48,0,48,0);body.addColorStop(0,"#5f0d59");body.addColorStop(.16,"#a51b91");body.addColorStop(.48,"#d33abd");body.addColorStop(.78,"#941b80");body.addColorStop(1,"#51094d");ctx.fillStyle=body;ctx.fill();
@@ -241,9 +243,13 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.beginPath();ctx.moveTo(-25,39);ctx.quadraticCurveTo(0,34,25,39);ctx.lineTo(21,54);ctx.quadraticCurveTo(0,59,-21,54);ctx.closePath();
     const rearGlass=ctx.createLinearGradient(0,37,0,57);rearGlass.addColorStop(0,"#34475c");rearGlass.addColorStop(.55,"#17283b");rearGlass.addColorStop(1,"#0b1728");ctx.fillStyle=rearGlass;ctx.fill();ctx.strokeStyle="rgba(255,255,255,.55)";ctx.lineWidth=1.2;ctx.stroke();
     ctx.beginPath();ctx.moveTo(-17,41);ctx.quadraticCurveTo(0,37,16,41);ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1.2;ctx.stroke();
-    // Tail lamps
-    ctx.shadowColor="#ff345e";ctx.shadowBlur=10;rounded(-39,-19,8,31,4,"#b71942","#ff9aab");rounded(31,-19,8,31,4,"#b71942","#ff9aab");ctx.shadowBlur=0;
-    rounded(-36,-13,3,20,2,"#ffb3bf");rounded(33,-13,3,20,2,"#ffb3bf");
+    // Rear tail lamps: moved to the rear edge, away from the cabin center.
+    ctx.shadowColor="#ff234f";ctx.shadowBlur=12;rounded(-36,48,8,19,4,"#b71942","#ff9aab");rounded(28,48,8,19,4,"#b71942","#ff9aab");ctx.shadowBlur=0;
+    rounded(-33,51,3,12,2,"#ffd0d6");rounded(30,51,3,12,2,"#ffd0d6");
+    // Front headlights at the nose, visibly illuminated in the direction of travel.
+    ctx.shadowColor="#fff1b8";ctx.shadowBlur=15;rounded(-34,-82,11,9,4,"#fff4c7","#ffffff");rounded(23,-82,11,9,4,"#fff4c7","#ffffff");ctx.shadowBlur=0;
+    rounded(-31,-80,5,4,2,"#ffffff");rounded(26,-80,5,4,2,"#ffffff");
+    ctx.strokeStyle="rgba(255,244,190,.72)";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-28,-86);ctx.lineTo(-28,-91);ctx.moveTo(28,-86);ctx.lineTo(28,-91);ctx.stroke();
     // Rear bumper and aqua signature
     ctx.beginPath();ctx.moveTo(-34,54);ctx.quadraticCurveTo(0,65,34,54);ctx.strokeStyle="#0096ae";ctx.lineWidth=3;ctx.stroke();
     ctx.beginPath();ctx.moveTo(-28,68);ctx.quadraticCurveTo(0,76,28,68);ctx.strokeStyle="rgba(255,255,255,.38)";ctx.lineWidth=1.2;ctx.stroke();
