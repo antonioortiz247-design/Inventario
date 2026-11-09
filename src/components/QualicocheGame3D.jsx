@@ -45,7 +45,7 @@ function BrandedCar({ engineRef }) {
 
   useFrame((state, delta) => {
     const g = engineRef?.current;
-    const targetX = g ? (g.lane - 1) * 1.35 : 0;
+    const targetX = g ? (g.lane - 1) * 0.52 : 0;
     const jumpProgress = g?.jump > 0 ? Math.sin((1 - g.jump / 22) * Math.PI) : 0;
     const targetY = jumpProgress * 0.85;
     car.position.x = THREE.MathUtils.damp(car.position.x, targetX, 12, delta);
@@ -60,7 +60,7 @@ function BrandedCar({ engineRef }) {
 export default function QualicocheGame3D({ engineRef }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-[2]" aria-label="Modelo 3D del Qualicoche">
-      <Canvas style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "transparent" }} camera={{ position: [0, 2.35, 6.2], fov: 34 }} dpr={[1, 1.35]}
+      <Canvas style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "transparent" }} camera={{ position: [0, 2.8, 6.2], fov: 34 }} dpr={[1, 1.35]}
         gl={{ alpha: true, premultipliedAlpha: true, antialias: true, powerPreference: "low-power" }}
         onCreated={({ gl }) => { gl.setClearColor(0x000000, 0); gl.setClearAlpha(0); gl.outputColorSpace = THREE.SRGBColorSpace; gl.domElement.style.background = "transparent"; gl.domElement.style.display = "block"; }}>
         <ambientLight intensity={1.15} />
