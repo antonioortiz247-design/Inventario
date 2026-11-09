@@ -50,7 +50,8 @@ function BrandedCar({ engineRef }) {
     const targetY = jumpProgress * 0.85;
     car.position.x = THREE.MathUtils.damp(car.position.x, targetX, 12, delta);
     car.position.y = THREE.MathUtils.damp(car.position.y, targetY, 12, delta);
-    car.rotation.y = THREE.MathUtils.damp(car.rotation.y, Math.PI, 10, delta);\n    car.rotation.z = THREE.MathUtils.damp(car.rotation.z, g ? (g.lane - 1) * -0.035 : 0, 8, delta);
+    car.rotation.y = THREE.MathUtils.damp(car.rotation.y, Math.PI, 10, delta);
+    car.rotation.z = THREE.MathUtils.damp(car.rotation.z, g ? (g.lane - 1) * -0.035 : 0, 8, delta);
   });
 
   return <primitive object={car} />;
