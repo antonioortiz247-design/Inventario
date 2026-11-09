@@ -81,7 +81,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   const ctx=canvas.getContext("2d"),W=540,H=900;
   const g=gameEngineRef.current||{lane:1,jump:0,obstacles:[],ticks:0,distance:0,speed:5,spawn:25};gameEngineRef.current=g;
   let raf=0,alive=true,last=0;
-  const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[203,337,473][lane];return top+(bottom-top)*p;};
+  const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return top+(bottom-top)*p;};
   const rounded=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}};
   const drawRoad=()=>{
     const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#d9f1f2");sky.addColorStop(.48,"#edf7f6");sky.addColorStop(1,"#c8e4e5");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
