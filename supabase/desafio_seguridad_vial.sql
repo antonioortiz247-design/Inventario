@@ -24,7 +24,7 @@ returns public.desafio_seguridad_vial_config
 language plpgsql
 security definer
 set search_path = public
-as $
+as $function$
 declare
   v_config public.desafio_seguridad_vial_config;
 begin
@@ -41,13 +41,13 @@ begin
   end if;
   return v_config;
 end;
-$;
+$function$;
 revoke all on function public.configurar_modo_competencia(boolean) from public, anon;
 grant execute on function public.configurar_modo_competencia(boolean) to authenticated;
 
 -- Habilita la publicación en tiempo real para que el modo cambie también
 -- en las sesiones públicas que ya estén abiertas.
-do $
+do $publication$
 begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
      and not exists (
@@ -59,7 +59,7 @@ begin
     alter publication supabase_realtime add table public.desafio_seguridad_vial_config;
   end if;
 end;
-$;
+$publication$;
 
 create table if not exists public.desafio_seguridad_vial (
   id uuid primary key default gen_random_uuid(),
