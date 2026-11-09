@@ -29,7 +29,7 @@ function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [desafioAdminOpen, setDesafioAdminOpen] = useState(false);
   const [touchStartX, setTouchStartX] = useState(null);
-  const inventory = useInventory();
+  const inventory = useInventory({ enabled: !(publicPreregistro || publicDesafio || publicCalaveritaSorteo) });
   const handleImport = async (data) => {
     const actuales = await getInventory();
     const nuevos = data.map((item) => ({ ...item, id: item.id || crypto.randomUUID(), cantidad: Number(item.cantidad || 0), stockMinimo: Number(item.stockMinimo ?? item.stock_minimo ?? 10), fechaRegistro: item.fechaRegistro || new Date().toISOString() }));
