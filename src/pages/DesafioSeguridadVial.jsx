@@ -198,7 +198,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
       const y=raw/2150*(H+150)-95;
       if(y<-90||y>H+90)continue;
       const p=.42+y/H*.82,side=i%2===0?"left":"right",sign=side==="left"?1:-1;
-      const x=side==="left"?25+18*p:515-18*p,w=94*p,h=62*p;
+      const x=side==="left"?18+5*p:522-5*p,w=70*p,h=50*p;
       const [brand,line1,line2]=campaigns[i%campaigns.length];
       ctx.save();ctx.translate(x,y);ctx.scale(p,p);
       // Double support posts and a solid, branded roadside structure.
