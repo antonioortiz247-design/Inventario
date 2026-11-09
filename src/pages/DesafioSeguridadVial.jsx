@@ -339,10 +339,8 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 .q-side-ad span { margin-top:7px; font-size:clamp(8px,.85vw,12px); line-height:1.2; font-weight:800; }
 .q-side-ad i { display:block; height:5px; width:100%; margin-top:9px; border-radius:8px; background:#0096AE; }
 `}</style>
-<div className="absolute inset-y-0 left-0 w-1/2 overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
-<div className="q-side-city"/>
+<div className="absolute inset-y-0 left-0 w-1/2 overflow-hidden bg-[#83a878]">
 <div className="q-side-garden"/>
-<div className="q-side-sidewalk q-side-sidewalk-left"/>
 
 <div className="q-side-plant left-[12%] top-[22%]"/>
 <div className="q-side-plant left-[46%] top-[57%]"/>
@@ -350,10 +348,8 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 <div className="q-side-prop" style={{animationDelay:"0s"}}><div className="q-side-ad"><strong>QUÁLITAS</strong><span>ASEGURAMOS AUTOS<br/>CUIDAMOS PERSONAS</span><i/></div></div>
 <div className="q-side-prop" style={{animationDelay:"-15s"}}><div className="q-side-ad" style={{background:"linear-gradient(135deg,#087f96,#07596c)"}}><strong>MANEJA SEGURO</strong><span>EN CADA KILÓMETRO<br/>VAMOS CONTIGO</span><i/></div></div>
 </div>
-<div className="absolute inset-y-0 right-0 w-1/2 overflow-hidden bg-gradient-to-b from-[#c7dfe2] via-[#dce9df] to-[#a8c4c0]">
-<div className="q-side-city"/>
+<div className="absolute inset-y-0 right-0 w-1/2 overflow-hidden bg-[#83a878]">
 <div className="q-side-garden"/>
-<div className="q-side-sidewalk q-side-sidewalk-right"/>
 
 <div className="q-side-plant right-[12%] top-[18%]"/>
 <div className="q-side-plant right-[45%] top-[54%]"/>
