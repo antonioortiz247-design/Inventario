@@ -178,15 +178,23 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=1.5;ctx.stroke();
     // Body highlights and sculpted shoulders
     ctx.beginPath();ctx.moveTo(-37,-67);ctx.quadraticCurveTo(-27,-76,-17,-77);ctx.moveTo(37,-67);ctx.quadraticCurveTo(27,-76,17,-77);ctx.strokeStyle="rgba(255,255,255,.34)";ctx.lineWidth=2;ctx.stroke();
+    // Visible tires and sidewalls, tucked under the wheel arches
+    ctx.shadowColor="rgba(10,18,32,.3)";ctx.shadowBlur=5;
+    rounded(-45,-53,11,29,4,"#202735","#667386");rounded(34,-53,11,29,4,"#202735","#667386");
+    rounded(-45,34,11,27,4,"#202735","#667386");rounded(34,34,11,27,4,"#202735","#667386");ctx.shadowBlur=0;
     // Side mirrors
     rounded(-53,-48,13,23,6,"#74116b","rgba(255,255,255,.3)");rounded(40,-48,13,23,6,"#74116b","rgba(255,255,255,.3)");
-    // Rear window
+    // Front windshield with glass reflections
     ctx.beginPath();ctx.moveTo(-29,-56);ctx.quadraticCurveTo(0,-67,29,-56);ctx.lineTo(25,-27);ctx.quadraticCurveTo(0,-20,-25,-27);ctx.closePath();
     const glass=ctx.createLinearGradient(0,-65,0,-20);glass.addColorStop(0,"#101a2b");glass.addColorStop(.5,"#26364b");glass.addColorStop(1,"#0c1422");ctx.fillStyle=glass;ctx.fill();ctx.strokeStyle="rgba(255,255,255,.3)";ctx.lineWidth=1.4;ctx.stroke();
     ctx.beginPath();ctx.moveTo(-21,-51);ctx.quadraticCurveTo(-4,-58,16,-54);ctx.strokeStyle="rgba(255,255,255,.24)";ctx.lineWidth=2;ctx.stroke();
     // Rear deck and trunk
     ctx.beginPath();ctx.moveTo(-31,-16);ctx.quadraticCurveTo(0,-9,31,-16);ctx.lineTo(29,31);ctx.quadraticCurveTo(0,39,-29,31);ctx.closePath();ctx.fillStyle="rgba(80,5,72,.24)";ctx.fill();
     ctx.beginPath();ctx.moveTo(-30,30);ctx.quadraticCurveTo(0,38,30,30);ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1.4;ctx.stroke();
+    // Rear windshield / medallion, clearly separated from the trunk lid
+    ctx.beginPath();ctx.moveTo(-25,39);ctx.quadraticCurveTo(0,34,25,39);ctx.lineTo(21,54);ctx.quadraticCurveTo(0,59,-21,54);ctx.closePath();
+    const rearGlass=ctx.createLinearGradient(0,37,0,57);rearGlass.addColorStop(0,"#34475c");rearGlass.addColorStop(.55,"#17283b");rearGlass.addColorStop(1,"#0b1728");ctx.fillStyle=rearGlass;ctx.fill();ctx.strokeStyle="rgba(255,255,255,.55)";ctx.lineWidth=1.2;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-17,41);ctx.quadraticCurveTo(0,37,16,41);ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1.2;ctx.stroke();
     // Tail lamps
     ctx.shadowColor="#ff345e";ctx.shadowBlur=10;rounded(-39,-19,8,31,4,"#b71942","#ff9aab");rounded(31,-19,8,31,4,"#b71942","#ff9aab");ctx.shadowBlur=0;
     rounded(-36,-13,3,20,2,"#ffb3bf");rounded(33,-13,3,20,2,"#ffb3bf");
@@ -230,8 +238,15 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.restore();
   };
   const frame=t=>{
-    if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;const difficultyLevel=Math.floor(g.distance/10000);g.speed=Math.min(15.5,7.2+difficultyLevel*0.85);
+    if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;const difficultyLevel=Math.floor(g.distance/10000);if(difficultyLevel>(g.level||0)){g.level=difficultyLevel;g.levelNotice=150;}g.speed=Math.min(15.5,7.2+difficultyLevel*0.85);
     ctx.clearRect(0,0,W,H);drawRoad();drawCityForeground();
+    // Smooth four-stage day/night cycle: dawn, day, sunset and night over 4 km.
+    const timePhase=(g.distance%40000)/40000;const nightMix=(1-Math.cos(timePhase*Math.PI*2))/2;const twilight=Math.max(0,1-Math.abs(nightMix-.5)*4);
+    if(nightMix>.02){ctx.fillStyle="rgba(8,18,48,"+(nightMix*.48).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
+    if(twilight>.02){ctx.fillStyle="rgba(255,143,82,"+(twilight*.12).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
+    // Sun by day, moon and stars by night.
+    const celestialX=452,celestialY=150;ctx.save();ctx.shadowBlur=nightMix>.55?14:12;ctx.shadowColor=nightMix>.55?"rgba(224,237,255,.7)":"rgba(255,218,130,.65)";ctx.fillStyle=nightMix>.55?"#e7efff":"#ffe2a0";ctx.beginPath();ctx.arc(celestialX,celestialY,nightMix>.55?13:17,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    if(nightMix>.42){ctx.fillStyle="rgba(255,255,255,"+(nightMix*.9).toFixed(2)+")";for(let s=0;s<22;s++){const sx=(s*83+29)%W,sy=(s*47+19)%260;if(sx<130||sx>410){ctx.beginPath();ctx.arc(sx,sy,1.2+(s%3)*.35,0,Math.PI*2);ctx.fill();}}}ctx.restore();
     g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});g.spawn=Math.max(25,42-difficultyLevel*3.5)+Math.random()*8;}
     g.obstacles.forEach(o=>{o.y+=g.speed*dt*1.7;o.phase=(o.phase||0)+dt*.08;});g.obstacles=g.obstacles.filter(o=>o.y<H+70);g.obstacles.slice().sort((a,b)=>a.y-b.y).forEach(drawObstacle);
     if(g.jump>0)g.jump=Math.max(0,g.jump-dt);
@@ -245,6 +260,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.font="800 19px Arial";ctx.fillText(Math.floor(g.distance/10)+" m",30,61);
     ctx.fillStyle="rgba(255,255,255,.72)";ctx.font="700 9px Arial";ctx.fillText("MANTÉN EL CONTROL",W-157,40);
     ctx.restore();
+    if(g.levelNotice>0){const alpha=Math.min(1,g.levelNotice/24);ctx.save();ctx.globalAlpha=alpha;rounded(92,330,356,104,18,"rgba(24,20,48,.86)","rgba(255,255,255,.65)");ctx.textAlign="center";ctx.shadowColor="rgba(0,150,174,.8)";ctx.shadowBlur=18;ctx.fillStyle="#75edf0";ctx.font="900 23px Arial";ctx.fillText("¡SUBISTE DE NIVEL!",270,371);ctx.shadowBlur=0;ctx.fillStyle="#fff";ctx.font="800 14px Arial";ctx.fillText("NIVEL "+(g.level+1)+"  ·  MÁS VELOCIDAD",270,402);ctx.restore();g.levelNotice=Math.max(0,g.levelNotice-dt);}
     if(g.ticks%8===0){const v=Math.floor(g.distance/10);setScore(v);setGameDistance(v);}
     raf=requestAnimationFrame(frame);
   };
@@ -252,7 +268,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   const key=e=>{if(["ArrowLeft","ArrowRight","ArrowUp"," ","a","d","A","D"].includes(e.key)){e.preventDefault();if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")g.lane=Math.max(0,g.lane-1);if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")g.lane=Math.min(2,g.lane+1);if(e.key===" "||e.key==="ArrowUp")g.jump=22;}};
   window.addEventListener("keydown",key);return()=>{alive=false;cancelAnimationFrame(raf);window.removeEventListener("keydown",key);};
  },[step,gameStatus]);
- const startDriving=()=>{gameEngineRef.current={lane:1,jump:0,obstacles:[],ticks:0,distance:0,speed:7.2,spawn:12};setScore(0);setGameDistance(0);setGameStatus("playing");};
+ const startDriving=()=>{gameEngineRef.current={lane:1,jump:0,obstacles:[],ticks:0,distance:0,speed:7.2,spawn:12,level:0,levelNotice:0};setScore(0);setGameDistance(0);setGameStatus("playing");};
  const moveCar=direction=>{const g=gameEngineRef.current;if(!g||gameStatus!=="playing")return;if(direction==="left")g.lane=Math.max(0,g.lane-1);if(direction==="right")g.lane=Math.min(2,g.lane+1);if(direction==="jump")g.jump=22;};
  const touchStartRef=useRef(null);
  const handleGamePointerDown=e=>{if(gameStatus!=="playing")return;touchStartRef.current={x:e.clientX,y:e.clientY,id:e.pointerId};};
