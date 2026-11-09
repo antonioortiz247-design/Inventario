@@ -97,41 +97,50 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return top+(bottom-top)*p;};
   const rounded=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}};
   const drawRoad=()=>{
-    // La vista central contiene únicamente la carretera: las banquetas y el jardín
-    // pertenecen a los paneles laterales del modo expandido.
+    // City approach: skyline stays on the horizon while the road converges
+    // toward a clear vanishing point. Sidewalks remain outside this canvas.
     const sky=ctx.createLinearGradient(0,0,0,H);
-    sky.addColorStop(0,"#344357");
-    sky.addColorStop(.5,"#46566a");
-    sky.addColorStop(1,"#344357");
-    ctx.fillStyle=sky;
-    ctx.fillRect(0,0,W,H);
-    // Asphalt occupies the complete game viewport; no city, sidewalk or curb
-    // is duplicated inside the canvas.
-    ctx.strokeStyle="rgba(0,150,174,.5)";
-    ctx.lineWidth=3;
-    ctx.beginPath();
-    ctx.moveTo(3,0);ctx.lineTo(3,H);
-    ctx.moveTo(W-3,0);ctx.lineTo(W-3,H);
-    ctx.stroke();
-    ctx.save();
-    ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();
+    sky.addColorStop(0,"#b8dce8");sky.addColorStop(.38,"#e4f0ec");sky.addColorStop(1,"#d4e8e3");
+    ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    // Distant city skyline, softly blended into atmospheric perspective.
+    const skyline=[[-8,160,104,180],[-2,118,42,220],[40,145,54,190],[82,95,45,245],[118,132,48,208],[420,112,52,228],[458,78,48,262],[500,135,55,205]];
+    skyline.forEach(([x,y,w,h],i)=>{
+      const grad=ctx.createLinearGradient(0,y,0,y+h);grad.addColorStop(0,i%2?"#829eae":"#718d9f");grad.addColorStop(1,"#a9c0c6");
+      ctx.fillStyle=grad;ctx.fillRect(x,y,w,h);
+      ctx.fillStyle="rgba(239,249,241,.65)";
+      for(let wy=y+14;wy<y+h-12;wy+=19)for(let wx=x+8;wx<x+w-6;wx+=14)ctx.fillRect(wx,wy,5,8);
+      ctx.fillStyle="rgba(44,70,88,.12)";ctx.fillRect(x+w-4,y,4,h);
+    });
+    const haze=ctx.createLinearGradient(0,170,0,440);
+    haze.addColorStop(0,"rgba(255,255,255,.04)");haze.addColorStop(1,"rgba(230,246,239,.9)");
+    ctx.fillStyle=haze;ctx.fillRect(0,150,W,310);
+    // Road trapezoid: narrow at the horizon, broad in the foreground.
+    const roadPath=()=>{ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(385,0);ctx.lineTo(470,H);ctx.lineTo(70,H);ctx.closePath();};
+    const asphalt=ctx.createLinearGradient(70,0,470,0);
+    asphalt.addColorStop(0,"#344357");asphalt.addColorStop(.5,"#46566a");asphalt.addColorStop(1,"#344357");
+    roadPath();ctx.fillStyle=asphalt;ctx.fill();
+    ctx.save();roadPath();ctx.clip();
     const sheen=ctx.createLinearGradient(0,0,W,0);
-    sheen.addColorStop(0,"rgba(255,255,255,.015)");
-    sheen.addColorStop(.5,"rgba(255,255,255,.06)");
-    sheen.addColorStop(1,"rgba(255,255,255,.015)");
+    sheen.addColorStop(0,"rgba(255,255,255,.02)");sheen.addColorStop(.5,"rgba(255,255,255,.055)");sheen.addColorStop(1,"rgba(255,255,255,.015)");
     ctx.fillStyle=sheen;ctx.fillRect(0,0,W,H);
     ctx.lineCap="round";
     for(let lane=1;lane<=2;lane++){
-      const x=W*lane/3;
+      const top=155+lane*76.7,bottom=70+lane*133.3;
       for(let k=-1;k<16;k++){
         const y=((k*88+(g.distance*2.5)%176)+H*2)%(H+176)-88;
-        const p=Math.max(0,Math.min(1,y/H));
+        const p=Math.max(0,Math.min(1,y/H)),x=top+(bottom-top)*p;
         const dashH=12+p*28,thick=1.8+p*2.5;
         ctx.fillStyle="rgba(255,255,255,.86)";
         rounded(x-thick/2,y,thick,dashH,thick/2,ctx.fillStyle);
       }
     }
     ctx.restore();
+    // Branded road-edge glints reinforce the perspective without adding curbs.
+    ctx.strokeStyle="rgba(0,150,174,.72)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(70,H);ctx.moveTo(385,0);ctx.lineTo(470,H);ctx.stroke();
+    const edgeGlow=ctx.createLinearGradient(0,0,0,H);
+    edgeGlow.addColorStop(0,"rgba(148,27,128,.08)");edgeGlow.addColorStop(1,"rgba(0,150,174,.3)");
+    ctx.fillStyle=edgeGlow;ctx.fillRect(0,H-10,W,10);
   };
   const drawCar=(x,y)=>{
     const jump=g.jump>0?Math.sin((1-g.jump/22)*Math.PI):0;
@@ -298,7 +307,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 .q-side-garden { position:absolute; inset:0; overflow:hidden; background:linear-gradient(90deg,#648d70 0%,#83a878 34%,#a1b987 72%,#739975 100%); }
 .q-side-garden:before { content:""; position:absolute; inset:-12%; background-image:repeating-linear-gradient(104deg,transparent 0 5px,rgba(34,91,53,.34) 5px 6px,transparent 6px 11px),repeating-linear-gradient(78deg,transparent 0 8px,rgba(225,238,177,.25) 8px 9px,transparent 9px 16px),radial-gradient(ellipse at 18% 22%,rgba(39,105,62,.56) 0 2%,transparent 8%),radial-gradient(ellipse at 73% 61%,rgba(46,111,66,.48) 0 3%,transparent 10%),radial-gradient(ellipse at 43% 84%,rgba(180,204,131,.3) 0 2%,transparent 9%); background-size:100% 100%,100% 100%,180px 160px,220px 190px,160px 180px; animation:qGardenFlow 18s linear infinite; }
 .q-side-garden:after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg,rgba(238,244,196,.12) 0 2px,transparent 2px 68px),linear-gradient(90deg,rgba(28,70,54,.22),transparent 24%,transparent 76%,rgba(28,70,54,.18)); }
-.q-side-sidewalk { position:absolute; top:0; bottom:0; width:30%; background:repeating-linear-gradient(0deg,rgba(112,132,136,.18) 0 2px,transparent 2px 76px),linear-gradient(90deg,#c7d0cc,#e2e4dc 48%,#bac8c4); box-shadow:inset 5px 0 8px rgba(35,58,60,.12),inset -4px 0 7px rgba(35,58,60,.12); animation:qLandscapeFlow 22s linear infinite; }
+.q-side-sidewalk { position:absolute; top:0; bottom:0; width:34%; background:repeating-linear-gradient(0deg,rgba(104,123,127,.22) 0 2px,transparent 2px 76px),linear-gradient(90deg,#b9c6c3 0%,#e2e6df 48%,#c0ceca 100%); box-shadow:inset 7px 0 12px rgba(35,58,60,.16),inset -6px 0 10px rgba(35,58,60,.14); animation:qLandscapeFlow 22s linear infinite; }
 .q-side-sidewalk-left { right:0; clip-path:polygon(30% 0,100% 0,100% 100%,0 100%); }
 .q-side-sidewalk-right { left:0; clip-path:polygon(0 0,70% 0,100% 100%,0 100%); }
 
