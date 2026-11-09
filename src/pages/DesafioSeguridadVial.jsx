@@ -302,8 +302,6 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
 .q-side-sidewalk-left { right:0; clip-path:polygon(30% 0,100% 0,100% 100%,0 100%); }
 .q-side-sidewalk-right { left:0; clip-path:polygon(0 0,70% 0,100% 100%,0 100%); }
 
-.q-side-curb-left { right:29%; }
-.q-side-curb-right { left:29%; }
 .q-side-plant { position:absolute; width:clamp(22px,4vw,54px); height:clamp(16px,3vh,34px); border-radius:50% 50% 42% 42%; background:radial-gradient(ellipse at 35% 28%,#9ebc82 0 12%,#4e895f 45%,#286348 100%); box-shadow:0 5px 8px rgba(30,63,46,.24); }
 .q-side-prop { position:absolute; z-index:3; left:50%; top:0; width:100%; height:1px; pointer-events:none; animation:qWorldPass 30s linear infinite; transform-origin:center center; }
 .q-side-prop:before { content:""; position:absolute; left:50%; top:0; height:clamp(52px,9vh,82px); border-left:5px solid #526b79; border-right:5px solid #526b79; transform:translateX(-50%); filter:drop-shadow(3px 3px 1px rgba(20,35,44,.3)); }
