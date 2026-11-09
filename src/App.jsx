@@ -58,7 +58,10 @@ function App() {
     }
   };
   return (publicPreregistro || publicDesafio || publicCalaveritaSorteo) ? (
-    <div className="min-h-screen bg-slate-100">{renderPage()}</div>
+    <div className="min-h-screen bg-slate-100">
+      {publicDesafio && <button type="button" onClick={() => window.location.reload()} className="fixed right-3 top-3 z-[120] inline-flex min-h-11 items-center gap-2 rounded-full border border-white/70 bg-white/95 px-4 text-xs font-bold text-[#941B80] shadow-lg backdrop-blur-md transition active:scale-95" aria-label="Recargar desafío"><FaSyncAlt /> Recargar</button>}
+      {renderPage()}
+    </div>
   ) : (
     <AuthGate>
     <div
