@@ -56,6 +56,7 @@ export default function A2Academy() {
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [examMode, setExamMode] = useState("practice");
   const [examIndex, setExamIndex] = useState(0);
+  const [examQuestionOrder, setExamQuestionOrder] = useState([]);
   const [examAnswers, setExamAnswers] = useState({});
   const [examFinished, setExamFinished] = useState(false);
   const [examChecked, setExamChecked] = useState(false);
@@ -73,27 +74,49 @@ export default function A2Academy() {
   }, [selectedExamId, examFinished]);
   const allExams = [...originalExams, manualA2Exam];
   const selectedExam = allExams.find(exam => exam.id === selectedExamId);
-  const currentExamQuestion = selectedExam?.questions?.[examIndex];
-  const scoredQuestions = selectedExam?.questions?.filter(q => q.answerStatus === "verified" && q.options?.length) || [];
-  const examScore = selectedExam ? selectedExam.questions.reduce((sum, q, i) => {
-    if (q.answerStatus !== "verified" || !q.options?.length) return sum;
-    const chosen = examAnswers[i] || [];
+  const currentQuestionIndex = examQuestionOrder[examIndex] ?? examIndex;
+  const currentExamQuestion = selectedExam?.questions?.[currentQuestionIndex];
+  const scoredQuestions = selectedExam ? examQuestionOrder.map(index => selectedExam.questions[index]).filter(q => q?.answerStatus === "verified" && q.options?.length) : [];
+  const examScore = selectedExam ? examQuestionOrder.reduce((sum, questionIndex) => {
+    const q = selectedExam.questions[questionIndex];
+    if (!q || q.answerStatus !== "verified" || !q.options?.length) return sum;
+    const chosen = examAnswers[questionIndex] || [];
     const key = q.answerKey || [];
     return sum + (chosen.length === key.length && chosen.every(value => key.includes(value)) ? 1 : 0);
   }, 0) : 0;
+  const examErrors = Math.max(0, scoredQuestions.length - examScore);
+  const examPending = Math.max(0, examQuestionOrder.length - scoredQuestions.length);
+  const wrongQuestionIndexes = selectedExam ? examQuestionOrder.filter(index => {
+    const q = selectedExam.questions[index];
+    if (!q || q.answerStatus !== "verified" || !q.options?.length) return false;
+    const chosen = examAnswers[index] || [];
+    const key = q.answerKey || [];
+    return chosen.length !== key.length || !chosen.every(value => key.includes(value));
+  }) : [];
   const startExam = (exam, mode) => {
-    setSelectedExamId(exam.id); setExamMode(mode); setExamIndex(0); setExamAnswers({});
+    const order = Array.from({ length: exam.questions.length }, (_, index) => index);
+    if (exam.id === "manual-a2") {
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+    }
+    setSelectedExamId(exam.id); setExamMode(mode); setExamIndex(0); setExamQuestionOrder(order); setExamAnswers({});
     setExamFinished(false); setExamChecked(false); setExamSeconds(0);
+  };
+  const retryWrongQuestions = () => {
+    setExamQuestionOrder(wrongQuestionIndexes); setExamMode("practice"); setExamIndex(0);
+    setExamAnswers({}); setExamFinished(false); setExamChecked(false); setExamSeconds(0);
   };
   const answerExamQuestion = (value) => {
     if (!currentExamQuestion || examFinished || (examMode === "practice" && examChecked)) return;
     setExamAnswers(prev => {
-      const current = prev[examIndex] || [];
+      const current = prev[currentQuestionIndex] || [];
       const multiple = (currentExamQuestion.answerKey || []).length > 1;
       const next = multiple
         ? (current.includes(value) ? current.filter(v => v !== value) : [...current, value])
         : [value];
-      return { ...prev, [examIndex]: next };
+      return { ...prev, [currentQuestionIndex]: next };
     });
   };
   const finishExam = () => setExamFinished(true);
@@ -147,8 +170,8 @@ export default function A2Academy() {
       </>}
       {selectedExam && !examFinished && currentExamQuestion && <div className="mx-auto max-w-3xl rounded-2xl border border-white/70 bg-white/85 p-5 shadow-sm md:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-[#0096AE]">{examMode==="exam"?"Simulación de examen":"Práctica guiada"}</p><h2 className="mt-1 text-xl font-bold text-slate-800">{selectedExam.title}</h2></div><div className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold tabular-nums text-slate-700">{formatTime(examSeconds)}</div></div>
-        <div className="mt-4 flex items-center justify-between text-xs font-semibold text-slate-500"><span>Reactivo {examIndex+1} de {selectedExam.questions.length}</span><span>{Math.round(((examIndex+1)/selectedExam.questions.length)*100)}%</span></div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0096AE] transition-all" style={{width:`${((examIndex+1)/selectedExam.questions.length)*100}%`}}/></div>
+        <div className="mt-4 flex items-center justify-between text-xs font-semibold text-slate-500"><span>Reactivo {examIndex+1} de {examQuestionOrder.length}</span><span>{Math.round(((examIndex+1)/examQuestionOrder.length)*100)}%</span></div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0096AE] transition-all" style={{width:`${((examIndex+1)/examQuestionOrder.length)*100}%`}}/></div>
         <div className="mt-6"><p className="text-xs font-bold uppercase tracking-wider text-[#941B80]">Pregunta {currentExamQuestion.number}</p><h3 className="mt-2 text-lg font-bold leading-7 text-slate-800">{currentExamQuestion.stem}</h3>
           {currentExamQuestion.supportingText?.length>0&&<div className="mt-3 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">{currentExamQuestion.supportingText.map((line,i)=><p key={i} className="mb-1 last:mb-0">{line}</p>)}</div>}
           {currentExamQuestion.options?.length>0 ? <div className="mt-5 space-y-2">{currentExamQuestion.options.map(option=>{
@@ -164,14 +187,15 @@ export default function A2Academy() {
           {examMode==="practice"&&currentExamQuestion.options?.length>0&&!examChecked&&<button onClick={checkPracticeAnswer} disabled={!examAnswers[examIndex]?.length} className="mt-4 rounded-xl bg-[#0096AE] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40">Comprobar respuesta</button>}
           {examMode==="practice"&&(examChecked||!currentExamQuestion.options?.length)&&<div className="mt-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4"><p className="font-bold text-cyan-950">{currentExamQuestion.answerStatus==="verified"?"Clave identificada en el documento": "Clave pendiente de validar"}</p><p className="mt-1 text-sm leading-6 text-cyan-900">{currentExamQuestion.explanation}</p>{currentExamQuestion.answerKey?.length>0&&<p className="mt-2 text-sm font-bold text-cyan-950">Respuesta marcada: {currentExamQuestion.answerKey.join(", ")}</p>}</div>}
         </div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-2"><button onClick={()=>{setSelectedExamId(null);setExamFinished(false);}} className="text-sm font-semibold text-slate-500">Salir del examen</button><div className="flex gap-2">{examIndex>0&&<button onClick={()=>{setExamIndex(v=>v-1);setExamChecked(false);}} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700">Anterior</button>}{examIndex<selectedExam.questions.length-1?<button onClick={()=>{setExamIndex(v=>v+1);setExamChecked(false);}} disabled={examMode==="practice"&&currentExamQuestion.options?.length>0&&!examChecked} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40">{examMode==="practice"?"Siguiente reactivo":"Siguiente"}</button>:<button onClick={finishExam} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white">Finalizar y calificar</button>}</div></div>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2"><button onClick={()=>{setSelectedExamId(null);setExamFinished(false);}} className="text-sm font-semibold text-slate-500">Salir del examen</button><div className="flex gap-2">{examIndex>0&&<button onClick={()=>{setExamIndex(v=>v-1);setExamChecked(false);}} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700">Anterior</button>}{examIndex<examQuestionOrder.length-1?<button onClick={()=>{setExamIndex(v=>v+1);setExamChecked(false);}} disabled={examMode==="practice"&&currentExamQuestion.options?.length>0&&!examChecked} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40">{examMode==="practice"?"Siguiente reactivo":"Siguiente"}</button>:<button onClick={finishExam} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white">Finalizar y calificar</button>}</div></div>
         {examMode==="exam"&&<p className="mt-3 text-xs text-slate-400">Puedes cambiar tus respuestas con los botones Anterior y Siguiente. La calificación se muestra al finalizar.</p>}
       </div>}
       {selectedExam && examFinished && <div className="mx-auto max-w-2xl rounded-3xl border border-white/70 bg-white/85 p-7 text-center shadow-lg">
         <FaGraduationCap className="mx-auto text-4xl text-[#941B80]"/><p className="mt-3 text-xs font-bold uppercase tracking-wider text-[#0096AE]">Resultado de evaluación</p><h2 className="mt-1 text-2xl font-black text-slate-800">{selectedExam.title}</h2>
         <p className="mt-5 text-5xl font-black text-[#941B80]">{examScore}/{scoredQuestions.length}</p><p className="mt-1 text-sm text-slate-500">{scoredQuestions.length?Math.round(examScore/scoredQuestions.length*100):0}% de aciertos · {formatTime(examSeconds)}</p>
+        <div className="mt-5 grid grid-cols-3 gap-2 text-left"><div className="rounded-xl bg-emerald-50 p-3"><p className="text-2xl font-black text-emerald-700">{examScore}</p><p className="text-xs text-emerald-800">Aciertos</p></div><div className="rounded-xl bg-rose-50 p-3"><p className="text-2xl font-black text-rose-700">{examErrors}</p><p className="text-xs text-rose-800">Errores</p></div><div className="rounded-xl bg-amber-50 p-3"><p className="text-2xl font-black text-amber-700">{examPending}</p><p className="text-xs text-amber-800">Por validar</p></div></div>
         <p className="mt-4 text-sm leading-6 text-slate-600">Se califican únicamente los reactivos cuya respuesta está marcada en el documento fuente. Los reactivos sin clave verificable no afectan tu resultado.</p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2"><button onClick={()=>startExam(selectedExam,examMode)} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white">Repetir examen</button><button onClick={()=>{setSelectedExamId(null);setExamFinished(false);}} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700">Volver a exámenes</button></div>
+        <div className="mt-6 flex flex-wrap justify-center gap-2"><button onClick={()=>startExam(selectedExam,examMode)} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white">Repetir examen</button><button onClick={retryWrongQuestions} disabled={!wrongQuestionIndexes.length} className="rounded-xl bg-[#0096AE] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40">Practicar errores ({wrongQuestionIndexes.length})</button><button onClick={()=>{setSelectedExamId(null);setExamFinished(false);}} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700">Volver a exámenes</button></div>
       </div>}
     </section>}
     {tab==="tarjetas" && <section className="mx-auto max-w-xl"><div className="mb-4 flex items-center justify-between"><div><h2 className="text-2xl font-bold text-slate-800">Tarjetas de estudio</h2><p className="text-sm text-slate-500">Tarjeta {card+1} de {flashcards.length}</p></div><span className="text-sm font-bold text-[#0096AE]">{progreso}% dominado</span></div><button onClick={()=>setRevelar(v=>!v)} className="flex min-h-64 w-full flex-col items-center justify-center rounded-3xl border border-white/70 bg-white/80 p-8 text-center shadow-lg"><FaBrain className="mb-5 text-3xl text-[#941B80]"/><p className="text-xs font-bold uppercase tracking-widest text-[#0096AE]">{revelar?"Respuesta":"Concepto"}</p><h3 className="mt-3 text-2xl font-black text-slate-800">{revelar?flashcards[card][1]:flashcards[card][0]}</h3><p className="mt-5 text-xs text-slate-400">Toca para {revelar?"ver el concepto":"revelar la respuesta"}</p></button><div className="mt-4 grid grid-cols-3 gap-2"><button onClick={()=>{setCard(v=>(v-1+flashcards.length)%flashcards.length);setRevelar(false);}} className="rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold text-slate-700">Anterior</button><button onClick={()=>{const next=[...new Set([...conocidas,card])];guardar("a2-known",next,setConocidas);setCard(v=>(v+1)%flashcards.length);setRevelar(false);}} className="rounded-xl bg-emerald-600 p-3 text-sm font-semibold text-white">La domino ✓</button><button onClick={()=>{setCard(v=>(v+1)%flashcards.length);setRevelar(false);}} className="rounded-xl bg-[#941B80] p-3 text-sm font-semibold text-white">Siguiente</button></div></section>}
