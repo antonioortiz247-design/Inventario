@@ -16,6 +16,7 @@ import RegistrosRuleta from "./pages/RegistrosRuleta";
 import CalaveritaSegura from "./pages/CalaveritaSegura";
 import CalaveritaPreregistro from "./pages/CalaveritaPreregistro";
 import DesafioSeguridadVial from "./pages/DesafioSeguridadVial";
+import A2Academy from "./pages/A2Academy";
 import useInventory from "./hooks/useInventory";
 import { getInventory, saveInventory } from "./services/inventory.service";
 
@@ -45,6 +46,7 @@ function App() {
       case "movimientos": return <Movimientos inventario={inventory.items} onUpdated={inventory.cargarInventario} />;
       case "eventos": return <Eventos inventario={inventory.items} onUpdated={inventory.cargarInventario} />;
       case "simulador": return <Simulador inventario={inventory.items} />;
+      case "a2-academy": return <A2Academy />;
       case "ruleta": return <RuletaActivaciones />;
       case "registros-ruleta": return <RegistrosRuleta />;
       case "calaverita-segura": return <CalaveritaSegura />;
