@@ -109,7 +109,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   // perspective as the lanes, so they never fight the road's motion.
   const wedgePath=(left)=>{ctx.beginPath();if(left){ctx.moveTo(0,0);ctx.lineTo(382,0);ctx.lineTo(270,H);ctx.lineTo(0,H);}else{ctx.moveTo(698,0);ctx.lineTo(W,0);ctx.lineTo(W,H);ctx.lineTo(810,H);}ctx.closePath();};
   const drawBush=(x,y,r)=>{ctx.save();ctx.translate(x,y);ctx.fillStyle="rgba(46,110,52,.35)";ctx.beginPath();ctx.ellipse(0,r*.72,r*1.05,r*.3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3d7a37";ctx.beginPath();ctx.ellipse(-r*.32,r*.1,r*.62,r*.52,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(r*.34,r*.12,r*.58,r*.48,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5da24f";ctx.beginPath();ctx.ellipse(0,-r*.22,r*.55,r*.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(255,255,255,.18)";ctx.beginPath();ctx.ellipse(-r*.2,-r*.38,r*.22,r*.16,0,0,Math.PI*2);ctx.fill();ctx.restore();};
-  const drawBillboard=(cx,cy,maxW,lines,sub,from,to)=>{const p=Math.max(.3,Math.min(1.1,cy/H)),w=Math.min(128*p,maxW),h=82*p,sx=w/128,sy=h/82;ctx.save();ctx.translate(cx,cy);ctx.scale(sx,sy);ctx.fillStyle="rgba(10,22,36,.28)";ctx.beginPath();ctx.ellipse(0,66,56,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5b4636";ctx.fillRect(-44,38,6,26);ctx.fillRect(38,38,6,26);const bg=ctx.createLinearGradient(0,-40,0,40);bg.addColorStop(0,from);bg.addColorStop(1,to);rounded(-64,-40,128,80,10,bg,"rgba(255,255,255,.9)");ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";let size=17;ctx.font="900 "+size+"px Arial";const widest=Math.max(...lines.map(l=>ctx.measureText(l).width));if(widest>112)size=Math.max(9,Math.floor(size*112/widest));ctx.font="900 "+size+"px Arial";lines.forEach((l,i)=>ctx.fillText(l,0,lines.length===1?2:-10+i*22));ctx.font="700 10px Arial";ctx.fillStyle="rgba(255,255,255,.85)";ctx.fillText(sub,0,30);ctx.restore();};
+  const drawBillboard=(cx,cy,maxW,lines,sub,from,to)=>{const p=Math.max(.3,Math.min(1.1,cy/H)),w=Math.min(170*p,maxW),k=w/128;ctx.save();ctx.translate(cx,cy);ctx.scale(k,k);ctx.fillStyle="rgba(10,22,36,.28)";ctx.beginPath();ctx.ellipse(0,66,56,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5b4636";ctx.fillRect(-44,38,6,26);ctx.fillRect(38,38,6,26);const bg=ctx.createLinearGradient(0,-40,0,40);bg.addColorStop(0,from);bg.addColorStop(1,to);rounded(-64,-40,128,80,10,bg,"rgba(255,255,255,.9)");ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";let size=17;ctx.font="900 "+size+"px Arial";const widest=Math.max(...lines.map(l=>ctx.measureText(l).width));if(widest>112)size=Math.max(9,Math.floor(size*112/widest));ctx.font="900 "+size+"px Arial";lines.forEach((l,i)=>ctx.fillText(l,0,lines.length===1?2:-10+i*22));ctx.font="700 10px Arial";ctx.fillStyle="rgba(255,255,255,.85)";ctx.fillText(sub,0,30);ctx.restore();};
   const drawScenery=()=>{
     for(let i=0;i<16;i++){
       const left=i%2===0,y=((i*137+g.distance*2.5)%(H+160))-80;
@@ -119,9 +119,12 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
       const r=Math.min(10+p*26,span*.42);
       ctx.save();wedgePath(left);ctx.clip();drawBush(cx,y,r);ctx.restore();
     }
+    // Billboards travel slower than the road (0.7 vs 2.5) and appear earlier,
+    // so each message stays on screen long enough to read: they are ads,
+    // not obstacles, and at road speed they flash past in under a second.
     [{left:true,lines:["MANEJA","SEGURO"],sub:"QUÁLITAS",from:"#941B80",to:"#5B155F",phase:0},{left:false,lines:["PROTEGE","LO QUE AMAS"],sub:"QUÁLITAS",from:"#0096AE",to:"#087f91",phase:900},{left:true,lines:["EXCELENCIA"],sub:"EN EL SERVICIO",from:"#0096AE",to:"#087f91",phase:1800},{left:false,lines:["QUÁLITAS"],sub:"ASEGURAMOS AUTOS",from:"#941B80",to:"#5B155F",phase:2700}].forEach(b=>{
-      const y=((b.phase+g.distance*2.5)%3600)-300;
-      if(y<260||y>H+40)return;
+      const y=((b.phase+g.distance*.7)%3600)-300;
+      if(y<200||y>H+40)return;
       const p=y/H,inner=b.left?382-112*p:698+112*p,span=b.left?inner:W-inner;
       const cx=b.left?inner*.5:inner+span*.5;
       ctx.save();wedgePath(b.left);ctx.clip();drawBillboard(cx,y,span*.94,b.lines,b.sub,b.from,b.to);ctx.restore();
