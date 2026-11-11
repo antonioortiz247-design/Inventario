@@ -57,6 +57,7 @@ export default function A2Academy() {
   const [examIndex, setExamIndex] = useState(0);
   const [examAnswers, setExamAnswers] = useState({});
   const [examFinished, setExamFinished] = useState(false);
+  const [examChecked, setExamChecked] = useState(false);
   const [examSeconds, setExamSeconds] = useState(0);
   useEffect(() => {
     let active = true;
@@ -81,10 +82,10 @@ export default function A2Academy() {
   }, 0) : 0;
   const startExam = (exam, mode) => {
     setSelectedExamId(exam.id); setExamMode(mode); setExamIndex(0); setExamAnswers({});
-    setExamFinished(false); setExamSeconds(0);
+    setExamFinished(false); setExamChecked(false); setExamSeconds(0);
   };
   const answerExamQuestion = (value) => {
-    if (!currentExamQuestion || examFinished) return;
+    if (!currentExamQuestion || examFinished || (examMode === "practice" && examChecked)) return;
     setExamAnswers(prev => {
       const current = prev[examIndex] || [];
       const multiple = (currentExamQuestion.answerKey || []).length > 1;
@@ -95,6 +96,7 @@ export default function A2Academy() {
     });
   };
   const finishExam = () => setExamFinished(true);
+  const checkPracticeAnswer = () => setExamChecked(true);
   const formatTime = (seconds) => `${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`;
   const [materia, setMateria] = useState("generales");
   const [indice, setIndice] = useState(0);
@@ -115,7 +117,7 @@ export default function A2Academy() {
   return <main className="mx-auto max-w-7xl space-y-6 p-4 pb-10 md:p-6">
     <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#5b185d] via-[#941B80] to-[#0096AE] p-6 text-white shadow-xl md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-white/75">Quálitas Hub · Formación</p><h1 className="mt-2 text-3xl font-black md:text-4xl">A2 Academy</h1><p className="mt-2 max-w-2xl text-sm text-white/85 md:text-base">Tu espacio de preparación para la Cédula A2 de la CNSF.</p></div><div className="flex flex-col items-center gap-3"><div className="rounded-2xl border border-white/20 bg-white/15 p-4 text-center backdrop-blur-xl"><FaGraduationCap className="mx-auto text-3xl"/><p className="mt-1 text-xs font-semibold">Preparación A2</p></div><button onClick={()=>{setTutorialStep(0);setTutorialOpen(true);}} className="rounded-xl border border-white/40 bg-white/15 px-4 py-2 text-xs font-bold text-white transition hover:bg-white/25">Ver tutorial</button></div></div>
-      <div className="mt-6 grid grid-cols-3 gap-2 md:max-w-xl"><div className="rounded-xl bg-white/15 p-3"><p className="text-2xl font-black">{materias.length}</p><p className="text-xs text-white/75">Materias</p></div><div className="rounded-xl bg-white/15 p-3"><p className="text-2xl font-black">{preguntas.length}</p><p className="text-xs text-white/75">Preguntas iniciales</p></div><div className="rounded-xl bg-white/15 p-3"><p className="text-2xl font-black">{progreso}%</p><p className="text-xs text-white/75">Tarjetas dominadas</p></div></div>
+      <div className="mt-6 grid grid-cols-3 gap-2 md:max-w-xl"><div className="rounded-xl bg-white/15 p-3"><p className="text-2xl font-black">{materias.length}</p><p className="text-xs text-white/75">Materias</p></div><div className="rounded-xl bg-white/15 p-3"><p className="text-2xl font-black">{originalExams.reduce((sum, exam) => sum + exam.questions.length, manualA2Exam.questions.length)}</p><p className="text-xs text-white/75">Reactivos de examen</p></div><div className="rounded-xl bg-white/15 p-3"><p className="text-2xl font-black">{progreso}%</p><p className="text-xs text-white/75">Tarjetas dominadas</p></div></div>
     </section>
     <nav className="flex gap-2 overflow-x-auto rounded-2xl border border-white/70 bg-white/70 p-2 shadow-sm backdrop-blur-xl">{tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} className={`flex shrink-0 items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${tab===t.id?"bg-[#941B80] text-white shadow-md":"text-slate-600 hover:bg-slate-100"}`}>{t.icon}{t.label}</button>)}</nav>
     {tab==="inicio" && <section className="grid gap-4 md:grid-cols-2"><div className="rounded-2xl border border-white/70 bg-white/75 p-6 shadow-sm"><p className="text-sm font-bold uppercase tracking-wider text-[#0096AE]">Ruta de estudio</p><h2 className="mt-2 text-2xl font-bold text-slate-800">Avanza por áreas</h2><p className="mt-2 text-sm leading-6 text-slate-600">Estudia cada materia, practica la recuperación de información y comprueba tus conocimientos con preguntas de opción múltiple.</p><button onClick={()=>setTab("lecciones")} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#941B80] px-5 py-3 font-semibold text-white">Ver materias <FaArrowRight/></button></div><div className="rounded-2xl border border-white/70 bg-white/75 p-6 shadow-sm"><p className="text-sm font-bold uppercase tracking-wider text-[#0096AE]">Sesión rápida</p><h2 className="mt-2 text-2xl font-bold text-slate-800">Pon a prueba lo aprendido</h2><p className="mt-2 text-sm leading-6 text-slate-600">Responde preguntas basadas en los cuestionarios que compartiste. La explicación aparece después de responder.</p><button onClick={()=>{setMateria("todas");setIndice(0);setRespuesta(null);setTab("practica");}} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0096AE] px-5 py-3 font-semibold text-white">Comenzar práctica <FaArrowRight/></button></div><div className="md:col-span-2 rounded-2xl border border-white/70 bg-white/75 p-6 shadow-sm"><div className="flex items-center justify-between"><div><h2 className="text-xl font-bold text-slate-800">Materias de la Cédula A2</h2><p className="mt-1 text-sm text-slate-500">Estructura basada en el temario de la guía de estudios.</p></div><button onClick={()=>setTab("lecciones")} className="text-sm font-bold text-[#941B80]">Explorar</button></div><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{materias.map(m=><button key={m.id} onClick={()=>{setMateria(m.id);setTab("lecciones");}} className="rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-[#0096AE] hover:shadow-md"><p className="font-bold text-slate-800">{m.title}</p><p className="mt-1 text-xs leading-5 text-slate-500">{m.description}</p></button>)}</div></div></section>}
@@ -151,16 +153,17 @@ export default function A2Academy() {
           {currentExamQuestion.options?.length>0 ? <div className="mt-5 space-y-2">{currentExamQuestion.options.map(option=>{
             const chosen=examAnswers[examIndex]||[];
             const active=chosen.includes(option.value);
-            const reveal=examMode==="practice"&&chosen.length>0;
+            const reveal=examMode==="practice"&&examChecked;
             const correct=reveal&&(currentExamQuestion.answerKey||[]).includes(option.value);
             return <button key={option.value} onClick={()=>answerExamQuestion(option.value)} disabled={reveal} className={`w-full rounded-xl border p-4 text-left text-sm leading-6 transition ${correct?"border-emerald-300 bg-emerald-50 text-emerald-950":active?"border-[#941B80] bg-purple-50 text-slate-900":"border-slate-200 bg-white hover:border-[#0096AE] hover:bg-cyan-50"} `}>
               <span className="mr-3 inline-flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-xs font-black text-[#941B80]">{option.value}</span>{option.text}
               {correct&&<FaCheckCircle className="float-right mt-1 text-emerald-600"/>}
             </button>;
           })}</div> : <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Este reactivo incluye una lista o estructura que no se pudo separar en opciones sin alterar el documento. Revísalo como aparece arriba y continúa.</p>}
-          {examMode==="practice"&&(examAnswers[examIndex]?.length>0||!currentExamQuestion.options?.length)&&<div className="mt-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4"><p className="font-bold text-cyan-950">{currentExamQuestion.answerStatus==="verified"?"Clave identificada en el documento": "Clave pendiente de validar"}</p><p className="mt-1 text-sm leading-6 text-cyan-900">{currentExamQuestion.explanation}</p>{currentExamQuestion.answerKey?.length>0&&<p className="mt-2 text-sm font-bold text-cyan-950">Respuesta marcada: {currentExamQuestion.answerKey.join(", ")}</p>}</div>}
+          {examMode==="practice"&&currentExamQuestion.options?.length>0&&!examChecked&&<button onClick={checkPracticeAnswer} disabled={!examAnswers[examIndex]?.length} className="mt-4 rounded-xl bg-[#0096AE] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40">Comprobar respuesta</button>}
+          {examMode==="practice"&&(examChecked||!currentExamQuestion.options?.length)&&<div className="mt-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4"><p className="font-bold text-cyan-950">{currentExamQuestion.answerStatus==="verified"?"Clave identificada en el documento": "Clave pendiente de validar"}</p><p className="mt-1 text-sm leading-6 text-cyan-900">{currentExamQuestion.explanation}</p>{currentExamQuestion.answerKey?.length>0&&<p className="mt-2 text-sm font-bold text-cyan-950">Respuesta marcada: {currentExamQuestion.answerKey.join(", ")}</p>}</div>}
         </div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-2"><button onClick={()=>{setSelectedExamId(null);setExamFinished(false);}} className="text-sm font-semibold text-slate-500">Salir del examen</button><div className="flex gap-2">{examIndex>0&&<button onClick={()=>setExamIndex(v=>v-1)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700">Anterior</button>}{examIndex<selectedExam.questions.length-1?<button onClick={()=>setExamIndex(v=>v+1)} disabled={examMode==="practice"&&currentExamQuestion.options?.length>0&&!examAnswers[examIndex]?.length} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40">{examMode==="practice"?"Siguiente reactivo":"Siguiente"}</button>:<button onClick={finishExam} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white">Finalizar y calificar</button>}</div></div>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2"><button onClick={()=>{setSelectedExamId(null);setExamFinished(false);}} className="text-sm font-semibold text-slate-500">Salir del examen</button><div className="flex gap-2">{examIndex>0&&<button onClick={()=>{setExamIndex(v=>v-1);setExamChecked(false);}} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700">Anterior</button>}{examIndex<selectedExam.questions.length-1?<button onClick={()=>{setExamIndex(v=>v+1);setExamChecked(false);}} disabled={examMode==="practice"&&currentExamQuestion.options?.length>0&&!examChecked} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40">{examMode==="practice"?"Siguiente reactivo":"Siguiente"}</button>:<button onClick={finishExam} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white">Finalizar y calificar</button>}</div></div>
         {examMode==="exam"&&<p className="mt-3 text-xs text-slate-400">Puedes cambiar tus respuestas con los botones Anterior y Siguiente. La calificación se muestra al finalizar.</p>}
       </div>}
       {selectedExam && examFinished && <div className="mx-auto max-w-2xl rounded-3xl border border-white/70 bg-white/85 p-7 text-center shadow-lg">
