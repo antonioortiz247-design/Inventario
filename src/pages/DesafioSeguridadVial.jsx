@@ -91,19 +91,57 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
  useEffect(()=>{
   if(step!=="game"||gameStatus!=="playing")return;
   const canvas=gameCanvasRef.current;if(!canvas)return;
-  const ctx=canvas.getContext("2d"),W=540,H=900;
+  // One world, one canvas: the road world is 540px wide and is drawn with a
+  // +90px offset inside a 720px canvas, so the sky, skyline, sidewalks, road,
+  // grass, bushes and billboards all share one vanishing point and one
+  // distance-based scroll. The DOM garden panels outside the canvas are gone.
+  const ctx=canvas.getContext("2d"),W=720,H=900,RW=540,OX=90;
   const g=gameEngineRef.current||{lane:1,jump:0,obstacles:[],ticks:0,distance:0,speed:7.2,spawn:12};gameEngineRef.current=g;
   let raf=0,alive=true,last=0;
-  const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return top+(bottom-top)*p;};
+  const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return OX+top+(bottom-top)*p;};
   const rounded=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}};
+  // Roadside scenery: bushes and billboards that live in the grass verges,
+  // scroll with the same distance as the road dashes and grow with the same
+  // perspective as the lanes, so they never fight the road's motion.
+  const wedgePath=(left)=>{ctx.beginPath();if(left){ctx.moveTo(0,0);ctx.lineTo(202,0);ctx.lineTo(90,H);ctx.lineTo(0,H);}else{ctx.moveTo(518,0);ctx.lineTo(W,0);ctx.lineTo(W,H);ctx.lineTo(630,H);}ctx.closePath();};
+  const drawBush=(x,y,r)=>{ctx.save();ctx.translate(x,y);ctx.fillStyle="rgba(46,110,52,.35)";ctx.beginPath();ctx.ellipse(0,r*.72,r*1.05,r*.3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#3d7a37";ctx.beginPath();ctx.ellipse(-r*.32,r*.1,r*.62,r*.52,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(r*.34,r*.12,r*.58,r*.48,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5da24f";ctx.beginPath();ctx.ellipse(0,-r*.22,r*.55,r*.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="rgba(255,255,255,.18)";ctx.beginPath();ctx.ellipse(-r*.2,-r*.38,r*.22,r*.16,0,0,Math.PI*2);ctx.fill();ctx.restore();};
+  const drawBillboard=(cx,cy,maxW,lines,sub,from,to)=>{const p=Math.max(.3,Math.min(1.1,cy/H)),w=Math.min(128*p,maxW),h=82*p,sx=w/128,sy=h/82;ctx.save();ctx.translate(cx,cy);ctx.scale(sx,sy);ctx.fillStyle="rgba(10,22,36,.28)";ctx.beginPath();ctx.ellipse(0,66,56,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#5b4636";ctx.fillRect(-44,38,6,26);ctx.fillRect(38,38,6,26);const bg=ctx.createLinearGradient(0,-40,0,40);bg.addColorStop(0,from);bg.addColorStop(1,to);rounded(-64,-40,128,80,10,bg,"rgba(255,255,255,.9)");ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";let size=17;ctx.font="900 "+size+"px Arial";const widest=Math.max(...lines.map(l=>ctx.measureText(l).width));if(widest>112)size=Math.max(9,Math.floor(size*112/widest));ctx.font="900 "+size+"px Arial";lines.forEach((l,i)=>ctx.fillText(l,0,lines.length===1?2:-10+i*22));ctx.font="700 10px Arial";ctx.fillStyle="rgba(255,255,255,.85)";ctx.fillText(sub,0,30);ctx.restore();};
+  const drawScenery=()=>{
+    for(let i=0;i<10;i++){
+      const left=i%2===0,y=((i*173+g.distance*2.5)%(H+160))-80;
+      if(y<300||y>H)continue;
+      const p=y/H,inner=left?202-112*p:518+112*p,span=left?inner:W-inner;
+      const frac=.28+((i*37)%40)/100,cx=left?inner*frac:inner+span*frac;
+      const r=Math.min(10+p*26,span*.42);
+      ctx.save();wedgePath(left);ctx.clip();drawBush(cx,y,r);ctx.restore();
+    }
+    [{left:true,lines:["MANEJA","SEGURO"],sub:"QUÁLITAS",from:"#941B80",to:"#5B155F",phase:0},{left:false,lines:["PROTEGE","LO QUE AMAS"],sub:"QUÁLITAS",from:"#0096AE",to:"#087f91",phase:1800}].forEach(b=>{
+      const y=((b.phase+g.distance*2.5)%3600)-300;
+      if(y<260||y>H+40)return;
+      const p=y/H,inner=b.left?202-112*p:518+112*p,span=b.left?inner:W-inner;
+      const cx=b.left?inner*.5:inner+span*.5;
+      ctx.save();wedgePath(b.left);ctx.clip();drawBillboard(cx,y,span*.94,b.lines,b.sub,b.from,b.to);ctx.restore();
+    });
+  };
   const drawRoad=()=>{
-    // City approach: skyline stays on the horizon while the road converges
-    // toward a clear vanishing point. Sidewalks remain outside this canvas.
+    // One scene, one vanishing point: the road world (540px) is centred in
+    // the 720px canvas with a +90px offset, so the skyline, the sidewalks,
+    // the road and the grass all converge to x=360 at the horizon.
     const sky=ctx.createLinearGradient(0,0,0,H);
     sky.addColorStop(0,"#b8dce8");sky.addColorStop(.38,"#e4f0ec");sky.addColorStop(1,"#d4e8e3");
     ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    // Grass verges beside the sidewalks. Their inner edge is the sidewalk
+    // outer edge (202->90 left, 518->630 right), so the grass converges to
+    // the same vanishing point as the road. It fades in below the skyline
+    // instead of painting the sky green.
+    const grass=ctx.createLinearGradient(0,0,0,H);
+    grass.addColorStop(0,"rgba(228,240,236,0)");grass.addColorStop(.3,"rgba(169,207,181,.55)");grass.addColorStop(.55,"#7fb069");grass.addColorStop(1,"#5d9b4e");
+    ctx.fillStyle=grass;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(202,0);ctx.lineTo(90,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(518,0);ctx.lineTo(W,0);ctx.lineTo(W,H);ctx.lineTo(630,H);ctx.closePath();ctx.fill();
     // Distant city skyline, softly blended into atmospheric perspective.
-    const skyline=[[-8,160,104,180],[-2,118,42,220],[40,145,54,190],[82,95,45,245],[118,132,48,208],[420,112,52,228],[458,78,48,262],[500,135,55,205]];
+    const skyline=[[-70,150,64,190],[-8,160,104,180],[-2,118,42,220],[40,145,54,190],[82,95,45,245],[118,132,48,208],[420,112,52,228],[458,78,48,262],[500,135,55,205],[545,140,58,200]];
+    ctx.save();ctx.translate(OX,0);
     skyline.forEach(([x,y,w,h],i)=>{
       const grad=ctx.createLinearGradient(0,y,0,y+h);grad.addColorStop(0,i%2?"#829eae":"#718d9f");grad.addColorStop(1,"#a9c0c6");
       ctx.fillStyle=grad;ctx.fillRect(x,y,w,h);
@@ -111,15 +149,17 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
       for(let wy=y+14;wy<y+h-12;wy+=19)for(let wx=x+8;wx<x+w-6;wx+=14)ctx.fillRect(wx,wy,5,8);
       ctx.fillStyle="rgba(44,70,88,.12)";ctx.fillRect(x+w-4,y,4,h);
     });
+    ctx.restore();
     const haze=ctx.createLinearGradient(0,170,0,440);
-    haze.addColorStop(0,"rgba(255,255,255,.04)");haze.addColorStop(1,"rgba(230,246,239,.9)");
+    haze.addColorStop(0,"rgba(255,255,255,.04)");haze.addColorStop(.6,"rgba(230,246,239,.45)");haze.addColorStop(1,"rgba(230,246,239,0)");
     ctx.fillStyle=haze;ctx.fillRect(0,150,W,310);
     // Sidewalks live inside the game viewport and follow the same vanishing point.
-    const sidewalk=ctx.createLinearGradient(0,0,W,0);
+    ctx.save();ctx.translate(OX,0);
+    const sidewalk=ctx.createLinearGradient(0,0,RW,0);
     sidewalk.addColorStop(0,"#c3cfca");sidewalk.addColorStop(.5,"#e2e7df");sidewalk.addColorStop(1,"#c3cfca");
     ctx.beginPath();ctx.moveTo(112,0);ctx.lineTo(155,0);ctx.lineTo(70,H);ctx.lineTo(0,H);ctx.closePath();
     ctx.fillStyle=sidewalk;ctx.fill();
-    ctx.beginPath();ctx.moveTo(385,0);ctx.lineTo(428,0);ctx.lineTo(W,H);ctx.lineTo(470,H);ctx.closePath();
+    ctx.beginPath();ctx.moveTo(385,0);ctx.lineTo(428,0);ctx.lineTo(RW,H);ctx.lineTo(470,H);ctx.closePath();
     ctx.fillStyle=sidewalk;ctx.fill();
     // Subtle moving expansion joints make the sidewalks feel continuous.
     ctx.strokeStyle="rgba(103,128,126,.22)";ctx.lineWidth=1;
@@ -135,9 +175,9 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     asphalt.addColorStop(0,"#344357");asphalt.addColorStop(.5,"#46566a");asphalt.addColorStop(1,"#344357");
     roadPath();ctx.fillStyle=asphalt;ctx.fill();
     ctx.save();roadPath();ctx.clip();
-    const sheen=ctx.createLinearGradient(0,0,W,0);
+    const sheen=ctx.createLinearGradient(0,0,RW,0);
     sheen.addColorStop(0,"rgba(255,255,255,.02)");sheen.addColorStop(.5,"rgba(255,255,255,.055)");sheen.addColorStop(1,"rgba(255,255,255,.015)");
-    ctx.fillStyle=sheen;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=sheen;ctx.fillRect(0,0,RW,H);
     ctx.lineCap="round";
     for(let lane=1;lane<=2;lane++){
       const top=155+lane*76.7,bottom=70+lane*133.3;
@@ -153,9 +193,11 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     // Branded road-edge glints reinforce the perspective without adding curbs.
     ctx.strokeStyle="rgba(0,150,174,.72)";ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(155,0);ctx.lineTo(70,H);ctx.moveTo(385,0);ctx.lineTo(470,H);ctx.stroke();
+    ctx.restore();
     const edgeGlow=ctx.createLinearGradient(0,0,0,H);
     edgeGlow.addColorStop(0,"rgba(148,27,128,.08)");edgeGlow.addColorStop(1,"rgba(0,150,174,.3)");
     ctx.fillStyle=edgeGlow;ctx.fillRect(0,H-10,W,10);
+    drawScenery();
   };
   const drawCar=(x,y)=>{
     const jump=g.jump>0?Math.sin((1-g.jump/22)*Math.PI):0;
@@ -241,7 +283,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
      if(twilight>.02){ctx.fillStyle="rgba(255,143,82,"+(twilight*.12).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
      const isMoon=timePhase>=.5;
      const celestialProgress=isMoon?(timePhase-.5)*2:timePhase*2;
-     const celestialX=34+celestialProgress*472;
+     const celestialX=34+celestialProgress*652;
      const celestialY=230-Math.sin(celestialProgress*Math.PI)*174;
      ctx.save();
      const glowRadius=isMoon?66:88;
@@ -256,7 +298,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
      }else{
        ctx.shadowBlur=13;ctx.shadowColor="rgba(224,237,255,.8)";ctx.fillStyle="#edf5ff";ctx.beginPath();ctx.arc(celestialX,celestialY,16,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
        ctx.fillStyle="rgba(8,18,48,.78)";ctx.beginPath();ctx.arc(celestialX+8,celestialY-6,14,0,Math.PI*2);ctx.fill();
-       ctx.fillStyle="rgba(255,255,255,.86)";for(let s=0;s<24;s++){const sx=(s*83+29)%W,sy=(s*47+19)%250;if(sx<130||sx>410){ctx.beginPath();ctx.arc(sx,sy,1+(s%3)*.35,0,Math.PI*2);ctx.fill();}}
+       ctx.fillStyle="rgba(255,255,255,.86)";for(let s=0;s<24;s++){const sx=(s*83+29)%W,sy=(s*47+19)%250;if(sx<220||sx>500){ctx.beginPath();ctx.arc(sx,sy,1+(s%3)*.35,0,Math.PI*2);ctx.fill();}}
      }
      ctx.restore();
      g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});g.spawn=Math.max(25,42-difficultyLevel*3.5)+Math.random()*8;}
@@ -272,7 +314,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.font="800 19px Arial";ctx.fillText(Math.floor(g.distance/10)+" m",30,61);
     ctx.fillStyle="rgba(255,255,255,.72)";ctx.font="700 9px Arial";ctx.fillText("MANTÉN EL CONTROL",W-157,40);
     ctx.restore();
-    if(g.levelNotice>0){const alpha=Math.min(1,g.levelNotice/24);ctx.save();ctx.globalAlpha=alpha;rounded(92,330,356,104,18,"rgba(24,20,48,.86)","rgba(255,255,255,.65)");ctx.textAlign="center";ctx.shadowColor="rgba(0,150,174,.8)";ctx.shadowBlur=18;ctx.fillStyle="#75edf0";ctx.font="900 23px Arial";ctx.fillText("¡SUBISTE DE NIVEL!",270,371);ctx.shadowBlur=0;ctx.fillStyle="#fff";ctx.font="800 14px Arial";ctx.fillText("NIVEL "+(g.level+1)+"  ·  MÁS VELOCIDAD",270,402);ctx.restore();g.levelNotice=Math.max(0,g.levelNotice-dt);}
+    if(g.levelNotice>0){const alpha=Math.min(1,g.levelNotice/24);ctx.save();ctx.globalAlpha=alpha;rounded(182,330,356,104,18,"rgba(24,20,48,.86)","rgba(255,255,255,.65)");ctx.textAlign="center";ctx.shadowColor="rgba(0,150,174,.8)";ctx.shadowBlur=18;ctx.fillStyle="#75edf0";ctx.font="900 23px Arial";ctx.fillText("¡SUBISTE DE NIVEL!",360,371);ctx.shadowBlur=0;ctx.fillStyle="#fff";ctx.font="800 14px Arial";ctx.fillText("NIVEL "+(g.level+1)+"  ·  MÁS VELOCIDAD",360,402);ctx.restore();g.levelNotice=Math.max(0,g.levelNotice-dt);}
     if(g.ticks%8===0){const v=Math.floor(g.distance/10);setScore(v);setGameDistance(v);}
     raf=requestAnimationFrame(frame);
   };
@@ -312,52 +354,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
  {step==="registro"&&<div className="p-6 sm:p-10"><div className="mb-7"><p className="text-xs font-black uppercase tracking-widest text-[#0096AE]">Antes de comenzar</p><h1 className="mt-2 text-3xl font-black text-slate-900">Registro del participante</h1><p className="mt-2 text-sm text-slate-500">Completa tus datos para guardar tu resultado y generar tu folio.</p></div><form onSubmit={e=>{e.preventDefault();setError("");startTrivia();}} className="grid gap-5 sm:grid-cols-2"><Field label="Nombre completo"><input className={inputClass} required minLength={3} value={form.nombre} onChange={e=>set("nombre",e.target.value)} placeholder="Tu nombre y apellidos"/></Field><Field label="Teléfono"><input className={inputClass} required inputMode="numeric" pattern="[0-9]{10}" maxLength={10} value={form.telefono} onChange={e=>set("telefono",e.target.value.replace(/\D/g,"").slice(0,10))} placeholder="10 dígitos"/></Field><Field label="Correo electrónico"><input className={inputClass} type="email" required value={form.correo} onChange={e=>set("correo",e.target.value)} placeholder="nombre@correo.com"/></Field><Field label="¿Actualmente cuentas con seguro?"><select className={inputClass} required value={form.tiene_seguro} onChange={e=>{const value=e.target.value;setForm(p=>({...p,tiene_seguro:value,aseguradora:value==="No"?"Sin seguro":(p.aseguradora==="Sin seguro"?"":p.aseguradora)}));}}><option value="">Selecciona</option><option>Sí</option><option>No</option></select></Field><div className="sm:col-span-2"><Field label="¿Quién asegura actualmente tu vehículo?"><select className={inputClass} required value={form.aseguradora} disabled={form.tiene_seguro==="No"} onChange={e=>set("aseguradora",e.target.value)}><option value="">Selecciona una opción</option>{(form.tiene_seguro==="No"?["Sin seguro"]:insurers.filter(x=>x!=="Sin seguro")).map(x=><option key={x}>{x}</option>)}</select></Field></div><div className="sm:col-span-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5"><span className="text-xs text-slate-400">Completa tu registro para desbloquear el juego Qualicoche Run.</span><button className={primary}>CONTINUAR <FaArrowRight/></button></div></form>{error&&<p className="mt-4 text-sm text-red-600">{error}</p>}</div>}
  {step==="game"&&<div ref={gameStageRef} className={isGameFullscreen?"fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-slate-950 p-3 text-white sm:p-5":"p-3 sm:p-8"}>
  <div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><span className="rounded-full bg-[#941B80]/15 px-3 py-1 text-xs font-black text-[#dca3d4]">QUALICOCHE RUN</span><h2 className={isGameFullscreen?"mt-1 text-xl font-black text-white sm:mt-2 sm:text-3xl":"mt-1 text-lg font-black text-slate-900 sm:mt-3 sm:text-3xl"}>¡A la ruta de la seguridad!</h2><p className={isGameFullscreen?"hidden text-sm text-slate-300 sm:block sm:mt-1":"hidden text-sm text-slate-500 sm:mt-1 sm:block"}>Conduce el Qualicoche, esquiva obstáculos y consigue la mayor distancia.</p></div><div className="flex items-center gap-2"><div className={isGameFullscreen?"rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-right sm:rounded-2xl sm:px-5 sm:py-2":"rounded-xl bg-[#941B80]/5 px-3 py-1.5 text-right sm:rounded-2xl sm:px-5 sm:py-3"}><p className="text-[9px] font-black uppercase tracking-wider opacity-70 sm:text-[10px]">Puntuación</p><p className="text-2xl font-black leading-none text-[#6FE3E8] sm:text-3xl">{score}</p></div>{gameStatus==="playing"||gameStatus==="paused"?<button type="button" onClick={()=>setGameStatus(gameStatus==="playing"?"paused":"playing")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#0096AE]/50 bg-[#0096AE]/15 px-3 py-2.5 text-xs font-black text-white shadow-md transition hover:bg-[#0096AE]/30 sm:px-4 sm:py-3 sm:text-sm">{gameStatus==="playing"?"Ⅱ Pausar":"▶ Continuar"}</button>:null}<button type="button" onClick={toggleGameFullscreen} className={"inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-black text-white shadow-md transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0096AE] sm:px-4 sm:py-3 sm:text-sm "+(isGameFullscreen?"border-white/30 bg-white/15 hover:bg-white/25":"border-[#941B80] bg-[#941B80] hover:bg-[#781568]") }>{isGameFullscreen?"Salir de pantalla completa":"⛶ Expandir juego"}</button></div></div>
- <div onPointerDown={handleGamePointerDown} onPointerUp={handleGamePointerUp} onPointerCancel={()=>{touchStartRef.current=null;}} className={(isGameFullscreen?"relative flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-[#e7f7f8] shadow-2xl":"relative mx-auto flex w-full max-w-[540px] flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-[#e7f7f8] shadow-xl sm:rounded-2xl sm:border-4")+" touch-none select-none"}><div aria-hidden="true" className={isGameFullscreen?"pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#b8d1d5]":"hidden"}>
-<style>{`
-@keyframes qWorldPass { 0% { transform:translate3d(-50%,-150vh,0) scale(.34); opacity:0; } 8% { opacity:1; } 86% { opacity:1; } 100% { transform:translate3d(-50%,125vh,0) scale(1.22); opacity:0; } }
-@keyframes qLandscapeFlow { from { background-position:0 0; } to { background-position:0 620px; } }
-@keyframes qGardenFlow { from { background-position:0 0,0 0; } to { background-position:0 540px,0 540px; } }
-.q-side-city { position:absolute; inset:0; overflow:hidden; background:linear-gradient(180deg,#c7e0e4 0%,#dbe8df 42%,#b9cfc3 100%); }
-.q-side-city:before { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 44%,rgba(55,94,83,.12)); }
-.q-side-garden { position:absolute; inset:0; overflow:hidden; background:linear-gradient(90deg,#648d70 0%,#83a878 34%,#a1b987 72%,#739975 100%); }
-.q-side-garden:before { content:""; position:absolute; inset:-12%; background-image:repeating-linear-gradient(104deg,transparent 0 5px,rgba(34,91,53,.34) 5px 6px,transparent 6px 11px),repeating-linear-gradient(78deg,transparent 0 8px,rgba(225,238,177,.25) 8px 9px,transparent 9px 16px),radial-gradient(ellipse at 18% 22%,rgba(39,105,62,.56) 0 2%,transparent 8%),radial-gradient(ellipse at 73% 61%,rgba(46,111,66,.48) 0 3%,transparent 10%),radial-gradient(ellipse at 43% 84%,rgba(180,204,131,.3) 0 2%,transparent 9%); background-size:100% 100%,100% 100%,180px 160px,220px 190px,160px 180px; animation:qGardenFlow 18s linear infinite; }
-.q-side-garden:after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg,rgba(238,244,196,.12) 0 2px,transparent 2px 68px),linear-gradient(90deg,rgba(28,70,54,.22),transparent 24%,transparent 76%,rgba(28,70,54,.18)); }
-.q-side-sidewalk { position:absolute; top:0; bottom:0; width:34%; background:repeating-linear-gradient(0deg,rgba(104,123,127,.22) 0 2px,transparent 2px 76px),linear-gradient(90deg,#b9c6c3 0%,#e2e6df 48%,#c0ceca 100%); box-shadow:inset 7px 0 12px rgba(35,58,60,.16),inset -6px 0 10px rgba(35,58,60,.14); animation:qLandscapeFlow 22s linear infinite; }
-.q-side-sidewalk-left { right:0; clip-path:polygon(30% 0,100% 0,100% 100%,0 100%); }
-.q-side-sidewalk-right { left:0; clip-path:polygon(0 0,70% 0,100% 100%,0 100%); }
-
-.q-side-plant { position:absolute; width:clamp(22px,4vw,54px); height:clamp(16px,3vh,34px); border-radius:50% 50% 42% 42%; background:radial-gradient(ellipse at 35% 28%,#9ebc82 0 12%,#4e895f 45%,#286348 100%); box-shadow:0 5px 8px rgba(30,63,46,.24); }
-.q-side-prop { position:absolute; z-index:3; left:50%; top:0; width:100%; height:1px; pointer-events:none; animation:qWorldPass 30s linear infinite; transform-origin:center center; }
-.q-side-prop:before { content:""; position:absolute; left:50%; top:0; height:clamp(52px,9vh,82px); border-left:5px solid #526b79; border-right:5px solid #526b79; transform:translateX(-50%); filter:drop-shadow(3px 3px 1px rgba(20,35,44,.3)); }
-.q-side-prop:after { content:""; position:absolute; left:50%; top:clamp(49px,8.7vh,79px); width:48%; height:8px; border-radius:50%; background:rgba(22,39,49,.28); transform:translateX(-50%); filter:blur(5px); }
-.q-side-ad { position:absolute; left:50%; top:0; width:min(72%,220px); height:clamp(82px,15vh,138px); border:4px solid #26394c; border-radius:5px; background:linear-gradient(145deg,#a32291,#64115f); box-shadow:0 7px 0 rgba(29,48,60,.32),0 15px 24px rgba(22,35,51,.26); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:9px; transform:translate(-50%,-100%); image-rendering:pixelated; }
-.q-side-prop { position:absolute; z-index:3; left:50%; top:0; width:100%; height:1px; pointer-events:none; animation:qWorldPass 30s linear infinite; transform-origin:center center; }
-.q-side-prop:before { content:""; position:absolute; left:50%; top:0; height:clamp(52px,9vh,82px); border-left:5px solid #526b79; border-right:5px solid #526b79; transform:translateX(-50%); filter:drop-shadow(3px 3px 1px rgba(20,35,44,.3)); }
-.q-side-prop:after { content:""; position:absolute; left:50%; top:clamp(49px,8.7vh,79px); width:48%; height:8px; border-radius:50%; background:rgba(22,39,49,.28); transform:translateX(-50%); filter:blur(5px); }
-.q-side-ad { position:absolute; left:50%; top:0; width:min(72%,220px); height:clamp(82px,15vh,138px); border:4px solid #26394c; border-radius:5px; background:linear-gradient(145deg,#a32291,#64115f); box-shadow:0 7px 0 rgba(29,48,60,.32),0 15px 24px rgba(22,35,51,.26); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:9px; transform:translate(-50%,-100%); image-rendering:pixelated; }
-.q-side-ad strong { font-size:clamp(13px,1.5vw,22px); line-height:1.05; font-weight:950; letter-spacing:.02em; }
-.q-side-ad span { margin-top:7px; font-size:clamp(8px,.85vw,12px); line-height:1.2; font-weight:800; }
-.q-side-ad i { display:block; height:5px; width:100%; margin-top:9px; border-radius:8px; background:#0096AE; }
-`}</style>
-<div className="absolute inset-y-0 left-0 w-1/2 overflow-hidden bg-[#83a878]">
-<div className="q-side-garden"/>
-
-<div className="q-side-plant left-[12%] top-[22%]"/>
-<div className="q-side-plant left-[46%] top-[57%]"/>
-<div className="q-side-plant left-[8%] top-[78%]"/>
-<div className="q-side-prop" style={{animationDelay:"0s"}}><div className="q-side-ad"><strong>QUÁLITAS</strong><span>ASEGURAMOS AUTOS<br/>CUIDAMOS PERSONAS</span><i/></div></div>
-<div className="q-side-prop" style={{animationDelay:"-15s"}}><div className="q-side-ad" style={{background:"linear-gradient(135deg,#087f96,#07596c)"}}><strong>MANEJA SEGURO</strong><span>EN CADA KILÓMETRO<br/>VAMOS CONTIGO</span><i/></div></div>
-</div>
-<div className="absolute inset-y-0 right-0 w-1/2 overflow-hidden bg-[#83a878]">
-<div className="q-side-garden"/>
-
-<div className="q-side-plant right-[12%] top-[18%]"/>
-<div className="q-side-plant right-[45%] top-[54%]"/>
-<div className="q-side-plant right-[8%] top-[80%]"/>
-<div className="q-side-prop" style={{animationDelay:"-7.5s"}}><div className="q-side-ad"><strong>EXCELENCIA</strong><span>EN EL SERVICIO<br/>QUÁLITAS</span><i/></div></div>
-<div className="q-side-prop" style={{animationDelay:"-22.5s"}}><div className="q-side-ad" style={{background:"linear-gradient(135deg,#087f96,#07596c)"}}><strong>PROTEGE LO QUE AMAS</strong><span>CONDUCE CON PRECAUCIÓN</span><i/></div></div>
-</div>
-</div><canvas ref={gameCanvasRef} width="540" height="900" style={isGameFullscreen?{width:"min(100%,49.2vh)",height:"auto",maxHeight:"82vh",aspectRatio:"3 / 5",objectFit:"contain",flex:"0 0 auto"}:undefined} className="relative z-10 mx-auto block aspect-[3/5] w-full max-w-[540px] shrink-0 touch-none"/>{gameStatus==="paused"?<div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-slate-950/65 px-4 py-4 text-center text-white backdrop-blur-sm"><div className="text-4xl font-black text-[#6FE3E8]">Ⅱ</div><h3 className="text-2xl font-black">Partida en pausa</h3><p className="text-sm text-white/80">Tu recorrido está detenido. Continúa cuando estés listo.</p><button type="button" className="rounded-xl bg-gradient-to-r from-[#941B80] to-[#0096AE] px-7 py-3 font-black text-white shadow-lg" onClick={()=>setGameStatus("playing")}>▶ CONTINUAR</button></div>:gameStatus!=="playing"&&<div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1.5 bg-slate-950/80 px-3 py-2 text-center text-white backdrop-blur-sm sm:gap-2 sm:p-5"><div className="text-2xl sm:text-5xl">{gameStatus==="over"?"🚧":"🚗"}</div><h3 className="text-base font-black sm:mt-2 sm:text-2xl">{gameStatus==="over"?"¡Fin del recorrido!":"Tu Qualicoche está listo"}</h3><p className="max-w-xs text-[11px] leading-tight text-white/80 sm:mt-2 sm:text-sm">{gameStatus==="over"?"Tu recorrido terminó al encontrar un obstáculo. ¡Inténtalo otra vez para superar tu puntuación!":"Muévete entre carriles y salta los obstáculos para recorrer la mayor distancia."}</p><div className="mt-1 flex flex-wrap justify-center gap-2 sm:mt-4">{gameStatus==="over"&&<button className="rounded-xl border border-white/30 px-5 py-3 font-bold" onClick={()=>setStep("resultado")}>Ver mi resultado</button>}<button className="rounded-lg bg-gradient-to-r from-[#941B80] to-[#0096AE] px-4 py-2 text-xs font-black text-white sm:rounded-xl sm:px-6 sm:py-3 sm:text-base" onClick={startDriving}>{gameStatus==="over"?"VOLVER A JUGAR":"INICIAR RECORRIDO"}</button></div></div>}
+ <div onPointerDown={handleGamePointerDown} onPointerUp={handleGamePointerUp} onPointerCancel={()=>{touchStartRef.current=null;}} className={(isGameFullscreen?"relative flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-[#e7f7f8] shadow-2xl":"relative mx-auto flex w-full max-w-[720px] flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-[#e7f7f8] shadow-xl sm:rounded-2xl sm:border-4")+" touch-none select-none"}><canvas ref={gameCanvasRef} width="720" height="900" style={isGameFullscreen?{width:"min(100%,65.6vh)",height:"auto",maxHeight:"82vh",aspectRatio:"4 / 5",objectFit:"contain",flex:"0 0 auto"}:undefined} className="relative z-10 mx-auto block aspect-[4/5] w-full max-w-[720px] shrink-0 touch-none"/>{gameStatus==="paused"?<div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-slate-950/65 px-4 py-4 text-center text-white backdrop-blur-sm"><div className="text-4xl font-black text-[#6FE3E8]">Ⅱ</div><h3 className="text-2xl font-black">Partida en pausa</h3><p className="text-sm text-white/80">Tu recorrido está detenido. Continúa cuando estés listo.</p><button type="button" className="rounded-xl bg-gradient-to-r from-[#941B80] to-[#0096AE] px-7 py-3 font-black text-white shadow-lg" onClick={()=>setGameStatus("playing")}>▶ CONTINUAR</button></div>:gameStatus!=="playing"&&<div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1.5 bg-slate-950/80 px-3 py-2 text-center text-white backdrop-blur-sm sm:gap-2 sm:p-5"><div className="text-2xl sm:text-5xl">{gameStatus==="over"?"🚧":"🚗"}</div><h3 className="text-base font-black sm:mt-2 sm:text-2xl">{gameStatus==="over"?"¡Fin del recorrido!":"Tu Qualicoche está listo"}</h3><p className="max-w-xs text-[11px] leading-tight text-white/80 sm:mt-2 sm:text-sm">{gameStatus==="over"?"Tu recorrido terminó al encontrar un obstáculo. ¡Inténtalo otra vez para superar tu puntuación!":"Muévete entre carriles y salta los obstáculos para recorrer la mayor distancia."}</p><div className="mt-1 flex flex-wrap justify-center gap-2 sm:mt-4">{gameStatus==="over"&&<button className="rounded-xl border border-white/30 px-5 py-3 font-bold" onClick={()=>setStep("resultado")}>Ver mi resultado</button>}<button className="rounded-lg bg-gradient-to-r from-[#941B80] to-[#0096AE] px-4 py-2 text-xs font-black text-white sm:rounded-xl sm:px-6 sm:py-3 sm:text-base" onClick={startDriving}>{gameStatus==="over"?"VOLVER A JUGAR":"INICIAR RECORRIDO"}</button></div></div>}
  <div className="mt-2 grid grid-cols-3 gap-2 sm:hidden"><button onClick={()=>moveCar("left")} className="min-h-[54px] rounded-xl bg-[#941B80] py-3 text-xl font-black text-white shadow-md active:scale-[.98]">←</button><button onClick={()=>moveCar("jump")} className="min-h-[54px] rounded-xl bg-[#0096AE] py-3 text-sm font-black text-white shadow-md active:scale-[.98]">SALTAR</button><button onClick={()=>moveCar("right")} className="min-h-[54px] rounded-xl bg-[#941B80] py-3 text-xl font-black text-white shadow-md active:scale-[.98]">→</button></div><div className={isGameFullscreen?"mt-3 flex items-center justify-center gap-3 text-xs font-semibold text-slate-300":"mt-4 hidden items-center justify-center gap-3 text-xs font-semibold text-slate-500 sm:flex"}><span className="rounded-lg bg-white/10 px-3 py-2">← → Cambiar carril</span><span className="rounded-lg bg-white/10 px-3 py-2">ESPACIO / ↑ Saltar</span></div><div className={isGameFullscreen?"mt-2 flex items-center justify-between gap-3 text-[10px] text-slate-400 sm:mt-3 sm:text-xs":"mt-2 flex items-center justify-between gap-3 text-[10px] leading-tight text-slate-400 sm:mt-4 sm:text-xs"}><span>Distancia: {gameDistance} m</span><span>Quálitas · Aseguramos autos, cuidamos personas.</span></div></div></div>}{step==="resultado"&&<div className="p-6 text-center sm:p-12"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-amber-50 text-4xl">🏆</div><p className="mt-5 text-xs font-black uppercase tracking-widest text-[#0096AE]">Desafío completado</p><h2 className="mt-2 text-3xl font-black text-slate-900">¡Excelente{participatingRun&&form.nombre.trim()?", "+form.nombre.trim().split(" ")[0]:""}!</h2><p className="mt-2 text-slate-500">Este es tu resultado en el rally de seguridad vial.</p><div className="mx-auto mt-7 grid max-w-xl gap-4 sm:grid-cols-2"><div className="rounded-2xl bg-[#941B80]/5 p-6"><FaStar className="mx-auto text-2xl text-[#941B80]"/><div className="mt-2 text-4xl font-black text-[#941B80]">{score}</div><div className="text-xs font-bold text-slate-500">PUNTOS OBTENIDOS</div></div><div className="rounded-2xl bg-[#0096AE]/10 p-6"><FaShieldAlt className="mx-auto text-2xl text-[#0096AE]"/><div className="mt-3 text-xl font-black text-[#007D91]">{profile()}</div><div className="mt-1 text-xs font-bold text-slate-500">TU PERFIL ORIENTATIVO</div></div></div><p className="mx-auto mt-5 max-w-xl rounded-xl bg-slate-50 p-5 text-left text-sm leading-6 text-slate-600">{profileCopy[profile()]} Este resultado es informativo y no sustituye una evaluación ni una cotización formal.</p><p className="mt-6 font-semibold text-slate-700">Gracias por participar en el Desafío Digital de Seguridad Vial Quálitas.</p>{participatingRun?<button className={primary+" mt-7"} onClick={()=>setStep("sorteo")}>Continuar con mi participación <FaArrowRight/></button>:<div className="mt-7"><p className="font-bold text-slate-700">Esta fue una partida de demostración.</p><p className="mt-1 text-sm text-slate-500">No se registraron tus datos ni tu puntuación.</p><button className={primary+" mt-4"} onClick={()=>setStep("fin")}>Finalizar demo</button></div>}</div>}
  {step==="sorteo"&&<div className="p-6 text-center sm:p-12"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-4xl text-emerald-600"><FaCheckCircle/></div><h2 className="mt-5 text-3xl font-black text-slate-900">Confirma tu participación</h2><p className="mt-2 text-slate-500">Selecciona si deseas que el equipo Quálitas te contacte. Al confirmar, guardaremos tu resultado y generaremos tu folio.</p><div className="mx-auto mt-7 max-w-sm rounded-2xl border-2 border-dashed border-[#941B80]/40 bg-[#941B80]/5 p-6"><p className="text-xs font-black uppercase tracking-widest text-[#941B80]">Tu folio de participación</p><div className="mt-3 text-4xl font-black tracking-wider text-[#941B80]">{folio}</div></div><div className="mx-auto mt-6 max-w-md space-y-3 text-left"><label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-sm"><input type="checkbox" checked={form.cotizacion} onChange={e=>set("cotizacion",e.target.checked)} className="mt-1 accent-[#941B80]"/> <span><strong>Deseo recibir una cotización personalizada</strong><span className="mt-1 block text-xs text-slate-500">Autorizo que me contacten para conocer opciones de seguro.</span></span></label><label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-sm"><input type="checkbox" checked={form.asesoria} onChange={e=>set("asesoria",e.target.checked)} className="mt-1 accent-[#941B80]"/> <span><strong>Deseo agendar una asesoría gratuita</strong><span className="mt-1 block text-xs text-slate-500">Me interesa recibir orientación sobre protección vehicular.</span></span></label></div><p className="mt-5 text-xs text-slate-400">Las preferencias de contacto se guardan con tu registro.</p><button className={primary+" mt-6"} disabled={busy} onClick={finish}>{busy?"Registrando...":"CONFIRMAR PARTICIPACIÓN"}</button></div>}
  {step==="fin"&&<div className="p-10 text-center sm:p-16"><div className="text-6xl">{participatingRun?"🎉":"🚘"}</div><h2 className="mt-5 text-3xl font-black text-[#941B80]">{participatingRun?"¡Tu participación ha sido registrada!":"¡Demo completada!"}</h2><p className="mt-3 text-slate-600">{participatingRun?"Gracias por participar en el Desafío Digital de Seguridad Vial Quálitas. Conserva tu folio:":"Esta partida fue únicamente de demostración. No se guardaron datos personales, puntuación ni folio."}</p>{participatingRun&&<div className="mx-auto mt-6 max-w-sm rounded-2xl border-2 border-dashed border-[#941B80]/40 bg-[#941B80]/5 p-6"><p className="text-xs font-black uppercase tracking-widest text-[#941B80]">Tu folio de participación</p><div className="mt-3 text-4xl font-black tracking-wider text-[#941B80]">{folio}</div></div>}<div className="mt-5 text-2xl font-black text-[#0096AE]">{Number(score||0).toLocaleString("es-MX")} puntos</div><button className={secondary+" mt-7"} onClick={()=>{setStep("inicio");setForm(blank);setScore(0);setFolio("");setRiskIndex(0);setAnswers({});setParticipatingRun(false);}}>Volver al inicio</button></div>}
