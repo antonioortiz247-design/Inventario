@@ -76,7 +76,7 @@ export default function Home({ inventario = [], estadisticas, onImport, onNaviga
         <h2 className="mb-4 text-xl font-bold text-[#941B80]">Herramientas</h2>
         <div className="flex flex-wrap gap-4"><ExcelImport onImport={onImport} /><ExcelExport data={inventario} fileName="Inventario_Qualitas" /></div>
       </section>
-      <section className="rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm md:p-10">
+      <section className="overflow-hidden rounded-2xl border border-purple-200 bg-gradient-to-r from-[#941B80] to-[#0096AE] p-6 text-white shadow-md md:p-7">\n        <div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-white/75">Formación y desarrollo</p><h2 className="mt-1 text-2xl font-black">Prepárate para la Cédula A2</h2><p className="mt-1 max-w-2xl text-sm text-white/85">Estudia por materias, practica con preguntas y lleva el seguimiento de tu avance.</p></div><button type="button" onClick={() => onNavigate?.("a2-academy")} className="rounded-xl border border-white/30 bg-white/15 px-5 py-3 font-bold text-white shadow-lg backdrop-blur-md hover:bg-white/25">Abrir A2 Academy →</button></div>\n      </section>\n      <section className="rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm md:p-10">
         <h3 className="text-2xl font-bold text-[#0096AE]">Bienvenido a Quálitas Hub</h3>
         <p className="mt-2 text-gray-600">Administra recursos, materiales promocionales, eventos y activaciones desde un solo lugar.</p>
       </section>
