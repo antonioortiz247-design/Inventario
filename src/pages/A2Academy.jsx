@@ -96,8 +96,7 @@ export default function A2Academy() {
   };
   const finishExam = () => setExamFinished(true);
   const formatTime = (seconds) => `${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`;
-  const materia = null;
-    const [materia, setMateria] = useState("generales");
+  const [materia, setMateria] = useState("generales");
   const [indice, setIndice] = useState(0);
   const [respuesta, setRespuesta] = useState(null);
   const [revelar, setRevelar] = useState(false);
