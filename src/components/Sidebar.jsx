@@ -16,6 +16,7 @@ import {
   FaTicketAlt,
   FaCamera,
   FaShieldAlt,
+  FaGraduationCap,
 } from "react-icons/fa";
 
 export default function Sidebar({
@@ -36,6 +37,7 @@ export default function Sidebar({
     { id: "calaverita-preregistro", label: "Prerregistro Calaverita", icon: <FaTicketAlt /> },
     { id: "desafio-seguridad-vial", label: "Desafío Digital de Seguridad Vial Quálitas", icon: <FaShieldAlt /> },
     { id: "simulador", label: "Simulador", icon: <FaCalculator /> },
+    { id: "a2-academy", label: "Estudio Cédula A2", icon: <FaGraduationCap /> },
     { id: "buscar-imagen", label: "Buscar por imagen", icon: <FaCamera /> },
     { id: "reportes", label: "Reportes", icon: <FaChartBar /> },
     { id: "configuracion", label: "Configuración", icon: <FaCog /> },
