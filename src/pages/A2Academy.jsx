@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { loadOriginalA2Exams, manualA2Exam } from "../data/a2Exams";
 import { FaBookOpen, FaBrain, FaClipboardCheck, FaGraduationCap, FaLayerGroup, FaChartLine, FaCheckCircle, FaTimesCircle, FaArrowRight, FaRedo } from "react-icons/fa";
 
 const materias = [
@@ -49,7 +50,54 @@ export default function A2Academy() {
     { title: "4. Consulta tu avance", text: "En “Mi avance” revisa las tarjetas dominadas y las preguntas que necesitas reforzar. Por ahora, el progreso se guarda en este dispositivo.", tip: "Si cambias de navegador o dispositivo, el avance local no se transfiere automáticamente." }
   ];
   const cerrarTutorial = () => { setTutorialOpen(false); try { localStorage.setItem("a2-tutorial-seen", "1"); } catch {} };
-  const [materia, setMateria] = useState("generales");
+  const [originalExams, setOriginalExams] = useState([]);
+  const [examLoadError, setExamLoadError] = useState("");
+  const [selectedExamId, setSelectedExamId] = useState(null);
+  const [examMode, setExamMode] = useState("practice");
+  const [examIndex, setExamIndex] = useState(0);
+  const [examAnswers, setExamAnswers] = useState({});
+  const [examFinished, setExamFinished] = useState(false);
+  const [examSeconds, setExamSeconds] = useState(0);
+  useEffect(() => {
+    let active = true;
+    loadOriginalA2Exams().then(data => { if (active) setOriginalExams(data); })
+      .catch(() => { if (active) setExamLoadError("No se pudieron cargar los cuestionarios originales. Actualiza la página e inténtalo nuevamente."); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    if (!selectedExamId || examFinished) return;
+    const timer = window.setInterval(() => setExamSeconds(value => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [selectedExamId, examFinished]);
+  const allExams = [...originalExams, manualA2Exam];
+  const selectedExam = allExams.find(exam => exam.id === selectedExamId);
+  const currentExamQuestion = selectedExam?.questions?.[examIndex];
+  const scoredQuestions = selectedExam?.questions?.filter(q => q.answerStatus === "verified" && q.options?.length) || [];
+  const examScore = selectedExam ? selectedExam.questions.reduce((sum, q, i) => {
+    if (q.answerStatus !== "verified" || !q.options?.length) return sum;
+    const chosen = examAnswers[i] || [];
+    const key = q.answerKey || [];
+    return sum + (chosen.length === key.length && chosen.every(value => key.includes(value)) ? 1 : 0);
+  }, 0) : 0;
+  const startExam = (exam, mode) => {
+    setSelectedExamId(exam.id); setExamMode(mode); setExamIndex(0); setExamAnswers({});
+    setExamFinished(false); setExamSeconds(0);
+  };
+  const answerExamQuestion = (value) => {
+    if (!currentExamQuestion || examFinished) return;
+    setExamAnswers(prev => {
+      const current = prev[examIndex] || [];
+      const multiple = (currentExamQuestion.answerKey || []).length > 1;
+      const next = multiple
+        ? (current.includes(value) ? current.filter(v => v !== value) : [...current, value])
+        : [value];
+      return { ...prev, [examIndex]: next };
+    });
+  };
+  const finishExam = () => setExamFinished(true);
+  const formatTime = (seconds) => `${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`;
+  const materia = null;
+    const [materia, setMateria] = useState("generales");
   const [indice, setIndice] = useState(0);
   const [respuesta, setRespuesta] = useState(null);
   const [revelar, setRevelar] = useState(false);
@@ -63,7 +111,7 @@ export default function A2Academy() {
   const guardar = (key, value, setter) => { setter(value); try { localStorage.setItem(key, JSON.stringify(value)); } catch {} };
   const elegir = (i) => { if (respuesta !== null) return; setRespuesta(i); if (i !== actual.answer) guardar("a2-missed", [...new Set([...fallos, actual.id])], setFallos); };
   const siguiente = () => { setIndice(v => (v + 1) % lista.length); setRespuesta(null); };
-  const tabs = [{id:"inicio",label:"Resumen",icon:<FaGraduationCap/>},{id:"lecciones",label:"Materias",icon:<FaBookOpen/>},{id:"practica",label:"Practicar",icon:<FaClipboardCheck/>},{id:"tarjetas",label:"Tarjetas",icon:<FaLayerGroup/>},{id:"avance",label:"Mi avance",icon:<FaChartLine/>}];
+  const tabs = [{id:"inicio",label:"Resumen",icon:<FaGraduationCap/>},{id:"lecciones",label:"Materias",icon:<FaBookOpen/>},{id:"practica",label:"Practicar",icon:<FaClipboardCheck/>},{id:"examenes",label:"Exámenes",icon:<FaClipboardCheck/>},{id:"tarjetas",label:"Tarjetas",icon:<FaLayerGroup/>},{id:"avance",label:"Mi avance",icon:<FaChartLine/>}];
 
   return <main className="mx-auto max-w-7xl space-y-6 p-4 pb-10 md:p-6">
     <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#5b185d] via-[#941B80] to-[#0096AE] p-6 text-white shadow-xl md:p-8">
@@ -74,6 +122,55 @@ export default function A2Academy() {
     {tab==="inicio" && <section className="grid gap-4 md:grid-cols-2"><div className="rounded-2xl border border-white/70 bg-white/75 p-6 shadow-sm"><p className="text-sm font-bold uppercase tracking-wider text-[#0096AE]">Ruta de estudio</p><h2 className="mt-2 text-2xl font-bold text-slate-800">Avanza por áreas</h2><p className="mt-2 text-sm leading-6 text-slate-600">Estudia cada materia, practica la recuperación de información y comprueba tus conocimientos con preguntas de opción múltiple.</p><button onClick={()=>setTab("lecciones")} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#941B80] px-5 py-3 font-semibold text-white">Ver materias <FaArrowRight/></button></div><div className="rounded-2xl border border-white/70 bg-white/75 p-6 shadow-sm"><p className="text-sm font-bold uppercase tracking-wider text-[#0096AE]">Sesión rápida</p><h2 className="mt-2 text-2xl font-bold text-slate-800">Pon a prueba lo aprendido</h2><p className="mt-2 text-sm leading-6 text-slate-600">Responde preguntas basadas en los cuestionarios que compartiste. La explicación aparece después de responder.</p><button onClick={()=>{setMateria("todas");setIndice(0);setRespuesta(null);setTab("practica");}} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#0096AE] px-5 py-3 font-semibold text-white">Comenzar práctica <FaArrowRight/></button></div><div className="md:col-span-2 rounded-2xl border border-white/70 bg-white/75 p-6 shadow-sm"><div className="flex items-center justify-between"><div><h2 className="text-xl font-bold text-slate-800">Materias de la Cédula A2</h2><p className="mt-1 text-sm text-slate-500">Estructura basada en el temario de la guía de estudios.</p></div><button onClick={()=>setTab("lecciones")} className="text-sm font-bold text-[#941B80]">Explorar</button></div><div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{materias.map(m=><button key={m.id} onClick={()=>{setMateria(m.id);setTab("lecciones");}} className="rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-[#0096AE] hover:shadow-md"><p className="font-bold text-slate-800">{m.title}</p><p className="mt-1 text-xs leading-5 text-slate-500">{m.description}</p></button>)}</div></div></section>}
     {tab==="lecciones" && <section className="space-y-4"><div><h2 className="text-2xl font-bold text-slate-800">Materias y temario</h2><p className="text-sm text-slate-500">Selecciona un área para consultar su estructura de estudio.</p></div><div className="grid gap-3 md:grid-cols-2">{materias.map(m=><button key={m.id} onClick={()=>setMateria(m.id)} className={`rounded-2xl border p-5 text-left ${materia===m.id?"border-[#941B80] bg-purple-50/70 ring-1 ring-[#941B80]":"border-white/70 bg-white/75"}`}><h3 className="font-bold text-slate-800">{m.title}</h3><p className="mt-1 text-sm text-slate-500">{m.description}</p><div className="mt-3 flex flex-wrap gap-2">{m.topics.map(x=><span key={x} className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{x}</span>)}</div></button>)}</div><p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">El temario ya está organizado. Las lecciones desarrolladas se irán incorporando desde el manual A2; no se completarán con información externa sin distinguirla.</p></section>}
     {tab==="practica" && <section className="mx-auto max-w-3xl rounded-2xl border border-white/70 bg-white/80 p-5 shadow-sm md:p-7"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-[#0096AE]">Práctica de conocimientos</p><h2 className="mt-1 text-xl font-bold text-slate-800">Pregunta {indice+1} de {lista.length}</h2></div><select value={materia} onChange={e=>{setMateria(e.target.value);setIndice(0);setRespuesta(null);}} className="rounded-xl border border-slate-200 p-2 text-sm"><option value="todas">Todas las materias</option>{materias.filter(m=>!["autos","hogar"].includes(m.id)).map(m=><option key={m.id} value={m.id}>{m.title}</option>)}</select></div><div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0096AE]" style={{width:`${((indice+1)/lista.length)*100}%`}}/></div><p className="mt-5 text-xs font-bold uppercase tracking-wider text-[#941B80]">{actual?.area}</p><h3 className="mt-2 text-lg font-bold leading-7 text-slate-800">{actual?.q}</h3><div className="mt-5 space-y-3">{actual?.options.map((o,i)=><button key={o} onClick={()=>elegir(i)} className={`w-full rounded-xl border p-4 text-left text-sm font-medium transition ${respuesta===null?"border-slate-200 bg-white hover:border-[#0096AE] hover:bg-cyan-50":i===actual.answer?"border-emerald-300 bg-emerald-50 text-emerald-900":respuesta===i?"border-rose-300 bg-rose-50 text-rose-900":"border-slate-200 bg-slate-50 text-slate-500"}`}><span className="mr-3 font-bold text-[#941B80]">{String.fromCharCode(65+i)}.</span>{o}{respuesta!==null&&i===actual.answer&&<FaCheckCircle className="float-right mt-1 text-emerald-600"/>}{respuesta===i&&i!==actual.answer&&<FaTimesCircle className="float-right mt-1 text-rose-600"/>}</button>)}</div>{respuesta!==null&&<div className="mt-5 rounded-xl border border-cyan-200 bg-cyan-50 p-4"><p className="font-bold text-cyan-950">{respuesta===actual.answer?"¡Correcto!":"Respuesta incorrecta"}</p><p className="mt-1 text-sm leading-6 text-cyan-900">{actual.why}</p><button onClick={siguiente} className="mt-4 rounded-xl bg-[#941B80] px-5 py-2.5 font-semibold text-white">Siguiente pregunta</button></div>}</section>}
+    {tab==="examenes" && <section className="space-y-5">
+      {!selectedExamId && <>
+        <div><p className="text-xs font-bold uppercase tracking-wider text-[#0096AE]">Evaluación interactiva</p><h2 className="mt-1 text-2xl font-bold text-slate-800">Centro de exámenes</h2><p className="mt-1 text-sm text-slate-500">Elige un cuestionario original o el examen nuevo elaborado con el manual.</p></div>
+        {examLoadError && <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{examLoadError}</p>}
+        {!originalExams.length && !examLoadError && <p className="rounded-xl bg-white p-4 text-sm text-slate-500">Cargando cuestionarios originales…</p>}
+        <div className="grid gap-4 md:grid-cols-2">
+          {allExams.map(exam => {
+            const total=exam.questions.length;
+            const verified=exam.questions.filter(q=>q.answerStatus==="verified"&&q.options?.length).length;
+            const pending=total-verified;
+            const manual=exam.id==="manual-a2";
+            return <article key={exam.id} className="rounded-2xl border border-white/70 bg-white/80 p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-3"><div><span className="rounded-full bg-purple-50 px-2.5 py-1 text-[11px] font-bold uppercase text-[#941B80]">{manual?"Nuevo · Manual":"Cuestionario original"}</span><h3 className="mt-3 text-lg font-bold text-slate-800">{exam.title}</h3></div><FaClipboardCheck className="mt-1 text-2xl text-[#0096AE]"/></div>
+              <p className="mt-2 text-sm text-slate-500">{total} reactivos · {verified} con clave identificada · {pending} por validar</p>
+              <p className="mt-2 text-xs leading-5 text-slate-500">{exam.source}</p>
+              {pending>0&&<p className="mt-3 rounded-lg bg-amber-50 p-2.5 text-xs leading-5 text-amber-800">Algunos reactivos no tienen una clave marcada verificable en el archivo original. Se mostrarán, pero no contarán en la calificación.</p>}
+              <div className="mt-4 flex flex-wrap gap-2"><button onClick={()=>startExam(exam,"practice")} className="rounded-xl bg-[#0096AE] px-4 py-2.5 text-sm font-bold text-white">Modo práctica</button><button onClick={()=>startExam(exam,"exam")} className="rounded-xl bg-[#941B80] px-4 py-2.5 text-sm font-bold text-white">Modo examen</button></div>
+            </article>;
+          })}
+        </div>
+      </>}
+      {selectedExam && !examFinished && currentExamQuestion && <div className="mx-auto max-w-3xl rounded-2xl border border-white/70 bg-white/85 p-5 shadow-sm md:p-7">
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-[#0096AE]">{examMode==="exam"?"Simulación de examen":"Práctica guiada"}</p><h2 className="mt-1 text-xl font-bold text-slate-800">{selectedExam.title}</h2></div><div className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold tabular-nums text-slate-700">{formatTime(examSeconds)}</div></div>
+        <div className="mt-4 flex items-center justify-between text-xs font-semibold text-slate-500"><span>Reactivo {examIndex+1} de {selectedExam.questions.length}</span><span>{Math.round(((examIndex+1)/selectedExam.questions.length)*100)}%</span></div>
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0096AE] transition-all" style={{width:`${((examIndex+1)/selectedExam.questions.length)*100}%`}}/></div>
+        <div className="mt-6"><p className="text-xs font-bold uppercase tracking-wider text-[#941B80]">Pregunta {currentExamQuestion.number}</p><h3 className="mt-2 text-lg font-bold leading-7 text-slate-800">{currentExamQuestion.stem}</h3>
+          {currentExamQuestion.supportingText?.length>0&&<div className="mt-3 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-700">{currentExamQuestion.supportingText.map((line,i)=><p key={i} className="mb-1 last:mb-0">{line}</p>)}</div>}
+          {currentExamQuestion.options?.length>0 ? <div className="mt-5 space-y-2">{currentExamQuestion.options.map(option=>{
+            const chosen=examAnswers[examIndex]||[];
+            const active=chosen.includes(option.value);
+            const reveal=examMode==="practice"&&chosen.length>0;
+            const correct=reveal&&(currentExamQuestion.answerKey||[]).includes(option.value);
+            return <button key={option.value} onClick={()=>answerExamQuestion(option.value)} disabled={reveal} className={`w-full rounded-xl border p-4 text-left text-sm leading-6 transition ${correct?"border-emerald-300 bg-emerald-50 text-emerald-950":active?"border-[#941B80] bg-purple-50 text-slate-900":"border-slate-200 bg-white hover:border-[#0096AE] hover:bg-cyan-50"} `}>
+              <span className="mr-3 inline-flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-xs font-black text-[#941B80]">{option.value}</span>{option.text}
+              {correct&&<FaCheckCircle className="float-right mt-1 text-emerald-600"/>}
+            </button>;
+          })}</div> : <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">Este reactivo incluye una lista o estructura que no se pudo separar en opciones sin alterar el documento. Revísalo como aparece arriba y continúa.</p>}
+          {examMode==="practice"&&(examAnswers[examIndex]?.length>0||!currentExamQuestion.options?.length)&&<div className="mt-4 rounded-xl border border-cyan-200 bg-cyan-50 p-4"><p className="font-bold text-cyan-950">{currentExamQuestion.answerStatus==="verified"?"Clave identificada en el documento": "Clave pendiente de validar"}</p><p className="mt-1 text-sm leading-6 text-cyan-900">{currentExamQuestion.explanation}</p>{currentExamQuestion.answerKey?.length>0&&<p className="mt-2 text-sm font-bold text-cyan-950">Respuesta marcada: {currentExamQuestion.answerKey.join(", ")}</p>}</div>}
+        </div>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2"><button onClick={()=>{setSelectedExamId(null);setExamFinished(false);}} className="text-sm font-semibold text-slate-500">Salir del examen</button><div className="flex gap-2">{examIndex>0&&<button onClick={()=>setExamIndex(v=>v-1)} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700">Anterior</button>}{examIndex<selectedExam.questions.length-1?<button onClick={()=>setExamIndex(v=>v+1)} disabled={examMode==="practice"&&currentExamQuestion.options?.length>0&&!examAnswers[examIndex]?.length} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40">{examMode==="practice"?"Siguiente reactivo":"Siguiente"}</button>:<button onClick={finishExam} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white">Finalizar y calificar</button>}</div></div>
+        {examMode==="exam"&&<p className="mt-3 text-xs text-slate-400">Puedes cambiar tus respuestas con los botones Anterior y Siguiente. La calificación se muestra al finalizar.</p>}
+      </div>}
+      {selectedExam && examFinished && <div className="mx-auto max-w-2xl rounded-3xl border border-white/70 bg-white/85 p-7 text-center shadow-lg">
+        <FaGraduationCap className="mx-auto text-4xl text-[#941B80]"/><p className="mt-3 text-xs font-bold uppercase tracking-wider text-[#0096AE]">Resultado de evaluación</p><h2 className="mt-1 text-2xl font-black text-slate-800">{selectedExam.title}</h2>
+        <p className="mt-5 text-5xl font-black text-[#941B80]">{examScore}/{scoredQuestions.length}</p><p className="mt-1 text-sm text-slate-500">{scoredQuestions.length?Math.round(examScore/scoredQuestions.length*100):0}% de aciertos · {formatTime(examSeconds)}</p>
+        <p className="mt-4 text-sm leading-6 text-slate-600">Se califican únicamente los reactivos cuya respuesta está marcada en el documento fuente. Los reactivos sin clave verificable no afectan tu resultado.</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2"><button onClick={()=>startExam(selectedExam,examMode)} className="rounded-xl bg-[#941B80] px-5 py-2.5 text-sm font-bold text-white">Repetir examen</button><button onClick={()=>{setSelectedExamId(null);setExamFinished(false);}} className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700">Volver a exámenes</button></div>
+      </div>}
+    </section>}
     {tab==="tarjetas" && <section className="mx-auto max-w-xl"><div className="mb-4 flex items-center justify-between"><div><h2 className="text-2xl font-bold text-slate-800">Tarjetas de estudio</h2><p className="text-sm text-slate-500">Tarjeta {card+1} de {flashcards.length}</p></div><span className="text-sm font-bold text-[#0096AE]">{progreso}% dominado</span></div><button onClick={()=>setRevelar(v=>!v)} className="flex min-h-64 w-full flex-col items-center justify-center rounded-3xl border border-white/70 bg-white/80 p-8 text-center shadow-lg"><FaBrain className="mb-5 text-3xl text-[#941B80]"/><p className="text-xs font-bold uppercase tracking-widest text-[#0096AE]">{revelar?"Respuesta":"Concepto"}</p><h3 className="mt-3 text-2xl font-black text-slate-800">{revelar?flashcards[card][1]:flashcards[card][0]}</h3><p className="mt-5 text-xs text-slate-400">Toca para {revelar?"ver el concepto":"revelar la respuesta"}</p></button><div className="mt-4 grid grid-cols-3 gap-2"><button onClick={()=>{setCard(v=>(v-1+flashcards.length)%flashcards.length);setRevelar(false);}} className="rounded-xl border border-slate-200 bg-white p-3 text-sm font-semibold text-slate-700">Anterior</button><button onClick={()=>{const next=[...new Set([...conocidas,card])];guardar("a2-known",next,setConocidas);setCard(v=>(v+1)%flashcards.length);setRevelar(false);}} className="rounded-xl bg-emerald-600 p-3 text-sm font-semibold text-white">La domino ✓</button><button onClick={()=>{setCard(v=>(v+1)%flashcards.length);setRevelar(false);}} className="rounded-xl bg-[#941B80] p-3 text-sm font-semibold text-white">Siguiente</button></div></section>}
     {tab==="avance" && <section className="grid gap-4 md:grid-cols-3"><div className="rounded-2xl bg-white/80 p-5 shadow-sm"><p className="text-sm text-slate-500">Tarjetas dominadas</p><p className="mt-2 text-3xl font-black text-[#941B80]">{conocidas.length}/{flashcards.length}</p><div className="mt-3 h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-[#0096AE]" style={{width:`${progreso}%`}}/></div></div><div className="rounded-2xl bg-white/80 p-5 shadow-sm"><p className="text-sm text-slate-500">Preguntas por reforzar</p><p className="mt-2 text-3xl font-black text-amber-600">{fallos.length}</p></div><div className="rounded-2xl bg-white/80 p-5 shadow-sm"><p className="text-sm text-slate-500">Preguntas disponibles</p><p className="mt-2 text-3xl font-black text-[#0096AE]">{preguntas.length}</p></div><div className="rounded-2xl border border-slate-200 bg-white/80 p-5 md:col-span-3"><h3 className="font-bold text-slate-800">Refuerzo recomendado</h3><p className="mt-1 text-sm text-slate-500">Las preguntas falladas se conservan en este dispositivo para retomarlas en otra sesión.</p><button onClick={()=>{setMateria("todas");setIndice(0);setRespuesta(null);setTab("practica");}} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#941B80] px-4 py-2.5 text-sm font-semibold text-white"><FaRedo/> Practicar nuevamente</button><button onClick={()=>{if(confirm("¿Borrar el avance local de A2 Academy en este dispositivo?")){guardar("a2-known",[],setConocidas);guardar("a2-missed",[],setFallos);}}} className="ml-2 mt-4 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600">Reiniciar avance</button></div></section>}
     <p className="text-center text-xs text-slate-400">Contenido inicial basado en los documentos de estudio compartidos. El avance se guarda localmente en este dispositivo.</p>
