@@ -330,14 +330,35 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
        ctx.fillStyle="rgba(255,255,255,.86)";for(let s=0;s<24;s++){const sx=(s*83+29)%W,sy=(s*47+19)%250;if(sx<360||sx>720){ctx.beginPath();ctx.arc(sx,sy,1+(s%3)*.35,0,Math.PI*2);ctx.fill();}}
      }
      ctx.restore();
-     g.spawn-=dt;if(g.spawn<=0){g.obstacles.push({lane:Math.floor(Math.random()*3),y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});g.spawn=Math.max(25,42-difficultyLevel*3.5)+Math.random()*8;}
+     g.spawn-=dt;
+    if(g.spawn<=0){
+      // Never create an obstacle in the same lane and near the same depth as a gift.
+      const lanes=[0,1,2].sort(()=>Math.random()-.5);
+      const safeLane=lanes.find(lane=>!g.collectibles.some(item=>item.lane===lane&&Math.abs(item.y-(-45))<155));
+      if(safeLane!==undefined){
+        g.obstacles.push({lane:safeLane,y:-45,type:["cone","hole","barrier","signal"][Math.floor(Math.random()*4)]});
+        g.spawn=Math.max(25,42-difficultyLevel*3.5)+Math.random()*8;
+      }else{
+        // Retry shortly rather than placing an obstacle over a collectible.
+        g.spawn=8;
+      }
+    }
     g.obstacles.forEach(o=>{o.y+=g.speed*dt*1.7;o.phase=(o.phase||0)+dt*.08;});g.obstacles=g.obstacles.filter(o=>o.y<H+70);g.obstacles.slice().sort((a,b)=>a.y-b.y).forEach(drawObstacle);
     g.multiplierTicks=Math.max(0,g.multiplierTicks-dt);
     g.giftSpawn-=dt;
     if(g.giftSpawn<=0&&g.collectibles.length===0){
-      const roll=Math.random(),type=roll<.12?"multiplier":roll<.34?"special":"common";
-      g.collectibles.push({lane:Math.floor(Math.random()*3),y:-35,type,phase:Math.random()*Math.PI*2});
-      g.giftSpawn=260+Math.random()*260;
+      // Gifts are only spawned in a lane with enough clear road around them.
+      // Obstacles and gifts move at the same speed, so this spacing remains stable.
+      const lanes=[0,1,2].sort(()=>Math.random()-.5);
+      const safeLane=lanes.find(lane=>!g.obstacles.some(obstacle=>obstacle.lane===lane&&Math.abs(obstacle.y-(-35))<155));
+      if(safeLane!==undefined){
+        const roll=Math.random(),type=roll<.12?"multiplier":roll<.34?"special":"common";
+        g.collectibles.push({lane:safeLane,y:-35,type,phase:Math.random()*Math.PI*2});
+        g.giftSpawn=260+Math.random()*260;
+      }else{
+        // Wait for a clear lane; do not overlap a gift with an obstacle.
+        g.giftSpawn=12;
+      }
     }
     g.collectibles.forEach(o=>{o.y+=g.speed*dt*1.7;o.phase=(o.phase||0)+dt*.08;});
     g.collectibles=g.collectibles.filter(o=>o.y<H+55);
