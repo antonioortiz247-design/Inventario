@@ -277,48 +277,53 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   const drawObstacle=o=>{
     const x=laneX(o.lane,o.y),y=o.y,p=Math.max(.5,Math.min(1.4,.58+y/H*.78)),w=24*p,h=34*p;
     ctx.save();ctx.translate(x,y);ctx.scale(p,p);
-    // Tight, crisp contact shadow only; no blur on the obstacle artwork.
+    // Contact shadow remains crisp so the hazard silhouette reads clearly.
     ctx.fillStyle="rgba(10,22,36,.24)";ctx.beginPath();ctx.ellipse(0,h*.68,w*.88,4*p,0,0,Math.PI*2);ctx.fill();
     if(o.type==="cone"){
       rounded(-22,-1,44,10,4,"#202b39","#111827");rounded(-18,-3,36,5,2,"#526176");
       ctx.beginPath();ctx.moveTo(-2,-52);ctx.quadraticCurveTo(0,-55,2,-52);ctx.lineTo(17,-4);ctx.quadraticCurveTo(18,0,13,1);ctx.lineTo(-13,1);ctx.quadraticCurveTo(-18,0,-17,-4);ctx.closePath();
       const cg=ctx.createLinearGradient(-18,0,18,0);cg.addColorStop(0,"#a83d12");cg.addColorStop(.25,"#f36b1e");cg.addColorStop(.55,"#ff963c");cg.addColorStop(.82,"#df5917");cg.addColorStop(1,"#8d3212");ctx.fillStyle=cg;ctx.fill();
-      ctx.beginPath();ctx.moveTo(-12,-20);ctx.lineTo(12,-20);ctx.lineTo(14,-12);ctx.lineTo(-14,-12);ctx.closePath();ctx.fillStyle="#fff8ed";ctx.fill();
-      ctx.beginPath();ctx.moveTo(-8,-34);ctx.lineTo(8,-34);ctx.lineTo(10,-27);ctx.lineTo(-10,-27);ctx.closePath();ctx.fillStyle="#fff8ed";ctx.fill();
+      ctx.beginPath();ctx.moveTo(-12,-20);ctx.lineTo(12,-20);ctx.lineTo(14,-12);ctx.lineTo(-14,-12);ctx.closePath();ctx.fillStyle="#fff";ctx.fill();
+      ctx.beginPath();ctx.moveTo(-8,-34);ctx.lineTo(8,-34);ctx.lineTo(10,-27);ctx.lineTo(-10,-27);ctx.closePath();ctx.fillStyle="#8df5f1";ctx.fill();
       ctx.strokeStyle="rgba(255,255,255,.45)";ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(-2,-49);ctx.lineTo(-13,-5);ctx.stroke();
     }else if(o.type==="hole"){
-      ctx.beginPath();ctx.ellipse(0,0,32,16,0,0,Math.PI*2);ctx.fillStyle="#8c98a7";ctx.fill();
-      ctx.beginPath();ctx.ellipse(0,-1,28,13,0,0,Math.PI*2);ctx.fillStyle="#202b3a";ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,0,34,18,0,0,Math.PI*2);ctx.fillStyle="#0096AE";ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,-1,30,15,0,0,Math.PI*2);ctx.fillStyle="#202b3a";ctx.fill();
       ctx.beginPath();ctx.ellipse(-2,-3,22,8,0,-.1,Math.PI*1.1);ctx.fillStyle="#0b1421";ctx.fill();
-      ctx.strokeStyle="rgba(255,255,255,.3)";ctx.lineWidth=1.3;ctx.beginPath();ctx.ellipse(-2,-3,23,9,-.08,Math.PI,Math.PI*1.85);ctx.stroke();
-      ctx.strokeStyle="#aeb9c5";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-23,-6);ctx.lineTo(-29,-11);ctx.lineTo(-25,-2);ctx.moveTo(18,7);ctx.lineTo(26,11);ctx.lineTo(22,2);ctx.stroke();
+      ctx.strokeStyle="rgba(255,255,255,.62)";ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(-2,-3,25,11,-.08,Math.PI,Math.PI*1.85);ctx.stroke();
+      ctx.fillStyle="#fff";ctx.font="900 9px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("!",0,-20);
     }else{
       rounded(-32,10,64,8,3,"#263548","#111827");rounded(-27,5,10,10,2,"#3c4a5c");rounded(17,5,10,10,2,"#3c4a5c");
       ctx.beginPath();ctx.moveTo(-30,-18);ctx.quadraticCurveTo(-30,-23,-25,-23);ctx.lineTo(25,-23);ctx.quadraticCurveTo(30,-23,30,-18);ctx.lineTo(27,7);ctx.lineTo(-27,7);ctx.closePath();
-      const bg=ctx.createLinearGradient(0,-23,0,8);bg.addColorStop(0,"#ffe36a");bg.addColorStop(.45,"#f3bd22");bg.addColorStop(1,"#bd8111");ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle="#fff0a0";ctx.lineWidth=1.3;ctx.stroke();
-      ctx.save();ctx.beginPath();ctx.roundRect(-27,-19,54,23,3);ctx.clip();ctx.fillStyle="#344052";
+      const bg=ctx.createLinearGradient(0,-23,0,8);bg.addColorStop(0,"#941B80");bg.addColorStop(.55,"#74116b");bg.addColorStop(1,"#4b104b");ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle="#dca3d4";ctx.lineWidth=1.3;ctx.stroke();
+      ctx.save();ctx.beginPath();ctx.roundRect(-27,-19,54,23,3);ctx.clip();ctx.fillStyle="#0096AE";
       for(let k=-3;k<4;k++){ctx.beginPath();ctx.moveTo(k*18-7,-20);ctx.lineTo(k*18+2,-20);ctx.lineTo(k*18-8,7);ctx.lineTo(k*18-17,7);ctx.closePath();ctx.fill();}
       ctx.restore();rounded(-31,-20,5,27,2,"#f7f1d6");rounded(26,-20,5,27,2,"#f7f1d6");
+      ctx.fillStyle="#fff";ctx.font="900 9px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Q",0,-8);
     }
     ctx.restore();
   };
   const drawCollectible=o=>{
     const x=laneX(o.lane,o.y),y=o.y,p=Math.max(.52,Math.min(1.45,.58+y/H*.78));
-    const size=24*p, bob=Math.sin((g.ticks*.09)+(o.phase||0))*3*p;
+    const size=24*p,bob=Math.sin((g.ticks*.09)+(o.phase||0))*3*p;
     ctx.save();ctx.translate(x,y+bob);ctx.scale(p,p);
-    ctx.fillStyle="rgba(8,20,34,.24)";ctx.beginPath();ctx.ellipse(0,24,23,6,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(8,20,34,.24)";ctx.beginPath();ctx.ellipse(0,25,25,7,0,0,Math.PI*2);ctx.fill();
     if(o.type==="multiplier"){
-      const glow=ctx.createRadialGradient(0,0,3,0,0,37);glow.addColorStop(0,"rgba(111,227,232,.42)");glow.addColorStop(1,"rgba(111,227,232,0)");
-      ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,37,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle="#073c4a";ctx.strokeStyle="#8df5f1";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(0,0,size,0,Math.PI*2);ctx.fill();ctx.stroke();
-      ctx.fillStyle="#fff";ctx.font="900 18px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("x2",0,1);
+      const glow=ctx.createRadialGradient(0,0,3,0,0,39);glow.addColorStop(0,"rgba(141,245,241,.5)");glow.addColorStop(1,"rgba(0,150,174,0)");
+      ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,0,39,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#073c4a";ctx.strokeStyle="#8df5f1";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,size,0,Math.PI*2);ctx.fill();ctx.stroke();
+      ctx.fillStyle="#fff";ctx.font="900 17px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("Q×2",0,1);
+      ctx.beginPath();ctx.arc(0,0,size+5,-Math.PI*.78,-Math.PI*.22);ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();
     }else{
       const special=o.type==="special";
-      const grad=ctx.createLinearGradient(-size,-size,size,size);grad.addColorStop(0,special?"#fff2a8":"#f7b8ed");grad.addColorStop(.5,special?"#f5bd38":"#b72ca2");grad.addColorStop(1,special?"#bd7815":"#74116b");
-      ctx.fillStyle=grad;ctx.strokeStyle=special?"#fff2a8":"#ffd9f6";ctx.lineWidth=2;
-      ctx.beginPath();ctx.roundRect(-size,-size,size*2,size*2,5);ctx.fill();ctx.stroke();
-      ctx.fillStyle="rgba(255,255,255,.85)";ctx.fillRect(-2.5,-size,5,size*2);ctx.fillRect(-size,-2.5,size*2,5);
-      ctx.fillStyle="#fff";ctx.font="900 10px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(special?"★":"+ ",0,0);
+      const grad=ctx.createLinearGradient(-size,-size,size,size);
+      grad.addColorStop(0,special?"#8df5f1":"#dca3d4");grad.addColorStop(.48,special?"#0096AE":"#941B80");grad.addColorStop(1,special?"#075b70":"#5b155f");
+      ctx.fillStyle=grad;ctx.strokeStyle=special?"#d7ffff":"#f5d8f1";ctx.lineWidth=2.2;
+      ctx.beginPath();ctx.roundRect(-size,-size,size*2,size*2,6);ctx.fill();ctx.stroke();
+      // Gift ribbon and bow retain the original pickup silhouette.
+      ctx.fillStyle="rgba(255,255,255,.94)";ctx.fillRect(-3.5,-size,7,size*2);ctx.fillRect(-size,-3.5,size*2,7);
+      ctx.beginPath();ctx.ellipse(-5,-size-3,5,3,-.45,0,Math.PI*2);ctx.ellipse(5,-size-3,5,3,.45,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#fff";ctx.font="900 10px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(special?"★":"Q",0,1);
     }
     ctx.restore();
   };
