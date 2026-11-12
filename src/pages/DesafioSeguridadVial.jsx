@@ -103,7 +103,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   // distance-based scroll, and the landscape fills a wide screen.
   const ctx=canvas.getContext("2d"),W=1080,H=900,RW=540,OX=270;
   const g=gameEngineRef.current||{lane:1,jump:0,obstacles:[],collectibles:[],ticks:0,distance:0,distancePoints:0,bonusPoints:0,multiplierTicks:0,giftSpawn:240,speed:7.2,spawn:12};gameEngineRef.current=g;
-  g.collectibles=g.collectibles||[];g.distancePoints=g.distancePoints||0;g.bonusPoints=g.bonusPoints||0;g.multiplierTicks=g.multiplierTicks||0;g.multiplierUses=g.multiplierUses||0;g.giftSpawn=g.giftSpawn??(220+Math.random()*180);
+  g.collectibles=g.collectibles||[];g.particles=g.particles||[];g.distancePoints=g.distancePoints||0;g.bonusPoints=g.bonusPoints||0;g.multiplierTicks=g.multiplierTicks||0;g.multiplierUses=g.multiplierUses||0;g.giftSpawn=g.giftSpawn??(220+Math.random()*180);
   let raf=0,alive=true,last=0;
   const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return OX+top+(bottom-top)*p;};
   const rounded=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}};
@@ -392,6 +392,9 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     const playerLane=g.lane,collectibleIndex=g.collectibles.findIndex(o=>o.lane===playerLane&&o.y>H-220&&o.y<H-105);
     if(collectibleIndex>=0){
       const item=g.collectibles.splice(collectibleIndex,1)[0];
+      const pickupX=laneX(item.lane,item.y),pickupY=item.y;
+      for(let i=0;i<22;i++){const a=(Math.PI*2*i)/22;g.particles.push({x:pickupX,y:pickupY,vx:Math.cos(a)*(2+Math.random()*3),vy:Math.sin(a)*(2+Math.random()*3),life:28+Math.random()*12,maxLife:40,color:item.type==="multiplier"?"#8df5f1":item.type==="special"?"#ffffff":"#dca3d4",size:2+Math.random()*3});}
+      g.pickupFlash=14;
       if(item.type==="multiplier"){
         if(g.multiplierTicks>0){
           g.pickupNotice={text:"¡EL x2 YA ESTÁ ACTIVO!",life:105};
@@ -411,10 +414,13 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
       setScore(totalScore());
     }
     g.collectibles.slice().sort((a,b)=>a.y-b.y).forEach(drawCollectible);
+    g.particles=g.particles.filter(p=>p.life>0);
+    g.particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.97;p.vy=p.vy*.97+.035*dt;p.life-=dt;ctx.save();ctx.globalAlpha=Math.max(0,p.life/p.maxLife);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();ctx.restore();});
+    if(g.pickupFlash>0){ctx.save();ctx.globalAlpha=(g.pickupFlash/14)*.22;ctx.fillStyle="#8df5f1";ctx.fillRect(0,0,W,H);ctx.restore();g.pickupFlash=Math.max(0,g.pickupFlash-dt);}
     if(g.jump>0)g.jump=Math.max(0,g.jump-dt);
     const playerX=laneX(g.lane,H-150),playerY=H-150;
     const hit=g.obstacles.some(o=>o.lane===g.lane&&o.y>H-220&&o.y<H-105&&g.jump<8);
-    if(hit){alive=false;const v=totalScore();setScore(v);setGameDistance(Math.floor(g.distance/10));setGameStatus("over");return;}
+    if(hit){alive=false;for(let i=0;i<30;i++){const a=Math.random()*Math.PI*2,s=2+Math.random()*5;g.particles.push({x:playerX,y:playerY,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:24+Math.random()*12,maxLife:36,color:i%3===0?"#8df5f1":i%3===1?"#dca3d4":"#ffffff",size:2+Math.random()*4});}const v=totalScore();setScore(v);setGameDistance(Math.floor(g.distance/10));setGameStatus("over");return;}
     drawCar(playerX,playerY);
     // Premium in-world telemetry with Quálitas Racing signature.
     ctx.save();
@@ -432,8 +438,10 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     ctx.font="700 10px Arial";ctx.fillStyle="#fff";ctx.fillText(g.multiplierTicks>0?Math.ceil(g.multiplierTicks/60)+" s · "+(MAX_MULTIPLIER_USES-g.multiplierUses)+" usos":"Disponibles: "+(MAX_MULTIPLIER_USES-g.multiplierUses)+"/"+MAX_MULTIPLIER_USES,W-101,119);ctx.restore();
     if(g.pickupNotice&&g.pickupNotice.life>0){
       const alpha=Math.min(1,g.pickupNotice.life/22);ctx.save();ctx.globalAlpha=alpha;
-      rounded(300,250,480,68,16,"rgba(25,18,48,.88)","rgba(255,255,255,.72)");
-      ctx.fillStyle="#8df5f1";ctx.textAlign="center";ctx.font="900 22px Arial";ctx.fillText(g.pickupNotice.text,540,292);
+      const notice=ctx.createLinearGradient(300,250,780,318);notice.addColorStop(0,"rgba(39,10,53,.96)");notice.addColorStop(1,"rgba(5,78,94,.96)");
+      rounded(300,250,480,68,16,notice,"rgba(141,245,241,.85)");
+      ctx.fillStyle="#8df5f1";ctx.textAlign="center";ctx.font="900 10px Arial";ctx.fillText("QUALICOCHE · RECOMPENSA",540,272);
+      ctx.fillStyle="#fff";ctx.font="900 20px Arial";ctx.fillText(g.pickupNotice.text,540,299);
       ctx.restore();g.pickupNotice.life=Math.max(0,g.pickupNotice.life-dt);
     }
     if(g.ticks%8===0){const v=totalScore();setScore(v);setGameDistance(Math.floor(g.distance/10));}
