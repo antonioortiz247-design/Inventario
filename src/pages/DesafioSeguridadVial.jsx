@@ -220,6 +220,26 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     const body=ctx.createLinearGradient(-48,0,48,0);body.addColorStop(0,"#5f0d59");body.addColorStop(.16,"#a51b91");body.addColorStop(.48,"#d33abd");body.addColorStop(.78,"#941b80");body.addColorStop(1,"#51094d");ctx.fillStyle=body;ctx.fill();
     ctx.shadowColor="transparent";ctx.shadowBlur=0;ctx.shadowOffsetY=0;
     ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=1.5;ctx.stroke();
+    // Quálitas Racing livery: twin aqua racing stripes, pearl-white pinstripes
+    // and discreet sponsor panels. The original coupe silhouette is preserved.
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(-10,-82);ctx.quadraticCurveTo(-13,-36,-12,18);ctx.lineTo(-10,67);ctx.quadraticCurveTo(0,72,10,67);ctx.lineTo(12,18);ctx.quadraticCurveTo(13,-36,10,-82);ctx.closePath();
+    const aquaLivery=ctx.createLinearGradient(-12,0,12,0);aquaLivery.addColorStop(0,"#006f82");aquaLivery.addColorStop(.45,"#00c1d2");aquaLivery.addColorStop(1,"#007e91");ctx.fillStyle=aquaLivery;ctx.fill();
+    ctx.globalAlpha=.9;ctx.fillStyle="#ffffff";ctx.fillRect(-15,-77,2,135);ctx.fillRect(13,-77,2,135);
+    // Side sponsor panels, aligned to the doors and readable from the top-down view.
+    rounded(-35,-7,12,31,4,"#f7f8fb","rgba(255,255,255,.75)");
+    rounded(23,-7,12,31,4,"#f7f8fb","rgba(255,255,255,.75)");
+    ctx.fillStyle="#941B80";ctx.font="900 5px Arial";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.save();ctx.translate(-29,8);ctx.rotate(-Math.PI/2);ctx.fillText("Q·RACING",0,0);ctx.restore();
+    ctx.save();ctx.translate(29,8);ctx.rotate(Math.PI/2);ctx.fillText("Q·RACING",0,0);ctx.restore();
+    // Race number roundel on the rear deck.
+    ctx.beginPath();ctx.arc(0,17,10,0,Math.PI*2);ctx.fillStyle="#ffffff";ctx.fill();
+    ctx.strokeStyle="#0096AE";ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle="#941B80";ctx.font="900 9px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("06",0,17);
+    // Aqua rear diffuser accents and a subtle front splitter.
+    ctx.fillStyle="#8df5f1";ctx.fillRect(-18,-84,36,3);
+    ctx.fillStyle="#0096AE";ctx.fillRect(-22,68,44,3);
+    ctx.restore();
     // Body highlights and sculpted shoulders
     ctx.beginPath();ctx.moveTo(-37,-67);ctx.quadraticCurveTo(-27,-76,-17,-77);ctx.moveTo(37,-67);ctx.quadraticCurveTo(27,-76,17,-77);ctx.strokeStyle="rgba(255,255,255,.34)";ctx.lineWidth=2;ctx.stroke();
     // Vista estrictamente cenital: las ruedas quedan ocultas bajo la carrocería.
@@ -391,11 +411,15 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     const hit=g.obstacles.some(o=>o.lane===g.lane&&o.y>H-220&&o.y<H-105&&g.jump<8);
     if(hit){alive=false;const v=totalScore();setScore(v);setGameDistance(Math.floor(g.distance/10));setGameStatus("over");return;}
     drawCar(playerX,playerY);
-    // Minimal in-world telemetry
-    ctx.save();ctx.fillStyle="rgba(9,22,38,.34)";rounded(18,18,168,56,13,ctx.fillStyle);
-    ctx.fillStyle="#fff";ctx.font="700 10px Arial";ctx.textAlign="left";ctx.fillText("DISTANCIA",30,39);
-    ctx.font="800 19px Arial";ctx.fillText(Math.floor(g.distance/10)+" m",30,61);
-    ctx.fillStyle="rgba(255,255,255,.72)";ctx.font="700 9px Arial";ctx.fillText("MANTÉN EL CONTROL",W-157,40);
+    // Premium in-world telemetry with Quálitas Racing signature.
+    ctx.save();
+    const hud=ctx.createLinearGradient(18,18,190,78);hud.addColorStop(0,"rgba(39,10,53,.88)");hud.addColorStop(1,"rgba(5,78,94,.82)");
+    rounded(18,18,178,62,14,hud,"rgba(141,245,241,.48)");
+    ctx.fillStyle="#8df5f1";ctx.font="900 9px Arial";ctx.textAlign="left";ctx.fillText("QUALICOCHE  ·  RACING",30,36);
+    ctx.fillStyle="#fff";ctx.font="900 22px Arial";ctx.fillText(Math.floor(g.distance/10).toLocaleString("es-MX")+" m",30,65);
+    rounded(W-192,18,174,62,14,"rgba(39,10,53,.82)","rgba(255,255,255,.25)");
+    ctx.fillStyle="#8df5f1";ctx.font="900 9px Arial";ctx.textAlign="center";ctx.fillText("CONDUCCIÓN SEGURA",W-105,37);
+    ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="700 10px Arial";ctx.fillText("ANTICIPA · REACCIONA",W-105,59);
     ctx.restore();
     if(g.levelNotice>0){const alpha=Math.min(1,g.levelNotice/24);ctx.save();ctx.globalAlpha=alpha;rounded(362,330,356,104,18,"rgba(24,20,48,.86)","rgba(255,255,255,.65)");ctx.textAlign="center";ctx.shadowColor="rgba(0,150,174,.8)";ctx.shadowBlur=18;ctx.fillStyle="#75edf0";ctx.font="900 23px Arial";ctx.fillText("¡SUBISTE DE NIVEL!",540,371);ctx.shadowBlur=0;ctx.fillStyle="#fff";ctx.font="800 14px Arial";ctx.fillText("NIVEL "+(g.level+1)+"  ·  MÁS VELOCIDAD",540,402);ctx.restore();g.levelNotice=Math.max(0,g.levelNotice-dt);}
     ctx.save();rounded(W-184,78,166,58,12,g.multiplierTicks>0?"rgba(7,60,74,.9)":"rgba(25,18,48,.84)",g.multiplierTicks>0?"rgba(111,227,232,.9)":"rgba(255,255,255,.45)");
