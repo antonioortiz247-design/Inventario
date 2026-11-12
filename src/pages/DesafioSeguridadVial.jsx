@@ -100,8 +100,8 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   // road, grass, bushes and billboards all share one vanishing point and one
   // distance-based scroll, and the landscape fills a wide screen.
   const ctx=canvas.getContext("2d"),W=1080,H=900,RW=540,OX=270;
-  const g=gameEngineRef.current||{lane:1,jump:0,obstacles:[],collectibles:[],ticks:0,distance:0,bonusPoints:0,multiplierTicks:0,giftSpawn:240,speed:7.2,spawn:12};gameEngineRef.current=g;
-  g.collectibles=g.collectibles||[];g.bonusPoints=g.bonusPoints||0;g.multiplierTicks=g.multiplierTicks||0;g.giftSpawn=g.giftSpawn??(220+Math.random()*180);
+  const g=gameEngineRef.current||{lane:1,jump:0,obstacles:[],collectibles:[],ticks:0,distance:0,distancePoints:0,bonusPoints:0,multiplierTicks:0,giftSpawn:240,speed:7.2,spawn:12};gameEngineRef.current=g;
+  g.collectibles=g.collectibles||[];g.distancePoints=g.distancePoints||0;g.bonusPoints=g.bonusPoints||0;g.multiplierTicks=g.multiplierTicks||0;g.giftSpawn=g.giftSpawn??(220+Math.random()*180);
   let raf=0,alive=true,last=0;
   const laneX=(lane,y)=>{const p=Math.max(0,Math.min(1,y/H));const top=[193,270,347][lane],bottom=[136.7,270,403.3][lane];return OX+top+(bottom-top)*p;};
   const rounded=(x,y,w,h,r,fill,stroke)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke();}};
@@ -300,9 +300,9 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     }
     ctx.restore();
   };
-  const totalScore=()=>Math.floor(g.distance/10)*(g.multiplierTicks>0?2:1)+g.bonusPoints;
+  const totalScore=()=>Math.floor(g.distancePoints)+g.bonusPoints;
   const frame=t=>{
-    if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;const difficultyLevel=Math.floor(g.distance/10000);if(difficultyLevel>(g.level||0)){g.level=difficultyLevel;g.levelNotice=150;}g.speed=Math.min(15.5,7.2+difficultyLevel*0.85);
+    if(!alive)return;const dt=Math.min((t-last)/16.67||1,2);last=t;g.ticks++;g.distance+=g.speed*dt;g.distancePoints+=(g.speed*dt/10)*(g.multiplierTicks>0?2:1);const difficultyLevel=Math.floor(g.distance/10000);if(difficultyLevel>(g.level||0)){g.level=difficultyLevel;g.levelNotice=150;}g.speed=Math.min(15.5,7.2+difficultyLevel*0.85);
     ctx.clearRect(0,0,W,H);drawRoad();
     // Day/night cycle: the sun and moon physically travel across the sky.
      const timePhase=(g.distance%40000)/40000;
@@ -386,7 +386,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
   const key=e=>{if(["ArrowLeft","ArrowRight","ArrowUp"," ","a","d","A","D"].includes(e.key)){e.preventDefault();if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")g.lane=Math.max(0,g.lane-1);if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")g.lane=Math.min(2,g.lane+1);if(e.key===" "||e.key==="ArrowUp")g.jump=22;}};
   window.addEventListener("keydown",key);return()=>{alive=false;cancelAnimationFrame(raf);window.removeEventListener("keydown",key);};
  },[step,gameStatus]);
- const startDriving=()=>{gameEngineRef.current={lane:1,jump:0,obstacles:[],collectibles:[],ticks:0,distance:0,bonusPoints:0,multiplierTicks:0,giftSpawn:220+Math.random()*180,speed:7.2,spawn:12,level:0,levelNotice:0};setScore(0);setGameDistance(0);setGameStatus("playing");};
+ const startDriving=()=>{gameEngineRef.current={lane:1,jump:0,obstacles:[],collectibles:[],ticks:0,distance:0,distancePoints:0,bonusPoints:0,multiplierTicks:0,giftSpawn:220+Math.random()*180,speed:7.2,spawn:12,level:0,levelNotice:0};setScore(0);setGameDistance(0);setGameStatus("playing");};
  const moveCar=direction=>{const g=gameEngineRef.current;if(!g||gameStatus!=="playing")return;if(direction==="left")g.lane=Math.max(0,g.lane-1);if(direction==="right")g.lane=Math.min(2,g.lane+1);if(direction==="jump")g.jump=22;};
  const touchStartRef=useRef(null);
  const handleGamePointerDown=e=>{if(gameStatus!=="playing")return;touchStartRef.current={x:e.clientX,y:e.clientY,id:e.pointerId};};
