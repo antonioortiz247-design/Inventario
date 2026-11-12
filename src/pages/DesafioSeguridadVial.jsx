@@ -399,7 +399,7 @@ export default function DesafioSeguridadVial({publicMode=false,adminMode=false,o
     if(g.levelNotice>0){const alpha=Math.min(1,g.levelNotice/24);ctx.save();ctx.globalAlpha=alpha;rounded(362,330,356,104,18,"rgba(24,20,48,.86)","rgba(255,255,255,.65)");ctx.textAlign="center";ctx.shadowColor="rgba(0,150,174,.8)";ctx.shadowBlur=18;ctx.fillStyle="#75edf0";ctx.font="900 23px Arial";ctx.fillText("¡SUBISTE DE NIVEL!",540,371);ctx.shadowBlur=0;ctx.fillStyle="#fff";ctx.font="800 14px Arial";ctx.fillText("NIVEL "+(g.level+1)+"  ·  MÁS VELOCIDAD",540,402);ctx.restore();g.levelNotice=Math.max(0,g.levelNotice-dt);}
     ctx.save();rounded(W-184,78,166,58,12,g.multiplierTicks>0?"rgba(7,60,74,.9)":"rgba(25,18,48,.84)",g.multiplierTicks>0?"rgba(111,227,232,.9)":"rgba(255,255,255,.45)");
     ctx.fillStyle="#8df5f1";ctx.textAlign="center";ctx.font="900 14px Arial";ctx.fillText(g.multiplierTicks>0?"PUNTOS x2":"MULTIPLICADOR",W-101,97);
-    ctx.font="700 10px Arial";ctx.fillStyle="#fff";ctx.fillText(g.multiplierTicks>0?Math.ceil(g.multiplierTicks/60)+" s restantes":"Usos: "+g.multiplierUses+"/"+MAX_MULTIPLIER_USES,W-101,119);ctx.restore();
+    ctx.font="700 10px Arial";ctx.fillStyle="#fff";ctx.fillText(g.multiplierTicks>0?Math.ceil(g.multiplierTicks/60)+" s · "+(MAX_MULTIPLIER_USES-g.multiplierUses)+" usos":"Disponibles: "+(MAX_MULTIPLIER_USES-g.multiplierUses)+"/"+MAX_MULTIPLIER_USES,W-101,119);ctx.restore();
     if(g.pickupNotice&&g.pickupNotice.life>0){
       const alpha=Math.min(1,g.pickupNotice.life/22);ctx.save();ctx.globalAlpha=alpha;
       rounded(300,250,480,68,16,"rgba(25,18,48,.88)","rgba(255,255,255,.72)");
